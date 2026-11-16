@@ -1,0 +1,40 @@
+# Local services, accounts, developer tools, and build output
+.local/
+.agents/
+.codex/
+.aws/
+.vs/
+node_modules/
+bin/
+obj/
+__pycache__/
+*.py[cod]
+*.user
+*.suo
+
+# Generated test output and diagnostics
+test-results/
+TestResults/
+playwright-report/
+coverage/
+*.log
+
+# Private configuration, credentials, and runtime data
+.env
+.env.*
+!.env.example
+*.credential.xml
+*.pem
+*.key
+*.p12
+*.pfx
+*.dump
+*.backup
+*.bak
+*.sqlite*
+*.qcow2
+
+# Retain only the reviewed, deployable curriculum bundles in dist
+**/dist/*
+!/phase4/dist/curriculum.json
+!/phase7/dist/curriculum.json

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Masar.Domain/Masar.Domain.csproj" />
+    <Project Path="src/Masar.Api/Masar.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Masar.Domain.Tests/Masar.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

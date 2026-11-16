@@ -1,0 +1,10 @@
+.local/
+**/bin/
+**/obj/
+**/node_modules/
+**/__pycache__/
+**/dist/
+src/Masar.Api/wwwroot/
+test-results/private/
+*.user
+*.log

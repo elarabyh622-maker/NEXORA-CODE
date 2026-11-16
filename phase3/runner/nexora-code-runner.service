@@ -1,0 +1,29 @@
+[Unit]
+Description=NEXORA CODE console runner
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=simple
+User=nexora-runner
+Group=nexora-runner
+SupplementaryGroups=docker
+RuntimeDirectory=nexora-code-runner
+RuntimeDirectoryMode=0700
+EnvironmentFile=/etc/nexora-code-runner/runner.env
+WorkingDirectory=/opt/nexora-code-runner
+ExecStart=/usr/bin/python3 -E -s -B /opt/nexora-code-runner/broker.py
+ExecStopPost=/usr/bin/python3 -E -s -B /opt/nexora-code-runner/broker.py --cleanup-owned
+KillMode=mixed
+TimeoutStopSec=35s
+Restart=on-failure
+RestartSec=10s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

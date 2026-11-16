@@ -1,0 +1,497 @@
+{
+  "lessons": [
+    {
+      "id": "data-05",
+      "title": "ألخّص القيم حسب الفئة",
+      "summary": "أجمع قيم كل فئة في قاموس وأعرضها بترتيب واضح.",
+      "why": "يكشف التجميع اختلاف الأنشطة الذي قد يخفيه المجموع العام.",
+      "objectives": [
+        "أحدّث مجموع كل فئة في قاموس.",
+        "أرتب المفاتيح عند عرض الملخص."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "data.groups"
+      ],
+      "sections": [
+        {
+          "heading": "المفتاح والمجموع",
+          "body": "بعد تنظيف الفئة والتحقق من العدد، استخدم اسم الفئة مفتاحًا: totals[name] = totals.get(name, 0) + value. القيمة الافتراضية صفر عند أول ظهور، ثم يضاف كل صف صالح مرة واحدة."
+        },
+        {
+          "heading": "حدود التجميع",
+          "body": "تجاهل الصف غير الصالح قبل تحديث القاموس. strip تزيل مسافات الطرفين فقط؛ reading وReading فئتان مختلفتان في هذا العقد. sorted(totals) يرتب المفاتيح تصاعديًا لنتيجة ثابتة. القاموس الفارغ لا ينتج أسطر فئات. في مختبري data-05 وdata-08 يتغير عقد الإدخال: اقرأ CSV مباشرة من stdin حتى نهاية الإدخال دون سطر عدد سابق، والرؤوس مضمونة. يتجاهل هذان المختبران الحقول الإضافية وفق عقدهما المعلن، حتى إن كان عقد مختبر سابق يرفضها."
+        },
+        {
+          "heading": "جرّب بنفسك",
+          "body": "أضف صف reading بقيمة 1 إلى المثال وتوقع المجموع قبل التشغيل. لا تخلط بين عدد الصفوف ومجموع الدقائق."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول",
+          "language": "python",
+          "code": "rows = [(\"reading\", 3), (\"practice\", 2), (\"reading\", 4)]\ntotals = {}\nfor category, minutes in rows:\n    totals[category] = totals.get(category, 0) + minutes\nfor category in sorted(totals):\n    print(f\"{category}:{totals[category]}\")",
+          "explanation": "تجمع reading القيمتين 3 و4 فتصبح 7؛ تظهر practice أولًا بالترتيب النصي."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "data-05-q1",
+          "prompt": "ما مجموع reading في المثال؟ اكتب العدد.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "7"
+          ],
+          "explanation": "3 + 4 = 7.",
+          "hints": [
+            "ابحث عن الصفين بالفئة نفسها.",
+            "اجمع 3 و4."
+          ],
+          "independent": false
+        },
+        {
+          "id": "data-05-q2",
+          "prompt": "ما القيمة التي يعيدها totals.get(\"new\", 0) إذا لم يوجد المفتاح؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "القيمة الثانية هي الافتراضية عند غياب المفتاح.",
+          "hints": [
+            "هل المفتاح موجود؟",
+            "انظر للوسيط الثاني."
+          ],
+          "independent": false
+        },
+        {
+          "id": "data-05-q3",
+          "prompt": "بعد strip هل reading وReading فئة واحدة في هذا العقد؟ أجب نعم أو لا.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "لا"
+          ],
+          "explanation": "إزالة المسافات لا تغير حالة الحروف.",
+          "hints": [
+            "فكر فيما تزيله strip.",
+            "هل تغير الحروف الكبيرة؟"
+          ],
+          "independent": false
+        }
+      ],
+      "takeaway": "أجمع القيم الصالحة حسب الفئة في قاموس وأرتب المفاتيح لعرض ثابت."
+    },
+    {
+      "id": "data-06",
+      "title": "أحسب نسبة بمقام معلوم",
+      "summary": "أحسب نسبة الحضور من مجموع الحضور والفرص مع معالجة الصفر.",
+      "why": "المعدل بلا مقام واضح قد يقود إلى استنتاج مضلل أو قسمة على صفر.",
+      "objectives": [
+        "أحدد البسط والمقام قبل الحساب.",
+        "أعالج المقام الصفري وأعرض دقة النسبة."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "data.rates"
+      ],
+      "sections": [
+        {
+          "heading": "البسط والمقام",
+          "body": "في بياناتنا attended عدد مرات الحضور وoffered عدد الفرص. نسبة الحضور الكلية = مجموع attended ÷ مجموع offered × 100، لا متوسط نسب الصفوف؛ يختلف الأثر عندما تختلف المقامات."
+        },
+        {
+          "heading": "الصفر والتحقق",
+          "body": "اقبل عددين صحيحين غير سالبين بشرط attended ≤ offered. إذا كان مجموع offered صفرًا اطبع NA بدل القسمة أو اختلاق نسبة صفر. صيغة :.1f تعرض منزلة عشرية واحدة؛ الحساب يستخدم القيم قبل التقريب."
+        },
+        {
+          "heading": "مثال على اختلاف الأوزان",
+          "body": "صف 1 من 1 وصف 0 من 9 يعطيان إجمالي 1 من 10 أي 10.0%، لا 50% الناتجة عن متوسط نسبتي الصفين."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول",
+          "language": "python",
+          "code": "attended, offered = 3, 4\nif offered == 0:\n    print(\"rate=NA\")\nelse:\n    print(f\"rate={attended / offered * 100:.1f}%\")",
+          "explanation": "3 من 4 يساوي 75.0%؛ الفرع الآخر يحمي من القسمة على صفر."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "data-06-q1",
+          "prompt": "حضور 1 من 1 و0 من 9: ما النسبة الكلية؟ اكتب الرقم دون علامة %.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "10"
+          ],
+          "explanation": "المجموع 1 من 10، أي 10%.",
+          "hints": [
+            "اجمع البسطين والمقامين أولًا.",
+            "اقسم 1 على 10 واضرب في 100."
+          ],
+          "independent": false
+        },
+        {
+          "id": "data-06-q2",
+          "prompt": "ماذا نطبع عندما يكون مجموع offered صفرًا؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "NA"
+          ],
+          "explanation": "النسبة غير معرّفة لأن المقام صفر.",
+          "hints": [
+            "هل القسمة على صفر ممكنة؟",
+            "استخدم النص المحدد في العقد."
+          ],
+          "independent": false
+        }
+      ],
+      "takeaway": "أحسب النسبة من مجموع البسط والمقام وأعرض NA عندما يكون المقام صفرًا."
+    },
+    {
+      "id": "data-07",
+      "title": "أرتب النتائج وأفسر حدودها",
+      "summary": "أعرض التعادل والترتيب وأصف نطاق الاستنتاج.",
+      "why": "تحتاج المقارنة العادلة عرض كل المتعادلين مع حدود البيانات.",
+      "objectives": [
+        "أستخرج جميع الفئات المتعادلة في أكبر مجموع.",
+        "أشرح حدود الملخص المجمع."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "data.report"
+      ],
+      "sections": [
+        {
+          "heading": "ترتيب وتعادل",
+          "body": "احسب أكبر مجموع ثم اجمع كل اسم يساويه، ورتب الأسماء تصاعديًا قبل ضمها. لا تستدع max على قاموس فارغ: اعرض none عند غياب الفئات. في المختبر التالي ترتيب الفئات نصي تصاعدي باستخدام sorted مع مراعاة حالة الحروف حتى عند التعادل."
+        },
+        {
+          "heading": "ماذا يخبرنا الملخص؟",
+          "body": "المجموع يصف الصفوف المقبولة فقط؛ لا يثبت سبب الحضور ولا يمثل طلابًا لم تسجل بياناتهم. قد تخفي المجاميع اختلاف الأفراد وعدد الفرص، ولذلك اذكر المقام وعدد الصفوف المستبعدة."
+        },
+        {
+          "heading": "اختبار",
+          "body": "جرّب فئتين بالمجموع نفسه. قبل تجربة قاموس فارغ في المثال، أضف شرط if totals يحرس max وفرع else يطبع top=none؛ المثال الحالي مفترض أن القاموس غير فارغ. لا تختَر فائزًا واحدًا بناءً على ترتيب الإدخال."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول",
+          "language": "python",
+          "code": "totals = {\"reading\": 5, \"practice\": 5, \"review\": 2}\nbest = max(totals.values())\nwinners = sorted(name for name, value in totals.items() if value == best)\nprint(\"top=\" + \",\".join(winners))\nprint(\"scope=observed rows only\")",
+          "explanation": "كل من practice وreading يساوي 5؛ نعرض الاثنين بترتيب ثابت، مع تحديد نطاق البيانات."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "data-07-q1",
+          "prompt": "كم فئة تتعادل على أكبر مجموع في المثال؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "practice وreading لهما المجموع 5.",
+          "hints": [
+            "قارن القيم الثلاث.",
+            "كم قيمة تساوي 5؟"
+          ],
+          "independent": false
+        },
+        {
+          "id": "data-07-q2",
+          "prompt": "هل يثبت مجموع أعلى أن النشاط سبب الحضور؟ أجب نعم أو لا.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "لا"
+          ],
+          "explanation": "المجاميع وصفية ولا تثبت السببية.",
+          "hints": [
+            "هل توجد تجربة تقارن الأسباب؟",
+            "لاحظ حدود الصفوف المرصودة."
+          ],
+          "independent": false
+        }
+      ],
+      "takeaway": "أعرض جميع المتعادلين وأحدد نطاق البيانات وحدود الاستنتاج."
+    },
+    {
+      "id": "data-08",
+      "title": "مشروع: تقرير أنشطة دراسة خيالية",
+      "summary": "أحلل CSV خياليًا وأنتج تقريرًا قابلًا لإعادة الاختبار.",
+      "why": "يجمع المشروع التنظيف والتجميع والنسبة والتفسير في برنامج واحد.",
+      "objectives": [
+        "أتحقق من الصفوف وألخص كل نشاط.",
+        "أنتج تقريرًا ثابتًا يتضمن المقام والاستبعاد والتعادل."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "data.project"
+      ],
+      "sections": [
+        {
+          "heading": "البيانات والعقد",
+          "body": "الإدخال CSV برؤوس activity,attended,offered من stdin حتى نهايته. كل صف يمثل سجل نشاط خيالي. نظف الحقول باستخدام strip؛ اقبل اسمًا غير فارغ وعددين صحيحين غير سالبين بحيث attended ≤ offered. تجاهل الصف غير الصالح وعدّه مرة. الرؤوس مضمونة والصفوف الناقصة غير صالحة؛ تجاهل الأعمدة الإضافية."
+        },
+        {
+          "heading": "التقرير",
+          "body": "اطبع valid=N وinvalid=N، ثم لكل نشاط بترتيب نصي تصاعدي activity:NAME attended=A offered=O rate=R. R نسبة بمكان عشري وعلامة %، أو NA إذا كان O صفرًا. بعد ذلك اطبع total:attended=A offered=O rate=R ثم top= وأسماء الأنشطة المتعادلة بأكبر حضور مفصولة بفاصلة بلا مسافات، أو none إن لم يوجد نشاط. أخيرًا اطبع scope=valid fictional rows only."
+        },
+        {
+          "heading": "خطة تنفيذ",
+          "body": "اقرأ csv.DictReader(sys.stdin)، افحص كل صف قبل تحويله وتجميعه، ثم اجمع القيم بالقاموس. احسب النسبة من مجموعي كل فئة، لا من متوسط نسبها. اختبر حالة المقام الصفري والتعادل والفارغ والصفوف الفاسدة."
+        },
+        {
+          "heading": "تفسير مسؤول",
+          "body": "يشمل التقرير السجلات المقبولة فقط ويعرض عدد المستبعد؛ لا يكشف فروق الأفراد أو سبب الحضور، ولا يدعم تعميمًا على مجتمع حقيقي. بيانات المثال خيالية."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول",
+          "language": "python",
+          "code": "import csv\nfrom io import StringIO\ntext = \"activity,attended,offered\\nreading,2,4\\npractice,1,2\\n\"\nrows = list(csv.DictReader(StringIO(text)))\nattended = sum(int(row[\"attended\"]) for row in rows)\noffered = sum(int(row[\"offered\"]) for row in rows)\nprint(f\"rows={len(rows)}\")\nprint(f\"rate={attended / offered * 100:.1f}%\" if offered else \"rate=NA\")",
+          "explanation": "السجلان يعطيان 3 من 6؛ المثال المصغر يمهد للتقرير الكامل في المختبر."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "data-08-q1",
+          "prompt": "صف حضوره 3 والفرص 2: هل يقبل؟ أجب نعم أو لا.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "لا"
+          ],
+          "explanation": "الحضور لا يجوز أن يزيد على الفرص في هذا العقد.",
+          "hints": [
+            "قارن attended مع offered.",
+            "راجع شرط صحة الصف."
+          ],
+          "independent": false
+        },
+        {
+          "id": "data-08-q2",
+          "prompt": "إذا لم يوجد أي صف صالح ماذا تكون قيمة top؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "none"
+          ],
+          "explanation": "لا توجد فئة لاختيار أكبر حضور منها.",
+          "hints": [
+            "هل يوجد مفتاح في القاموس؟",
+            "راجع صيغة الحالة الفارغة."
+          ],
+          "independent": false
+        },
+        {
+          "id": "data-08-q3",
+          "prompt": "هل يستنتج التقرير سبب الحضور؟ أجب نعم أو لا.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "لا"
+          ],
+          "explanation": "التقرير وصفي للصفوف الخيالية المقبولة فقط.",
+          "hints": [
+            "تذكر الفرق بين الوصف والسببية.",
+            "هل سجلنا تجربة سببية؟"
+          ],
+          "independent": false
+        }
+      ],
+      "takeaway": "أتحقق من السجلات الخيالية وأنتج تقريرًا مرتبًا بمجاميع ونسب قابلة للاختبار."
+    }
+  ],
+  "skills": [
+    {
+      "id": "data.groups",
+      "title": "ألخص حسب الفئة",
+      "description": "أجمع القيم الصالحة حسب فئة في قاموس.",
+      "required": {
+        "skill": "data.summary"
+      },
+      "recommended": []
+    },
+    {
+      "id": "data.rates",
+      "title": "أحسب نسبة ذات مقام",
+      "description": "أحسب النسبة من المجاميع وأعالج المقام الصفري.",
+      "required": {
+        "skill": "data.groups"
+      },
+      "recommended": []
+    },
+    {
+      "id": "data.report",
+      "title": "أرتب وأفسر النتائج",
+      "description": "أعرض التعادل وحدود البيانات المجملة.",
+      "required": {
+        "skill": "data.rates"
+      },
+      "recommended": []
+    },
+    {
+      "id": "data.project",
+      "title": "أبني تقرير نشاط",
+      "description": "أنتج تقريرًا ثابتًا عن سجلات خيالية.",
+      "required": {
+        "skill": "data.report"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "data-05",
+      "title": "ألخّص القيم حسب الفئة",
+      "why": "يكشف التجميع اختلاف الأنشطة الذي قد يخفيه المجموع العام.",
+      "skillIds": [
+        "data.groups"
+      ]
+    },
+    {
+      "id": "data-06",
+      "title": "أحسب نسبة بمقام معلوم",
+      "why": "المعدل بلا مقام واضح قد يقود إلى استنتاج مضلل أو قسمة على صفر.",
+      "skillIds": [
+        "data.rates"
+      ]
+    },
+    {
+      "id": "data-07",
+      "title": "أرتب النتائج وأفسر حدودها",
+      "why": "تحتاج المقارنة العادلة عرض كل المتعادلين مع حدود البيانات.",
+      "skillIds": [
+        "data.report"
+      ]
+    },
+    {
+      "id": "data-08",
+      "title": "مشروع: تقرير أنشطة دراسة خيالية",
+      "why": "يجمع المشروع التنظيف والتجميع والنسبة والتفسير في برنامج واحد.",
+      "skillIds": [
+        "data.project"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "تجميع حسب الفئة",
+      "technical": "Group aggregation",
+      "definition": "جمع القيم لكل مفتاح مشترك بعد التحقق من الصفوف."
+    },
+    {
+      "term": "المقام",
+      "technical": "Denominator",
+      "definition": "الكمية التي نقسم عليها، مثل عدد الفرص المتاحة."
+    },
+    {
+      "term": "تعادل",
+      "technical": "Tie",
+      "definition": "تساوي فئتين أو أكثر في القيمة المقارنة."
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "data-05",
+      "id": "data-05-lab",
+      "language": "python",
+      "title": "دقائق حسب النشاط",
+      "prompt": "اقرأ CSV كاملًا من stdin برؤوس مضمونة activity,minutes. نظف الحقلين بـ strip؛ الصف صالح إذا كان الاسم غير فارغ والدقائق عددًا صحيحًا غير سالب. اعتبر القيم الناقصة أو غير الصحيحة صفًا مستبعدًا واحدًا وتجاهل الأعمدة الإضافية. اجمع الدقائق حسب الاسم مع الحفاظ على حالة الحروف. اطبع NAME:TOTAL لكل فئة بترتيب نصي تصاعدي، ثم invalid=N. لا تطبع شيئًا آخر. استخدم المكتبة القياسية فقط.",
+      "starterCode": "import csv\nimport sys\n\n# اقرأ السجلات واجمع الدقائق الصالحة\n",
+      "sampleInput": "activity,minutes\nreading,3\npractice,2\nreading,4\n,1\n",
+      "sampleOutput": "practice:2\nreading:7\ninvalid=1\n",
+      "skillId": "data.groups",
+      "hiddenTests": [
+        {
+          "input": "activity,minutes\n",
+          "expectedOutput": "invalid=0\n"
+        },
+        {
+          "input": "activity,minutes\n A , 0 \nA,5\nB,-1\nB,no\n",
+          "expectedOutput": "A:5\ninvalid=2\n"
+        },
+        {
+          "input": "activity,minutes\n\"read, aloud\",2\nread,3\nreading\n",
+          "expectedOutput": "read:3\nread, aloud:2\ninvalid=1\n"
+        }
+      ],
+      "solution": "import csv\nimport sys\n\ntotals = {}\ninvalid = 0\nfor row in csv.DictReader(sys.stdin):\n    name = (row.get(\"activity\") or \"\").strip()\n    try:\n        value = int((row.get(\"minutes\") or \"\").strip())\n        if not name or value < 0:\n            raise ValueError\n    except ValueError:\n        invalid += 1\n        continue\n    totals[name] = totals.get(name, 0) + value\nfor name in sorted(totals):\n    print(f\"{name}:{totals[name]}\")\nprint(f\"invalid={invalid}\")\n"
+    },
+    {
+      "lessonId": "data-08",
+      "id": "data-08-lab",
+      "language": "python",
+      "title": "تقرير الحضور الخيالي",
+      "prompt": "نفّذ عقد التقرير المذكور في الدرس حرفيًا من CSV على stdin حتى نهاية الإدخال، باستخدام المكتبة القياسية فقط. الرؤوس activity,attended,offered مضمونة. نظف الحقول واعتبر الصفوف الناقصة وغير العددية والسالبة والتي يتجاوز حضورها الفرص أو اسمها فارغًا غير صالحة؛ تجاهل الأعمدة الإضافية. المخرجات بالترتيب الدقيق الموصوف في الدرس، بلا رسائل إضافية. استخدم أسماء الفئات كما هي بعد strip وراعِ حالة الحروف.",
+      "starterCode": "import csv\nimport sys\n\n# تحقق من الصفوف ثم اجمع واطبع التقرير\n",
+      "sampleInput": "activity,attended,offered\nreading,2,4\npractice,1,2\nreading,1,2\nbad,4,3\n",
+      "sampleOutput": "valid=3\ninvalid=1\nactivity:practice attended=1 offered=2 rate=50.0%\nactivity:reading attended=3 offered=6 rate=50.0%\ntotal:attended=4 offered=8 rate=50.0%\ntop=reading\nscope=valid fictional rows only\n",
+      "skillId": "data.project",
+      "hiddenTests": [
+        {
+          "input": "activity,attended,offered\n",
+          "expectedOutput": "valid=0\ninvalid=0\ntotal:attended=0 offered=0 rate=NA\ntop=none\nscope=valid fictional rows only\n"
+        },
+        {
+          "input": "activity,attended,offered\nB,0,0\nA,0,0\n",
+          "expectedOutput": "valid=2\ninvalid=0\nactivity:A attended=0 offered=0 rate=NA\nactivity:B attended=0 offered=0 rate=NA\ntotal:attended=0 offered=0 rate=NA\ntop=A,B\nscope=valid fictional rows only\n"
+        },
+        {
+          "input": "activity,attended,offered\n X ,1,1\nX,0,9\nY,1,2\n,1,2\nZ,-1,2\nZ,foo,2\nZ,1\n",
+          "expectedOutput": "valid=3\ninvalid=4\nactivity:X attended=1 offered=10 rate=10.0%\nactivity:Y attended=1 offered=2 rate=50.0%\ntotal:attended=2 offered=12 rate=16.7%\ntop=X,Y\nscope=valid fictional rows only\n"
+        }
+      ],
+      "solution": "import csv\nimport sys\n\ngroups = {}\nvalid = invalid = 0\nfor row in csv.DictReader(sys.stdin):\n    name = (row.get(\"activity\") or \"\").strip()\n    try:\n        attended = int((row.get(\"attended\") or \"\").strip())\n        offered = int((row.get(\"offered\") or \"\").strip())\n        if not name or attended < 0 or offered < 0 or attended > offered:\n            raise ValueError\n    except ValueError:\n        invalid += 1\n        continue\n    valid += 1\n    if name not in groups:\n        groups[name] = [0, 0]\n    groups[name][0] += attended\n    groups[name][1] += offered\n\ndef rate(a, o):\n    return f\"{a / o * 100:.1f}%\" if o else \"NA\"\n\nprint(f\"valid={valid}\")\nprint(f\"invalid={invalid}\")\nfor name in sorted(groups):\n    a, o = groups[name]\n    print(f\"activity:{name} attended={a} offered={o} rate={rate(a, o)}\")\na = sum(v[0] for v in groups.values())\no = sum(v[1] for v in groups.values())\nprint(f\"total:attended={a} offered={o} rate={rate(a, o)}\")\nif groups:\n    best = max(v[0] for v in groups.values())\n    top = \",\".join(sorted(name for name, v in groups.items() if v[0] == best))\nelse:\n    top = \"none\"\nprint(f\"top={top}\")\nprint(\"scope=valid fictional rows only\")\n"
+    }
+  ],
+  "project": {
+    "id": "data-attendance-project",
+    "title": "تقرير أنشطة الدراسة الخيالية",
+    "lessonId": "data-08",
+    "summary": "حلل سجلات حضور خيالية بصيغة CSV وأصدر تقريرًا ثابتًا يوضح المجاميع والنسب وحدود البيانات.",
+    "criteria": [
+      "قراءة CSV من stdin بالمكتبة القياسية والتحقق من كل صف حسب العقد.",
+      "تجميع الحضور والفرص لكل نشاط والإبلاغ عن عدد الصفوف الصالحة والمستبعدة.",
+      "حساب النسب من المجاميع ومعالجة المقام الصفري باستخدام NA.",
+      "ترتيب الأنشطة وعرض جميع المتعادلين بأكبر حضور، ومعالجة غياب الفئات.",
+      "إظهار نطاق البيانات الخيالية وتفسير أن المجاميع لا تثبت السببية.",
+      "اختبار العينة وحالات فارغة وصفرية ومتعادلة وغير صالحة."
+    ]
+  },
+  "exampleChecks": [
+    {
+      "lessonId": "data-05",
+      "index": 0,
+      "input": "",
+      "output": "practice:2\nreading:7\n"
+    },
+    {
+      "lessonId": "data-06",
+      "index": 0,
+      "input": "",
+      "output": "rate=75.0%\n"
+    },
+    {
+      "lessonId": "data-07",
+      "index": 0,
+      "input": "",
+      "output": "top=practice,reading\nscope=observed rows only\n"
+    },
+    {
+      "lessonId": "data-08",
+      "index": 0,
+      "input": "",
+      "output": "rows=2\nrate=50.0%\n"
+    }
+  ]
+}

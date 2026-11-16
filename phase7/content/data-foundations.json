@@ -1,0 +1,765 @@
+{
+  "lessons": [
+    {
+      "id": "data-01",
+      "title": "أقرأ صفوف CSV بأسماء الأعمدة",
+      "summary": "أحوّل نص CSV تجريبي إلى صفوف وأقرأ كل حقل باسمه.",
+      "why": "تقارير التشغيل تصل كثيرًا كجدول نصي؛ فهم الصف والعنوان أول خطوة قبل حساب أي رقم.",
+      "objectives": [
+        "أستخدم csv.DictReader مع io.StringIO دون فتح ملفات.",
+        "أقرأ الحقول النصية وأتعامل مع فاصلة داخل حقل مقتبس."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "data.csv"
+      ],
+      "sections": [
+        {
+          "heading": "جدول داخل نص",
+          "body": "CSV شكل نصي لجدول: السطر الأول هنا أسماء الأعمدة، وبعده صفوف البيانات. نستخدم بيانات تشغيل مصطنعة فقط. import csv يتيح قارئ CSV، وimport io يتيح StringIO التي تقدم النص كتيار للقارئ. لا نحتاج مكتبات إضافية أو ملفات. في نص Python تمثل \\n نهاية سطر."
+        },
+        {
+          "heading": "اسم العمود بدل موقعه",
+          "body": "نكتب reader = csv.DictReader(io.StringIO(text)) ثم for row in reader. كل row قاموس؛ row[\"item\"] يقرأ حقل item. العنوان لا يُحسب صف بيانات. القيم نصوص حتى لو ظهرت كأرقام؛ \"12\" لا تصبح عددًا تلقائيًا. القارئ يُستهلك أثناء المرور؛ أنشئ قارئًا جديدًا إذا أردت إعادة القراءة."
+        },
+        {
+          "heading": "فاصلة داخل الاسم",
+          "body": "الحقل \"Box, small\" محاط بعلامتي تنصيص داخل CSV؛ فتظل الفاصلة جزءًا من اسم الصنف. split(\",\") سيقسم هذا الاسم خطأ. DictReader يفهم الاقتباس ويعيد الاسم دون علامتي التنصيص. نفترض هنا عناوين سليمة وصفوفًا متساوية الطول؛ سنفحص ذلك لاحقًا."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول: أقرأ صفوف CSV بأسماء الأعمدة",
+          "language": "python",
+          "code": "import csv\nimport io\ntext = 'item,units\\n\"Box, small\",12\\nTape,3\\n'\nreader = csv.DictReader(io.StringIO(text))\nfor row in reader:\n    print(row[\"item\"], row[\"units\"])\n",
+          "explanation": "يستهلك القارئ سطر العناوين. الصف الأول يعطي اسم Box, small والوحدات النصية 12. print تفصل القيم بمسافة؛ لا نجمع وحدات بعد."
+        }
+      ],
+      "exercises": [
+        {
+          "prompt": "أي تعبير يقرأ حقل units من القاموس row؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "row[0]"
+            },
+            {
+              "id": "2",
+              "text": "row[\"units\"]"
+            },
+            {
+              "id": "3",
+              "text": "row.units"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "مفاتيح القاموس أسماء العناوين كنصوص؛ لذلك نستخدم row[\"units\"].",
+          "hints": [
+            "راجع اسم العمود في السطر الأول.",
+            "المفتاح النصي يحتاج تنصيصًا."
+          ],
+          "independent": false,
+          "id": "data-01-q1"
+        },
+        {
+          "prompt": "كم صف بيانات تمر عليه الحلقة في المثال؟ اكتب عددًا فقط.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "سطر item,units عنوان؛ يتبقى صف Box, small وصف Tape.",
+          "hints": [
+            "لا تعدّ سطر العناوين.",
+            "الفاصلة داخل الاسم لا تنشئ صفًا جديدًا."
+          ],
+          "independent": false,
+          "id": "data-01-q2"
+        },
+        {
+          "prompt": "ما نوع row[\"units\"] قبل التحويل إذا كان الحقل مكتوبًا 12؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "str"
+            },
+            {
+              "id": "2",
+              "text": "int"
+            },
+            {
+              "id": "3",
+              "text": "float"
+            }
+          ],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "DictReader يعيد الحقل كنص ولا يستنتج نوعه العددي.",
+          "hints": [
+            "فصل الحقول يختلف عن تحويل النوع.",
+            "فكر لماذا نحتاج int لاحقًا."
+          ],
+          "independent": true,
+          "id": "data-01-q3"
+        }
+      ],
+      "takeaway": "أحوّل نص CSV تجريبي إلى صفوف وأقرأ كل حقل باسمه."
+    },
+    {
+      "id": "data-02",
+      "title": "أفحص العناوين والحقول الناقصة",
+      "summary": "أتحقق من مخطط الجدول وأميز الخانة الفارغة عن الحقل الغائب.",
+      "why": "أعمدة خاطئة أو حقول ناقصة قد تعطي تقريرًا مضللًا حتى إن استمر البرنامج.",
+      "objectives": [
+        "أفحص fieldnames مع السماح بتغيير ترتيب العناوين.",
+        "أرفض الحقول الغائبة والفارغة والزائدة وفق سياسة واضحة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "data.schema"
+      ],
+      "sections": [
+        {
+          "heading": "اتفاق على العناوين",
+          "body": "نتوقع عنوانين فقط item وunits بأسمائهما الدقيقة. reader.fieldnames قائمة العناوين أو None إذا كان النص فارغًا. نكتب headers = reader.fieldnames or [] ثم نفحص len(headers) == 2 وset(headers) == {\"item\", \"units\"}. العدد يمنع التكرار، والمجموعة تسمح بتغيير الترتيب. لا ننظف مسافات العناوين تلقائيًا؛ units مع مسافة اسم مختلف."
+        },
+        {
+          "heading": "غائب أم فارغ؟",
+          "body": "بعناوين item,units يعطي الصف Tape قيمة None لحقل units لأنه غائب، بينما Tape, يعطي النص الفارغ \"\". التعبير (row.get(\"units\") or \"\").strip() يحول الغائب والفارغ والمسافات إلى نص فارغ للفحص. لا نستدعي strip على None مباشرة. نرفض أيضًا اسم الصنف الفارغ."
+        },
+        {
+          "heading": "فحص البنية وحدوده",
+          "body": "في الصف Pen,1,extra يجمع DictReader الحقول الزائدة تحت المفتاح None؛ نرفض الصف إذا كان None in row. الصف Box,wrong مكتمل بنيويًا لكنه يحتاج فحص الرقم في الدرس التالي. إذا لم تطابق العناوين الاتفاق نطبع BAD HEADER ولا نعالج الصفوف."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول: أفحص العناوين والحقول الناقصة",
+          "language": "python",
+          "code": "import csv\nimport io\ntext = 'item,units\\nBox,2\\nTape\\nBag,\\nPen,1,extra\\n'\nreader = csv.DictReader(io.StringIO(text))\nheaders = reader.fieldnames or []\nvalid = len(headers) == 2 and set(headers) == {\"item\", \"units\"}\nif not valid:\n    print(\"BAD HEADER\")\nelse:\n    for row in reader:\n        item = (row.get(\"item\") or \"\").strip()\n        units = (row.get(\"units\") or \"\").strip()\n        if None in row or not item or not units:\n            print(\"SKIP\")\n        else:\n            print(\"READY\", item)\n",
+          "explanation": "العناوين مطابقة. Box مكتمل فيطبع READY Box؛ Tape ينقصه حقل، وBag له حقل فارغ، وPen له حقل زائد. لم نثبت بعد أن units تمثل عددًا."
+        }
+      ],
+      "exercises": [
+        {
+          "prompt": "بعناوين item,units، ما قيمة حقل units للصف Tape دون فاصلة؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "\"\""
+            },
+            {
+              "id": "2",
+              "text": "None"
+            },
+            {
+              "id": "3",
+              "text": "0"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "الحقل الثاني غائب فيعطي None؛ لو وُجدت فاصلة وخانة خالية لكانت القيمة نصًا فارغًا.",
+          "hints": [
+            "قارن Tape مع Tape,.",
+            "السؤال عن حقل غائب وليس خانة فارغة."
+          ],
+          "independent": false,
+          "id": "data-02-q1"
+        },
+        {
+          "prompt": "لماذا نضيف len(headers) == 2 إلى فحص مجموعة العناوين؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "لتحويل الوحدات لعدد"
+            },
+            {
+              "id": "2",
+              "text": "لفرض ترتيب الأعمدة"
+            },
+            {
+              "id": "3",
+              "text": "لرفض العناوين المكررة أو الزائدة"
+            }
+          ],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "المجموعة تزيل التكرار؛ item,units,units تعطي المجموعة المطلوبة لكنها ليست عنوانين فقط.",
+          "hints": [
+            "المجموعة لا تحتفظ بالتكرارات.",
+            "قارن عدد عناصر القائمة والمجموعة."
+          ],
+          "independent": false,
+          "id": "data-02-q2"
+        },
+        {
+          "prompt": "بعناوين سليمة، الصفوف A,0 وB, وC,7,extra: كم صفًا جاهزًا بنيويًا وفق المثال؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "A,0 مكتمل بلا زيادة؛ النص \"0\" غير فارغ. B فارغ وC زائد.",
+          "hints": [
+            "الصفر النصي ليس خانة فارغة.",
+            "افحص الحقل الزائد في الصف الأخير."
+          ],
+          "independent": true,
+          "id": "data-02-q3"
+        }
+      ],
+      "takeaway": "أتحقق من مخطط الجدول وأميز الخانة الفارغة عن الحقل الغائب."
+    },
+    {
+      "id": "data-03",
+      "title": "أنظف القيم وأعد المقبول والمتروك",
+      "summary": "أزيل مسافات الأطراف وأحوّل الوحدات إلى int وأتخطى غير الصالح مع عدّه.",
+      "why": "إسقاط الصفوف دون عدّها يخفي مشاكل المصدر؛ نريد معرفة ما دخل الحساب وما استُبعد.",
+      "objectives": [
+        "أستخدم try/except ValueError حول التحويل المحدد.",
+        "أقبل الصفر وأرفض السالب والفارغ وغير الصحيح وأعدّ النتيجة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "data.clean"
+      ],
+      "sections": [
+        {
+          "heading": "المسافات ليست أرقامًا",
+          "body": "strip تزيل مسافات الأطراف فقط؛ \" 12 \" تصبح \"12\" بينما \"1 2\" تظل غير صالحة لـ int. ننظف اسم الصنف ونرفض الاسم الفارغ. نفترض العناوين فُحصت؛ تنظيف القيم لا يصلح عناوين خاطئة."
+        },
+        {
+          "heading": "تحويل وحدود واضحة",
+          "body": "نضع units = int(raw) داخل try ونلتقط ValueError لتخطي wrong أو 2.5 أو النص الفارغ. نقبل ما تحوله int إلى عدد صحيح غير سالب، بما فيه 0 و+3. بعد التحويل، units < 0 يرفض السالب. int لا تقرب النص 2.5 لأنه ليس صيغة عدد صحيح."
+        },
+        {
+          "heading": "صف واحد في عداد واحد",
+          "body": "ابدأ accepted وskipped بصفر. عند الرفض زد skipped مرة واحدة ثم continue للصف التالي. زد accepted فقط بعد اجتياز جميع الفحوص. مجموع العدادين يساوي الصفوف التي أعادها القارئ، لا الأسطر الفيزيائية؛ قارئ CSV يتجاهل الأسطر الخالية. لا تستبدل القيمة السيئة بصفر لأن ذلك يصنع بيانات جديدة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول: أنظف القيم وأعد المقبول والمتروك",
+          "language": "python",
+          "code": "import csv\nimport io\ntext = 'item,units\\n Box , 4 \\nTape,wrong\\nBag,-2\\nPen,0\\nClip,\\n'\nreader = csv.DictReader(io.StringIO(text))\naccepted = 0\nskipped = 0\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    raw = (row.get(\"units\") or \"\").strip()\n    if None in row or not item:\n        skipped += 1\n        continue\n    try:\n        units = int(raw)\n    except ValueError:\n        skipped += 1\n        continue\n    if units < 0:\n        skipped += 1\n        continue\n    accepted += 1\nprint(\"accepted\", accepted)\nprint(\"skipped\", skipped)\n",
+          "explanation": "Box يتحول إلى 4 ويُقبل. wrong يفشل في التحويل، و-2 يتحول لكنه مرفوض لأنه سالب. Pen بقيمة 0 مقبول. Clip بحقل فارغ يفشل في التحويل: المقبول 2 والمتروك 3."
+        }
+      ],
+      "exercises": [
+        {
+          "prompt": "أي قيمة تقبلها سياسة الوحدات غير السالبة بعد strip وint؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "\"-1\""
+            },
+            {
+              "id": "2",
+              "text": "\" 0 \""
+            },
+            {
+              "id": "3",
+              "text": "\"2.5\""
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "الصفر صحيح وغير سالب؛ -1 سالب، والنص 2.5 لا يتحول مباشرة بواسطة int.",
+          "hints": [
+            "الشرط أقل من صفر وليس أقل من أو يساوي صفر.",
+            "int لا تحول نص 2.5 إلى عدد صحيح."
+          ],
+          "independent": false,
+          "id": "data-03-q1"
+        },
+        {
+          "prompt": "لماذا نكتب continue بعد زيادة skipped في مسار الرفض؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "لمنع قبول الصف المرفوض أيضًا"
+            },
+            {
+              "id": "2",
+              "text": "لإيقاف البرنامج كله"
+            },
+            {
+              "id": "3",
+              "text": "لحذف العناوين"
+            }
+          ],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "تنتقل للصف التالي فلا يصل الصف المرفوض إلى accepted += 1.",
+          "hints": [
+            "تتبع مكان زيادة accepted.",
+            "نريد عدّ الصف مرة واحدة فقط."
+          ],
+          "independent": false,
+          "id": "data-03-q2"
+        },
+        {
+          "prompt": "أسماء الأصناف سليمة والوحدات \" 5 \" و\"x\" و\"-3\" و\"0\". كم صفًا يُتخطى؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "x يفشل في التحويل و-3 يرفض بعده؛ 5 و0 مقبولان.",
+          "hints": [
+            "افصل فشل التحويل عن رفض السالب.",
+            "الصفر لا يزيد skipped."
+          ],
+          "independent": true,
+          "id": "data-03-q3"
+        }
+      ],
+      "takeaway": "أزيل مسافات الأطراف وأحوّل الوحدات إلى int وأتخطى غير الصالح مع عدّه."
+    },
+    {
+      "id": "data-04",
+      "title": "أحسب الإجمالي والمتوسط بأمان",
+      "summary": "ألخص الصفوف المقبولة بإجمالي ومتوسط وأوضح حالة عدم وجود بيانات صالحة.",
+      "why": "المتوسط يحتاج مقامًا صحيحًا؛ إدخال الصفوف المرفوضة أو القسمة على صفر يفسدان التقرير.",
+      "objectives": [
+        "أجمع الوحدات المقبولة فقط وأقسم على عدد صفوفها.",
+        "أعرض المتوسط بمنزلتين أو NO DATA عندما لا يوجد صف مقبول."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "data.summary"
+      ],
+      "sections": [
+        {
+          "heading": "العدد والإجمالي من نفس الصفوف",
+          "body": "بعد اجتياز كل الفحوص نفذ total += units وaccepted += 1 معًا. المرفوض لا يغيرهما. المتوسط هنا وحدات لكل صف مقبول، وليس لكل اسم صنف مميز؛ تكرار الاسم لا يحذف أي صف في هذه السياسة."
+        },
+        {
+          "heading": "لا بيانات تختلف عن صفر",
+          "body": "إذا accepted > 0 احسب total / accepted، وإلا اعرض NO DATA. جدول عناوين فقط أو كله مرفوض له إجمالي صفر دون متوسط. صف مقبول بوحدات صفر له متوسط صحيح صفر. لذلك نفحص accepted وليس total قبل القسمة."
+        },
+        {
+          "heading": "تنسيق العرض في النهاية",
+          "body": "f\"{total / accepted:.2f}\" يعرض منزلتين مثل 3.50. ننسق عند العرض ولا نقرب القيم قبل جمعها. الملخص يصف المقبول من البيانات، ولا يثبت اكتمال المصدر. اعرض skipped بجانبه كي لا تخفي الاستبعاد."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال محلول: أحسب الإجمالي والمتوسط بأمان",
+          "language": "python",
+          "code": "import csv\nimport io\ntext = 'item,units\\nBox,4\\nTape,3\\nBag,bad\\nPen,0\\n'\nreader = csv.DictReader(io.StringIO(text))\naccepted = 0\nskipped = 0\ntotal = 0\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    raw = (row.get(\"units\") or \"\").strip()\n    if None in row or not item:\n        skipped += 1\n        continue\n    try:\n        units = int(raw)\n    except ValueError:\n        skipped += 1\n        continue\n    if units < 0:\n        skipped += 1\n        continue\n    accepted += 1\n    total += units\nprint(\"total\", total)\nprint(\"accepted\", accepted)\nprint(\"skipped\", skipped)\nif accepted:\n    print(f\"mean {total / accepted:.2f}\")\nelse:\n    print(\"NO DATA\")\n",
+          "explanation": "نقبل 4 و3 و0: الإجمالي 7 والعدد 3. bad لا يدخل البسط أو المقام. 7 / 3 يعرض 2.33 بمنزلتين، والمتروك 1. العناوين هنا ثابتة ومطابقة لاتفاقنا."
+        }
+      ],
+      "exercises": [
+        {
+          "prompt": "قُبلت القيم 6 و0 ورُفض صف واحد. ما المتوسط بمنزلتين؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "3.00"
+          ],
+          "explanation": "الإجمالي 6 وعدد المقبول 2؛ الصفر يدخل العدد والمرفوض لا يدخل المقام.",
+          "hints": [
+            "المقام ليس عدد جميع الصفوف.",
+            "احسب 6 / 2 ثم اكتب منزلتين."
+          ],
+          "independent": false,
+          "id": "data-04-q1"
+        },
+        {
+          "prompt": "متى نطبع NO DATA؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "عندما total == 0 دائمًا"
+            },
+            {
+              "id": "2",
+              "text": "عندما accepted == 0"
+            },
+            {
+              "id": "3",
+              "text": "عندما skipped > 0"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "عدد المقبول صفر يجعل مقام المتوسط صفرًا. الإجمالي صفر وحده لا يعني غياب البيانات.",
+          "hints": [
+            "قد يكون هناك صف مقبول بقيمة صفر.",
+            "افحص accepted بدل total."
+          ],
+          "independent": false,
+          "id": "data-04-q2"
+        },
+        {
+          "prompt": "صفان مقبولان بقيمتي 0 و0. اكتب المتوسط المعروض بمنزلتين.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "0.00"
+          ],
+          "explanation": "لدينا صفان صالحان، و0 / 2 يساوي صفرًا. هذه ليست حالة NO DATA.",
+          "hints": [
+            "المقام هنا 2.",
+            "تنسيق .2f يعرض صفرين بعد النقطة."
+          ],
+          "independent": true,
+          "id": "data-04-q3"
+        }
+      ],
+      "takeaway": "ألخص الصفوف المقبولة بإجمالي ومتوسط وأوضح حالة عدم وجود بيانات صالحة."
+    }
+  ],
+  "skills": [
+    {
+      "id": "data.csv",
+      "title": "أقرأ صفوف CSV بأسماء الأعمدة",
+      "description": "أحوّل نص CSV تجريبي إلى صفوف وأقرأ كل حقل باسمه.",
+      "required": {
+        "skill": "py.automation"
+      },
+      "recommended": []
+    },
+    {
+      "id": "data.schema",
+      "title": "أفحص العناوين والحقول الناقصة",
+      "description": "أتحقق من مخطط الجدول وأميز الخانة الفارغة عن الحقل الغائب.",
+      "required": {
+        "skill": "data.csv"
+      },
+      "recommended": []
+    },
+    {
+      "id": "data.clean",
+      "title": "أنظف القيم وأعد المقبول والمتروك",
+      "description": "أزيل مسافات الأطراف وأحوّل الوحدات إلى int وأتخطى غير الصالح مع عدّه.",
+      "required": {
+        "skill": "data.schema"
+      },
+      "recommended": []
+    },
+    {
+      "id": "data.summary",
+      "title": "أحسب الإجمالي والمتوسط بأمان",
+      "description": "ألخص الصفوف المقبولة بإجمالي ومتوسط وأوضح حالة عدم وجود بيانات صالحة.",
+      "required": {
+        "skill": "data.clean"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "data-01",
+      "title": "أقرأ صفوف CSV بأسماء الأعمدة",
+      "why": "تقارير التشغيل تصل كثيرًا كجدول نصي؛ فهم الصف والعنوان أول خطوة قبل حساب أي رقم.",
+      "skillIds": [
+        "data.csv"
+      ]
+    },
+    {
+      "id": "data-02",
+      "title": "أفحص العناوين والحقول الناقصة",
+      "why": "أعمدة خاطئة أو حقول ناقصة قد تعطي تقريرًا مضللًا حتى إن استمر البرنامج.",
+      "skillIds": [
+        "data.schema"
+      ]
+    },
+    {
+      "id": "data-03",
+      "title": "أنظف القيم وأعد المقبول والمتروك",
+      "why": "إسقاط الصفوف دون عدّها يخفي مشاكل المصدر؛ نريد معرفة ما دخل الحساب وما استُبعد.",
+      "skillIds": [
+        "data.clean"
+      ]
+    },
+    {
+      "id": "data-04",
+      "title": "أحسب الإجمالي والمتوسط بأمان",
+      "why": "المتوسط يحتاج مقامًا صحيحًا؛ إدخال الصفوف المرفوضة أو القسمة على صفر يفسدان التقرير.",
+      "skillIds": [
+        "data.summary"
+      ]
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "data-01",
+      "id": "data-01-lab-names",
+      "language": "python",
+      "title": "قائمة أصناف الشحنة",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين item,units صحيحة والصفوف مكتملة. اطبع اسم item لكل صف في سطر محتفظًا بالفاصلة داخل الاسم المقتبس، دون طباعة العنوان.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\n# اطبع اسم كل صنف\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\nfor row in reader:\n    print(row[\"item\"])\n",
+      "sampleInput": "3\nitem,units\nBox,2\nTape,4\n",
+      "sampleOutput": "Box\nTape\n",
+      "skillId": "data.csv",
+      "hiddenTests": [
+        {
+          "input": "2\nitem,units\n\"Bag, large\",1\n",
+          "expectedOutput": "Bag, large\n"
+        },
+        {
+          "input": "1\nitem,units\n",
+          "expectedOutput": ""
+        }
+      ]
+    },
+    {
+      "lessonId": "data-01",
+      "id": "data-01-lab-count",
+      "language": "python",
+      "title": "عدد بنود التسليم",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين والصفوف سليمة. اطبع عدد صفوف البيانات فقط؛ لا تعد العنوان. قد يكون الجدول عناوين فقط.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\ncount = 0\n# عد الصفوف ثم اطبع العدد\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\ncount = 0\nfor row in reader:\n    count += 1\nprint(count)\n",
+      "sampleInput": "3\nitem,units\nBox,2\nTape,4\n",
+      "sampleOutput": "2\n",
+      "skillId": "data.csv",
+      "hiddenTests": [
+        {
+          "input": "1\nitem,units\n",
+          "expectedOutput": "0\n"
+        },
+        {
+          "input": "2\nitem,units\n\"Clip, blue\",8\n",
+          "expectedOutput": "1\n"
+        }
+      ]
+    },
+    {
+      "lessonId": "data-02",
+      "id": "data-02-lab-headers",
+      "language": "python",
+      "title": "بوابة عناوين التقرير",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. اطبع OK إذا كانت العناوين item وunits فقط بلا تكرار بأي ترتيب. وإلا اطبع BAD HEADER. لا تنظف العناوين ولا تفحص الصفوف. n قد يساوي صفرًا.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\n# افحص العناوين واطبع القرار\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\nheaders = reader.fieldnames or []\nvalid = len(headers) == 2 and set(headers) == {\"item\", \"units\"}\nprint(\"OK\" if valid else \"BAD HEADER\")\n",
+      "sampleInput": "1\nunits,item\n",
+      "sampleOutput": "OK\n",
+      "skillId": "data.schema",
+      "hiddenTests": [
+        {
+          "input": "1\nitem,units,units\n",
+          "expectedOutput": "BAD HEADER\n"
+        },
+        {
+          "input": "0\n",
+          "expectedOutput": "BAD HEADER\n"
+        },
+        {
+          "input": "1\nitem, units\n",
+          "expectedOutput": "BAD HEADER\n"
+        }
+      ]
+    },
+    {
+      "lessonId": "data-02",
+      "id": "data-02-lab-complete",
+      "language": "python",
+      "title": "عد الصفوف المكتملة",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين مضمونة item,units. اطبع عدد الصفوف بلا حقول زائدة ولها item وunits غير فارغين بعد strip. ارفض الحقل الغائب. لا تحول الوحدات لعدد؛ wrong حقل مكتمل.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\ncomplete = 0\n# افحص بنية الصفوف فقط\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\ncomplete = 0\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    units = (row.get(\"units\") or \"\").strip()\n    if None not in row and item and units:\n        complete += 1\nprint(complete)\n",
+      "sampleInput": "4\nitem,units\nBox,2\nTape\nBag,\n",
+      "sampleOutput": "1\n",
+      "skillId": "data.schema",
+      "hiddenTests": [
+        {
+          "input": "4\nitem,units\nA,wrong\nB,0\nC,1,extra\n",
+          "expectedOutput": "2\n"
+        },
+        {
+          "input": "3\nitem,units\n ,3\nB,   \n",
+          "expectedOutput": "0\n"
+        }
+      ]
+    },
+    {
+      "lessonId": "data-03",
+      "id": "data-03-lab-counts",
+      "language": "python",
+      "title": "قبول صفوف الجرد",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين مضمونة item,units. نظف الحقول بـ strip؛ ارفض الاسم الفارغ والحقول الزائدة والوحدات الغائبة أو الفارغة أو التي تفشل مع int أو تكون سالبة. اقبل الصفر. اطبع عدد المقبول في سطر ثم عدد المتروك في السطر التالي، دون عناوين.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\n# نظف وافحص ثم اطبع العددين\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\naccepted = 0\nskipped = 0\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    raw = (row.get(\"units\") or \"\").strip()\n    if None in row or not item:\n        skipped += 1\n        continue\n    try:\n        units = int(raw)\n    except ValueError:\n        skipped += 1\n        continue\n    if units < 0:\n        skipped += 1\n        continue\n    accepted += 1\nprint(accepted)\nprint(skipped)\n",
+      "sampleInput": "5\nitem,units\n Box , 4 \nTape,bad\nBag,-2\nPen,0\n",
+      "sampleOutput": "2\n2\n",
+      "skillId": "data.clean",
+      "hiddenTests": [
+        {
+          "input": "4\nitem,units\nA,\nB\nC,2.5\n",
+          "expectedOutput": "0\n3\n"
+        },
+        {
+          "input": "4\nitem,units\n ,3\nB,2,extra\nC,+3\n",
+          "expectedOutput": "1\n2\n"
+        },
+        {
+          "input": "1\nitem,units\n",
+          "expectedOutput": "0\n0\n"
+        }
+      ]
+    },
+    {
+      "lessonId": "data-03",
+      "id": "data-03-lab-labels",
+      "language": "python",
+      "title": "قرار لكل بند",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين مضمونة item,units. نظف الحقول بـ strip؛ ارفض الاسم الفارغ والحقول الزائدة والوحدات الغائبة أو الفارغة أو التي تفشل مع int أو تكون سالبة. اقبل الصفر. لكل صف اطبع ACCEPT ثم مسافة ثم اسم الصنف المنظف عند قبوله، أو SKIP فقط عند رفضه. حافظ على الترتيب.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\n# اطبع قرارًا لكل صف\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    raw = (row.get(\"units\") or \"\").strip()\n    if None in row or not item:\n        print(\"SKIP\")\n        continue\n    try:\n        units = int(raw)\n    except ValueError:\n        print(\"SKIP\")\n        continue\n    if units < 0:\n        print(\"SKIP\")\n        continue\n    print(\"ACCEPT\", item)\n",
+      "sampleInput": "3\nitem,units\n Box , 2 \nTape,no\n",
+      "sampleOutput": "ACCEPT Box\nSKIP\n",
+      "skillId": "data.clean",
+      "hiddenTests": [
+        {
+          "input": "4\nitem,units\nA,-1\nB,0\nC,\n",
+          "expectedOutput": "SKIP\nACCEPT B\nSKIP\n"
+        },
+        {
+          "input": "3\nitem,units\n ,2\n\"Bag, large\",+3\n",
+          "expectedOutput": "SKIP\nACCEPT Bag, large\n"
+        }
+      ]
+    },
+    {
+      "lessonId": "data-04",
+      "id": "data-04-lab-total",
+      "language": "python",
+      "title": "إجمالي الوحدات الصالحة",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين مضمونة item,units. نظف الحقول بـ strip؛ ارفض الاسم الفارغ والحقول الزائدة والوحدات الغائبة أو الفارغة أو التي تفشل مع int أو تكون سالبة. اقبل الصفر. اطبع إجمالي الوحدات المقبولة في سطر ثم عدد المتروك في سطر. إذا لم يقبل أي صف فالإجمالي 0.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\n# اجمع بعد اجتياز الفحوص\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\naccepted = 0\nskipped = 0\ntotal = 0\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    raw = (row.get(\"units\") or \"\").strip()\n    if None in row or not item:\n        skipped += 1\n        continue\n    try:\n        units = int(raw)\n    except ValueError:\n        skipped += 1\n        continue\n    if units < 0:\n        skipped += 1\n        continue\n    accepted += 1\n    total += units\nprint(total)\nprint(skipped)\n",
+      "sampleInput": "4\nitem,units\nA,4\nB,3\nC,bad\n",
+      "sampleOutput": "7\n1\n",
+      "skillId": "data.summary",
+      "hiddenTests": [
+        {
+          "input": "3\nitem,units\nA,-2\nB,\n",
+          "expectedOutput": "0\n2\n"
+        },
+        {
+          "input": "3\nitem,units\nA,0\nA,5\n",
+          "expectedOutput": "5\n0\n"
+        },
+        {
+          "input": "1\nitem,units\n",
+          "expectedOutput": "0\n0\n"
+        }
+      ]
+    },
+    {
+      "lessonId": "data-04",
+      "id": "data-04-lab-mean",
+      "language": "python",
+      "title": "متوسط لكل صف مقبول",
+      "prompt": "يبدأ المدخل بعدد أسطر CSV التالية (يشمل العنوان)، ثم الأسطر نفسها. لا توجد نهاية سطر داخل حقل مقتبس. استخدم القارئ المجهز. العناوين مضمونة item,units. نظف الحقول بـ strip؛ ارفض الاسم الفارغ والحقول الزائدة والوحدات الغائبة أو الفارغة أو التي تفشل مع int أو تكون سالبة. اقبل الصفر. اطبع متوسط الوحدات المقبولة بمنزلتين عشريتين فقط. إذا لم يقبل أي صف اطبع NO DATA. تكرار اسم الصنف لا يلغي أي صف.",
+      "starterCode": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\n# احسب العدد والإجمالي ثم عالج غياب البيانات\n",
+      "solution": "import csv\nimport io\nn = int(input())\ntext = \"\\n\".join(input() for _ in range(n))\nreader = csv.DictReader(io.StringIO(text))\naccepted = 0\nskipped = 0\ntotal = 0\nfor row in reader:\n    item = (row.get(\"item\") or \"\").strip()\n    raw = (row.get(\"units\") or \"\").strip()\n    if None in row or not item:\n        skipped += 1\n        continue\n    try:\n        units = int(raw)\n    except ValueError:\n        skipped += 1\n        continue\n    if units < 0:\n        skipped += 1\n        continue\n    accepted += 1\n    total += units\nif accepted:\n    print(f\"{total / accepted:.2f}\")\nelse:\n    print(\"NO DATA\")\n",
+      "sampleInput": "4\nitem,units\nA,4\nB,3\nC,0\n",
+      "sampleOutput": "2.33\n",
+      "skillId": "data.summary",
+      "hiddenTests": [
+        {
+          "input": "1\nitem,units\n",
+          "expectedOutput": "NO DATA\n"
+        },
+        {
+          "input": "3\nitem,units\nA,0\nB,0\n",
+          "expectedOutput": "0.00\n"
+        },
+        {
+          "input": "4\nitem,units\nA,5\nA,2\nC,bad\n",
+          "expectedOutput": "3.50\n"
+        }
+      ]
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "data-01",
+      "index": 0,
+      "input": "",
+      "output": "Box, small 12\nTape 3\n"
+    },
+    {
+      "lessonId": "data-02",
+      "index": 0,
+      "input": "",
+      "output": "READY Box\nSKIP\nSKIP\nSKIP\n"
+    },
+    {
+      "lessonId": "data-03",
+      "index": 0,
+      "input": "",
+      "output": "accepted 2\nskipped 3\n"
+    },
+    {
+      "lessonId": "data-04",
+      "index": 0,
+      "input": "",
+      "output": "total 7\naccepted 3\nskipped 1\nmean 2.33\n"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "قيم مفصولة بفواصل",
+      "technical": "CSV",
+      "definition": "صيغة جدول نصي تفصل الحقول بفواصل وتسمح باقتباس حقل يحتوي فاصلة."
+    },
+    {
+      "term": "قارئ بالقواميس",
+      "technical": "csv.DictReader",
+      "definition": "يستخدم العناوين مفاتيح لقاموس كل صف؛ القيم نصوص والحقل الغائب قد يكون None."
+    },
+    {
+      "term": "تيار في الذاكرة",
+      "technical": "io.StringIO",
+      "definition": "يقدم نصًا لواجهة القراءة دون إنشاء ملف على القرص."
+    },
+    {
+      "term": "مخطط الجدول",
+      "technical": "Schema",
+      "definition": "اتفاق على أسماء الأعمدة وأنواعها وقواعد قبولها."
+    },
+    {
+      "term": "حقل غائب",
+      "technical": "Missing field",
+      "definition": "حقل لم يصل في صف أقصر من العناوين؛ يمثله DictReader افتراضيًا بـ None، ويختلف عن نص فارغ."
+    },
+    {
+      "term": "تنظيف الأطراف",
+      "technical": "strip",
+      "definition": "إزالة محارف الفراغ من طرفي النص دون حذف مسافاته الداخلية."
+    },
+    {
+      "term": "صف متروك",
+      "technical": "Skipped row",
+      "definition": "صف استبعدته قواعد معلنة ويُعد منفصلًا؛ لا يُستبدل بصفر في الحسابات."
+    },
+    {
+      "term": "متوسط حسابي",
+      "technical": "Arithmetic mean",
+      "definition": "مجموع القيم المقبولة مقسومًا على عددها؛ لا يحسب عندما يكون العدد صفرًا."
+    }
+  ]
+}

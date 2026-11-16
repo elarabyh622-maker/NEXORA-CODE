@@ -1,0 +1,95 @@
+.code-lab { margin-block: 30px; }
+.code-lab > h2 { margin-bottom: 12px; }
+.lab-picker { margin-block: 12px; }
+.lab-exercise {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: clamp(14px, 3vw, 24px);
+  background: var(--surface);
+}
+.lab-exercise-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lab-language {
+  padding: 2px 12px;
+  border-radius: 999px;
+  color: var(--brand-dark);
+  background: var(--accent);
+  font-weight: 600;
+  font-size: .85rem;
+}
+.lab-prompt { white-space: pre-line; overflow-wrap: anywhere; }
+.lab-example {
+  padding: 4px 12px;
+  margin: 0;
+  border-top: 0;
+  background: var(--soft);
+  border-radius: 10px;
+}
+.lab-example summary {
+  display: list-item;
+  min-height: 44px;
+  padding-block: 8px;
+  color: var(--brand-dark);
+  cursor: pointer;
+}
+.lab-example-values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 185px), 1fr));
+  gap: 12px;
+  margin-block: 4px 10px;
+}
+.lab-example-values dd { margin: 0; }
+.lab-exercise pre, .lab-exercise textarea {
+  min-width: 0;
+  max-width: 100%;
+  font: .9rem/1.65 Consolas, "Courier New", monospace;
+  text-align: start;
+  tab-size: 4;
+}
+.lab-exercise pre {
+  margin: 5px 0 0;
+  max-height: 16rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--brand-dark);
+  color: var(--surface);
+  padding: 10px 14px;
+  border-radius: 8px;
+}
+.lab-editor, .lab-draft, .lab-run-controls { display: grid; gap: 8px; }
+.lab-editor textarea { min-height: 12rem; }
+.lab-exercise textarea[aria-invalid="true"] { border-color: var(--error); }
+.lab-draft > .btn { justify-self: start; }
+.lab-draft .notice, .lab-exercise > .notice { margin-block: 0; }
+.lab-run-controls {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.lab-run-controls .actions { margin-top: 2px; }
+.btn.lab-run-button {
+  background: var(--action, var(--brand));
+  border-color: var(--action, var(--brand));
+  color: var(--surface);
+}
+.btn.lab-run-button:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+.lab-result {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  background: var(--soft);
+  border-radius: 12px;
+}
+.lab-result .btn { justify-self: start; }
+.lab-stale { font-weight: 600; }
+.lab-evidence { margin-block: 22px 0; }
+.lab-evidence time { color: var(--muted); font-size: .85rem; }

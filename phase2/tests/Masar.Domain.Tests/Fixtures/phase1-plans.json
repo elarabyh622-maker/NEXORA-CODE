@@ -1,0 +1,859 @@
+[
+  {
+    "goalId": "explore",
+    "achievedSkillIds": [],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "explore",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.program",
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «أستكشف البرمجة». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: فهم البرنامج، المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أستكشف البرمجة». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أستكشف البرمجة». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.program",
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "explore",
+    "achievedSkillIds": [
+      "concept.program"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "explore",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «أستكشف البرمجة». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أستكشف البرمجة». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أستكشف البرمجة». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "explore",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "explore",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أستكشف البرمجة». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أستكشف البرمجة». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "explore",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "explore",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أستكشف البرمجة». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "explore",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence",
+      "concept.variable"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "explore",
+      "status": "sample",
+      "steps": [],
+      "missingSkillIds": [],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "python",
+    "achievedSkillIds": [],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "python",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.program",
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «أجرب أمثلة Python». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: فهم البرنامج، المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أجرب أمثلة Python». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة Python». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.program",
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "python",
+    "achievedSkillIds": [
+      "concept.program"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "python",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «أجرب أمثلة Python». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أجرب أمثلة Python». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة Python». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "python",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "python",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أجرب أمثلة Python». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة Python». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "python",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "python",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة Python». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "python",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence",
+      "concept.variable"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "python",
+      "status": "sample",
+      "steps": [],
+      "missingSkillIds": [],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "web",
+    "achievedSkillIds": [],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "web",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.program",
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «أجرب أمثلة الويب». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: فهم البرنامج، المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أجرب أمثلة الويب». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة الويب». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.program",
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "web",
+    "achievedSkillIds": [
+      "concept.program"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "web",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «أجرب أمثلة الويب». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أجرب أمثلة الويب». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة الويب». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "web",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "web",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «أجرب أمثلة الويب». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة الويب». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.sequence",
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "web",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "web",
+      "status": "sample",
+      "steps": [
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «أجرب أمثلة الويب». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.variable"
+      ],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "web",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence",
+      "concept.variable"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "web",
+      "status": "sample",
+      "steps": [],
+      "missingSkillIds": [],
+      "uncoveredSkillIds": [],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "react",
+    "achievedSkillIds": [],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "react",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.program",
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «React — مخطط». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: فهم البرنامج، المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «React — مخطط». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «React — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.program",
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable",
+        "react.component"
+      ],
+      "uncoveredSkillIds": [
+        "react.component"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "react",
+    "achievedSkillIds": [
+      "concept.program"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "react",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «React — مخطط». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «React — مخطط». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «React — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable",
+        "react.component"
+      ],
+      "uncoveredSkillIds": [
+        "react.component"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "react",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "react",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «React — مخطط». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «React — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.sequence",
+        "concept.variable",
+        "react.component"
+      ],
+      "uncoveredSkillIds": [
+        "react.component"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "react",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "react",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «React — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.variable",
+        "react.component"
+      ],
+      "uncoveredSkillIds": [
+        "react.component"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "react",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence",
+      "concept.variable"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "react",
+      "status": "planned",
+      "steps": [],
+      "missingSkillIds": [
+        "react.component"
+      ],
+      "uncoveredSkillIds": [
+        "react.component"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "ai",
+    "achievedSkillIds": [],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "ai",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.program",
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: فهم البرنامج، المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.program",
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable",
+        "ai.model"
+      ],
+      "uncoveredSkillIds": [
+        "ai.model"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "ai",
+    "achievedSkillIds": [
+      "concept.program"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "ai",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "what-is-a-program",
+          "skillIds": [
+            "concept.input-output"
+          ],
+          "reason": "ندرس «ما البرنامج؟» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة. المهارات الجديدة: المدخلات والمخرجات."
+        },
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.input-output",
+        "concept.sequence",
+        "concept.variable",
+        "ai.model"
+      ],
+      "uncoveredSkillIds": [
+        "ai.model"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "ai",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "ai",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "step-by-step",
+          "skillIds": [
+            "concept.sequence"
+          ],
+          "reason": "ندرس «لماذا يهم ترتيب الخطوات؟» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته. المهارات الجديدة: ترتيب التعليمات."
+        },
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.sequence",
+        "concept.variable",
+        "ai.model"
+      ],
+      "uncoveredSkillIds": [
+        "ai.model"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "ai",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence"
+    ],
+    "preferredSkillIds": [
+      "concept.variable"
+    ],
+    "expected": {
+      "goalId": "ai",
+      "status": "planned",
+      "steps": [
+        {
+          "lessonId": "first-variable",
+          "skillIds": [
+            "concept.variable"
+          ],
+          "reason": "ندرس «أول متغير: اسم لقيمة» للتقدم نحو هدف «الذكاء الاصطناعي — مخطط». بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج. المهارات الجديدة: المتغير الأول."
+        }
+      ],
+      "missingSkillIds": [
+        "concept.variable",
+        "ai.model"
+      ],
+      "uncoveredSkillIds": [
+        "ai.model"
+      ],
+      "chosenAlternatives": []
+    }
+  },
+  {
+    "goalId": "ai",
+    "achievedSkillIds": [
+      "concept.program",
+      "concept.input-output",
+      "concept.sequence",
+      "concept.variable"
+    ],
+    "preferredSkillIds": [],
+    "expected": {
+      "goalId": "ai",
+      "status": "planned",
+      "steps": [],
+      "missingSkillIds": [
+        "ai.model"
+      ],
+      "uncoveredSkillIds": [
+        "ai.model"
+      ],
+      "chosenAlternatives": []
+    }
+  }
+]

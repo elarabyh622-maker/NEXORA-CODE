@@ -1,0 +1,106 @@
+.auth-layout {
+  display: grid;
+  grid-template-areas: 'form identity';
+  grid-template-columns: minmax(0, 1fr) minmax(0, .94fr);
+  margin-inline: auto;
+  max-inline-size: 68rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.auth-identity {
+  grid-area: identity;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: clamp(16px, 3vw, 40px);
+  background: radial-gradient(ellipse at 8% 100%, #16a34a90, transparent 66%), var(--brand-dark);
+  color: var(--on-brand);
+  text-align: center;
+}
+
+.auth-identity img {
+  display: block;
+  inline-size: min(100%, 25rem);
+  block-size: auto;
+  border-radius: 12px;
+  box-shadow: 0 14px 38px #041c164d;
+}
+
+.auth-identity p {
+  font-weight: 600;
+}
+
+.auth-form-panel {
+  grid-area: form;
+  align-self: center;
+  min-inline-size: 0;
+  padding: clamp(20px, 3.6vw, 48px);
+  overflow-wrap: anywhere;
+}
+
+.auth-form-panel h1 {
+  font-size: clamp(1.55rem, 2.8vw, 2.1rem);
+  margin-block-end: 4px;
+}
+
+.auth-mode {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-block: 20px;
+}
+
+.auth-mode > .btn {
+  padding-inline: 8px;
+}
+
+.auth-mode > .btn[aria-pressed='true'] {
+  border-color: var(--brand);
+  background: var(--soft);
+  color: var(--brand-dark);
+}
+
+.auth-form {
+  gap: 14px;
+}
+
+.auth-form input:not([type='checkbox']) {
+  font-size: 1rem;
+}
+
+.auth-form .field-help {
+  margin-block-start: -8px;
+}
+
+.auth-form > .auth-submit {
+  justify-self: stretch;
+}
+
+.auth-form-panel > .auth-submit {
+  margin-block-start: 20px;
+}
+
+.auth-form-panel > .auth-guest {
+  margin-block-start: 8px;
+}
+
+@media (max-width: 900px) {
+  .auth-layout {
+    grid-template-areas: 'identity' 'form';
+    grid-template-columns: minmax(0, 1fr);
+    max-inline-size: 36rem;
+  }
+
+  .auth-identity {
+    gap: 4px;
+    padding: 14px 20px;
+  }
+
+  .auth-identity img {
+    inline-size: min(100%, 17rem);
+  }
+}

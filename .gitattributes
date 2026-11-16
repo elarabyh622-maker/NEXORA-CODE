@@ -1,0 +1,8 @@
+# The publisher and migration runner verify these files byte for byte.
+/phase4/dist/curriculum.json -text
+/phase7/dist/curriculum.json -text
+/phase2/database/migrations/*.sql -text
+
+# These files are used directly inside the Linux lab host.
+*.sh text eol=lf
+*.service text eol=lf

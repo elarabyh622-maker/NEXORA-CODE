@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "phase1-ar-v1",
+  "skills": [
+    { "id": "concept.program", "title": "فهم البرنامج", "description": "تمييز البرنامج بوصفه تعليمات ينفذها الحاسوب.", "required": null, "recommended": [] },
+    { "id": "concept.input-output", "title": "المدخلات والمخرجات", "description": "تحديد ما يستقبله البرنامج وما ينتجه في مثال بسيط.", "required": { "skill": "concept.program" }, "recommended": [] },
+    { "id": "concept.sequence", "title": "ترتيب التعليمات", "description": "تتبع خطوات بسيطة وفهم أثر ترتيبها.", "required": { "allOf": [{ "skill": "concept.program" }, { "skill": "concept.input-output" }] }, "recommended": [] },
+    { "id": "concept.variable", "title": "المتغير الأول", "description": "تتبع قيمة محفوظة باسم واستخدامها في مثال قصير.", "required": { "skill": "concept.sequence" }, "recommended": [] },
+    { "id": "react.component", "title": "مكوّن React — مخطط", "description": "مكان محجوز لمحتوى لاحق؛ لا يوجد درس لهذه المهارة في العينة.", "required": { "skill": "concept.variable" }, "recommended": [] },
+    { "id": "ai.model", "title": "فكرة نموذج الذكاء الاصطناعي — مخطط", "description": "مكان محجوز لمحتوى لاحق؛ لا يوجد درس لهذه المهارة في العينة.", "required": { "skill": "concept.variable" }, "recommended": [] }
+  ],
+  "lessons": [
+    { "id": "what-is-a-program", "title": "ما البرنامج؟", "skillIds": ["concept.program", "concept.input-output"], "why": "نبدأ بفهم التعليمات والمدخلات والمخرجات قبل تتبع تفاصيل الكتابة." },
+    { "id": "step-by-step", "title": "لماذا يهم ترتيب الخطوات؟", "skillIds": ["concept.sequence"], "why": "ترتيب التعليمات يفسر كيف يصل البرنامج من مدخلاته إلى نتيجته." },
+    { "id": "first-variable", "title": "أول متغير: اسم لقيمة", "skillIds": ["concept.variable"], "why": "بعد فهم الترتيب، نتتبع قيمة محفوظة باسم خلال خطوات البرنامج." }
+  ],
+  "goals": [
+    { "id": "explore", "title": "أستكشف البرمجة", "description": "عينة مشتركة من ثلاثة دروس للتعرف إلى الفكرة وتجربة التتبع.", "status": "sample", "skillIds": ["concept.program", "concept.input-output", "concept.sequence", "concept.variable"] },
+    { "id": "python", "title": "أجرب أمثلة Python", "description": "مهارات العينة المشتركة مع تفضيل أمثلة Python؛ ليست مسار Python كاملًا.", "status": "sample", "skillIds": ["concept.program", "concept.input-output", "concept.sequence", "concept.variable"] },
+    { "id": "web", "title": "أجرب أمثلة الويب", "description": "مهارات العينة المشتركة مع تفضيل أمثلة JavaScript؛ ليست مسار تطوير ويب كاملًا.", "status": "sample", "skillIds": ["concept.program", "concept.input-output", "concept.sequence", "concept.variable"] },
+    { "id": "react", "title": "React — مخطط", "description": "يمكن دراسة المقدمة المشتركة الآن؛ محتوى React ومتطلباته التفصيلية لم يُبنَ بعد.", "status": "planned", "skillIds": ["concept.program", "concept.input-output", "concept.sequence", "concept.variable", "react.component"] },
+    { "id": "ai", "title": "الذكاء الاصطناعي — مخطط", "description": "يمكن دراسة المقدمة المشتركة الآن؛ محتوى الذكاء الاصطناعي ومتطلباته التفصيلية لم يُبنَ بعد.", "status": "planned", "skillIds": ["concept.program", "concept.input-output", "concept.sequence", "concept.variable", "ai.model"] }
+  ]
+}
