@@ -19,13 +19,18 @@ public sealed record ProgressResult(string ReleaseId, string[] CompletedLessonId
 public static class Learning
 {
     public static async Task<ProgressResult> Progress(NpgsqlConnection conn, Release release, Guid userId,
-        CancellationToken ct, NpgsqlTransaction? tx = null)
+        CancellationToken ct, NpgsqlTransaction? tx = null, IReadOnlySet<string>? accessibleLessons = null)
     {
         var attempts = await Db.Query(conn, tx,
-            "SELECT exercise_id,correct FROM public.attempts WHERE user_id=@user AND release_id=@release",
-            r => (Id: r.GetString(0), Correct: r.GetBoolean(1)), ct, ("user", userId), ("release", release.ReleaseId));
+            """
+            SELECT exercise_id,correct FROM public.attempts WHERE user_id=@user AND release_id=@release
+            AND (@full OR lesson_id=ANY(@lessons))
+            """,
+            r => (Id: r.GetString(0), Correct: r.GetBoolean(1)), ct, ("user", userId), ("release", release.ReleaseId),
+            ("full", accessibleLessons is null), ("lessons", accessibleLessons?.ToArray() ?? Array.Empty<string>()));
         var successful = attempts.Where(x => x.Correct).Select(x => x.Id).ToHashSet(StringComparer.Ordinal);
-        var lessons = Content.Lessons(release.Bundle).ToArray();
+        var lessons = Content.Lessons(release.Bundle)
+            .Where(l => accessibleLessons is null || accessibleLessons.Contains(Input.String(l["id"]))).ToArray();
         var progress = lessons.Select(l =>
         {
             var exercises = Content.Exercises(l).Select(e => Input.String(e["id"])).ToArray();
@@ -45,7 +50,7 @@ public static class Learning
     }
 
     private static async Task<JsonObject> Plan(NpgsqlConnection conn, Release release, string goalId, Guid? userId,
-        CancellationToken ct, NpgsqlTransaction? tx = null)
+        CommercialEntitlements access, CancellationToken ct, NpgsqlTransaction? tx = null)
     {
         var goals = (release.Bundle["graph"]?["goals"] as JsonArray ?? []).OfType<JsonObject>();
         if (!goals.Any(g => Input.String(g["id"]) == goalId)) throw ApiError.Missing();
@@ -58,7 +63,8 @@ public static class Learning
                 """, row => row.GetString(0), ct, ("user", learner), ("release", release.ReleaseId));
             skills = practice.PracticedSkillIds.Union(coding, StringComparer.Ordinal);
         }
-        var plan = CurriculumEngine.Plan(release.Bundle, goalId, skills);
+        var allowedLessons = access.FullAccess ? null : CommercialLearning.AllowedLessons(access, release);
+        var plan = CurriculumEngine.Plan(release.Bundle, goalId, skills, allowedLessonIds: allowedLessons);
         plan["releaseId"] = release.ReleaseId;
         return plan;
     }
@@ -70,65 +76,80 @@ public static class Learning
     {
         app.MapPost("/api/v1/plan-previews", async (PreviewRequest request, HttpContext ctx, Db db, CancellationToken ct) =>
         {
+            var goalId = Input.Id(request.GoalId);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            CommercialLearning.RequireGoal(access, goalId);
             await using var conn = await db.Open(ct);
             var release = await Content.Find(conn, Input.Id(request.ReleaseId), ct);
-            var plan = await Plan(conn, release, Input.Id(request.GoalId),
-                ctx.User.Identity?.IsAuthenticated == true ? Input.UserId(ctx) : null, ct);
+            var plan = await Plan(conn, release, goalId,
+                ctx.User.Identity?.IsAuthenticated == true ? Input.UserId(ctx) : null, access, ct);
             return Results.Ok(plan);
-        });
+        }).WithMetadata(new ScopedCommercialEndpoint());
 
         app.MapPost("/api/v1/learning-plans", async (PlanRequest request, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             var userId = Input.UserId(ctx);
             var goalId = Input.Id(request.GoalId);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            CommercialLearning.RequireGoal(access, goalId);
             await using var conn = await db.Open(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
             // Serialize revision allocation per real owner, including the first plan.
             await Db.Scalar<Guid>(conn, tx, "SELECT id FROM public.users WHERE id=@id FOR UPDATE", ct, ("id", userId));
-            var current = await Db.Scalar<int>(conn, tx,
-                "SELECT COALESCE(MAX(revision),0) FROM public.learning_plans WHERE user_id=@user", ct, ("user", userId));
+            var revisions = (await Db.Query(conn, tx, """
+                SELECT COALESCE(MAX(revision),0),
+                       COALESCE(MAX(revision) FILTER (WHERE @full OR goal_id=ANY(@goals)),0)
+                FROM public.learning_plans WHERE user_id=@user
+                """, row => (Latest: row.GetInt32(0), Visible: row.GetInt32(1)), ct,
+                ("user", userId), ("full", access.FullAccess), ("goals", access.GoalIds.ToArray()))).Single();
+            var current = revisions.Visible;
             if (current > 0 && request.ExpectedCurrentRevision != current ||
                 current == 0 && request.ExpectedCurrentRevision is not null and not 0)
                 throw ApiError.Conflict("plan_revision_conflict");
             var release = await Content.Find(conn, Input.Id(request.ReleaseId), ct, tx);
-            var plan = await Plan(conn, release, goalId, userId, ct, tx);
+            var plan = await Plan(conn, release, goalId, userId, access, ct, tx);
             var id = Guid.NewGuid();
             var status = Input.String(plan["status"]);
             await Db.Execute(conn, tx, """
                 INSERT INTO public.learning_plans(id,user_id,revision,release_id,goal_id,status,plan)
                 VALUES (@id,@user,@revision,@release,@goal,@status,@plan::jsonb)
-                """, ct, ("id", id), ("user", userId), ("revision", current + 1), ("release", release.ReleaseId),
+                """, ct, ("id", id), ("user", userId), ("revision", revisions.Latest + 1), ("release", release.ReleaseId),
                 ("goal", goalId), ("status", status), ("plan", plan.ToJsonString()));
             await tx.CommitAsync(ct);
-            return Results.Json(new PlanResult(id, current + 1, release.ReleaseId, goalId, status, plan), statusCode: 201);
-        }).RequireAuthorization();
+            return Results.Json(new PlanResult(id, revisions.Latest + 1, release.ReleaseId, goalId, status, plan), statusCode: 201);
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         app.MapGet("/api/v1/me/plan", async (HttpContext ctx, Db db, CancellationToken ct) =>
         {
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
             await using var conn = await db.Open(ct);
             var plans = await Db.Query(conn, null, """
                 SELECT id,revision,release_id,goal_id,status,plan::text FROM public.learning_plans
-                WHERE user_id=@user ORDER BY revision DESC LIMIT 1
-                """, ReadPlan, ct, ("user", Input.UserId(ctx)));
+                WHERE user_id=@user AND (@full OR goal_id=ANY(@goals)) ORDER BY revision DESC LIMIT 1
+                """, ReadPlan, ct, ("user", Input.UserId(ctx)), ("full", access.FullAccess), ("goals", access.GoalIds.ToArray()));
             return Results.Ok(plans.FirstOrDefault() ?? throw ApiError.Missing());
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
         app.MapGet("/api/v1/me/plan/history", async (HttpContext ctx, Db db, CancellationToken ct) =>
         {
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
             await using var conn = await db.Open(ct);
             var revisions = await Db.Query(conn, null, """
-                SELECT id,revision,release_id,goal_id,created_at FROM public.learning_plans WHERE user_id=@user ORDER BY revision DESC
+                SELECT id,revision,release_id,goal_id,created_at FROM public.learning_plans
+                WHERE user_id=@user AND (@full OR goal_id=ANY(@goals)) ORDER BY revision DESC
                 """, r => new { id = r.GetGuid(0), revision = r.GetInt32(1), releaseId = r.GetString(2), goalId = r.GetString(3), createdAt = r.GetDateTime(4) }, ct,
-                ("user", Input.UserId(ctx)));
+                ("user", Input.UserId(ctx)), ("full", access.FullAccess), ("goals", access.GoalIds.ToArray()));
             return Results.Ok(new { revisions });
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
         app.MapGet("/api/v1/learning-plans/{id:guid}", async (Guid id, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var plans = await Db.Query(conn, null, """
                 SELECT id,revision,release_id,goal_id,status,plan::text FROM public.learning_plans WHERE id=@id AND user_id=@user
                 """, ReadPlan, ct, ("id", id), ("user", Input.UserId(ctx)));
-            return Results.Ok(plans.FirstOrDefault() ?? throw ApiError.Missing());
-        }).RequireAuthorization();
+            var plan = plans.FirstOrDefault() ?? throw ApiError.Missing();
+            CommercialLearning.RequireGoal(await CommercialAccess.ReadEntitlements(ctx, db, ct), plan.GoalId);
+            return Results.Ok(plan);
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         app.MapPost("/api/v1/practice/attempts", async (AttemptRequest request, HttpContext ctx, Db db, CancellationToken ct) =>
         {
@@ -142,6 +163,9 @@ public static class Learning
             var hash = Input.Hash(JsonSerializer.Serialize(new { releaseId, lessonId, exerciseId, answer, hintsUsed = request.HintsUsed }));
             await using var conn = await db.Open(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            if (!access.FullAccess)
+                CommercialLearning.RequireLesson(access, await Content.Find(conn, releaseId, ct, tx), lessonId);
             // Same per-owner lock makes simultaneous retries deterministic without a duplicate insert race.
             await Db.Scalar<Guid>(conn, tx, "SELECT id FROM public.users WHERE id=@id FOR UPDATE", ct, ("id", userId));
             var existing = await Db.Query(conn, tx, """
@@ -170,25 +194,28 @@ public static class Learning
                 ("explanation", explanation), ("key", key), ("hash", hash));
             await tx.CommitAsync(ct);
             return Results.Ok(new AttemptResult(id, correct, assisted, explanation, false));
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         app.MapGet("/api/v1/me/progress", async (string releaseId, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var release = await Content.Find(conn, Input.Id(releaseId), ct, requirePublished: false);
             if (release.Status is not ("published" or "retired")) throw ApiError.Missing();
-            return Results.Ok(await Progress(conn, release, Input.UserId(ctx), ct));
-        }).RequireAuthorization();
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            return Results.Ok(await Progress(conn, release, Input.UserId(ctx), ct,
+                accessibleLessons: access.FullAccess ? null : CommercialLearning.AllowedLessons(access, release)));
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         app.MapGet("/api/v1/me/drafts/{releaseId}/{exerciseId}", async (string releaseId, string exerciseId, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
+            await RequireDraftAccess(ctx, db, conn, releaseId, exerciseId, ct);
             var drafts = await Db.Query(conn, null, """
                 SELECT answer,version FROM public.drafts WHERE user_id=@user AND release_id=@release AND exercise_id=@exercise
                 """, r => new { answer = r.GetString(0), version = r.GetInt32(1) }, ct,
                 ("user", Input.UserId(ctx)), ("release", Input.Id(releaseId)), ("exercise", Input.Id(exerciseId)));
             return Results.Ok(drafts.FirstOrDefault() ?? throw ApiError.Missing());
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
         app.MapPut("/api/v1/me/drafts/{releaseId}/{exerciseId}", async (string releaseId, string exerciseId, DraftRequest request, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             var answer = Input.Text(request.Answer, 0, 4096, false);
@@ -196,6 +223,7 @@ public static class Learning
             await using var conn = await db.Open(ct);
             var release = await Content.Find(conn, Input.Id(releaseId), ct);
             Content.Exercise(release, Input.Id(exerciseId));
+            RequireDraftLesson(await CommercialAccess.ReadEntitlements(ctx, db, ct), release, exerciseId);
             var userId = Input.UserId(ctx);
             int changed;
             if (request.ExpectedVersion == 0)
@@ -210,6 +238,23 @@ public static class Learning
                     """, ct, ("user", userId), ("release", releaseId), ("exercise", exerciseId), ("answer", answer), ("version", request.ExpectedVersion));
             if (changed != 1) throw ApiError.Conflict("draft_version_conflict");
             return Results.Ok(new { answer, version = request.ExpectedVersion + 1 });
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
+    }
+
+    private static async Task RequireDraftAccess(HttpContext ctx, Db db, NpgsqlConnection conn,
+        string releaseId, string exerciseId, CancellationToken ct)
+    {
+        var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+        if (!access.FullAccess)
+            RequireDraftLesson(access, await Content.Find(conn, releaseId, ct, requirePublished: false), Input.Id(exerciseId));
+    }
+
+    private static void RequireDraftLesson(CommercialEntitlements access, Release release, string exerciseId)
+    {
+        if (access.FullAccess) return;
+        if (release.Status is not ("published" or "retired")) throw ApiError.Missing();
+        var lesson = Content.Lessons(release.Bundle).FirstOrDefault(l =>
+            Content.Exercises(l).Any(exercise => Input.String(exercise["id"]) == exerciseId)) ?? throw ApiError.Missing();
+        CommercialLearning.RequireLesson(access, release, Input.String(lesson["id"]));
     }
 }

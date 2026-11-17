@@ -1,0 +1,617 @@
+{
+  "lessons": [
+    {
+      "id": "git-01",
+      "title": "احفظ نسخة من مشروع في Git",
+      "summary": "تابع حالة الملفات من تعديلها إلى حفظها في سجل Git.",
+      "why": "تعطيك النسخة المبدئية نقطة تقارن بها سلوك المشروع بعد الإصلاح.",
+      "objectives": [
+        "أنشئ مستودعًا محليًا وسجّل أول نسخة من المشروع.",
+        "قارن التعديل قبل التجهيز وبعده."
+      ],
+      "minutes": "30",
+      "skillIds": [
+        "git.history"
+      ],
+      "sections": [
+        {
+          "heading": "أنشئ مجلد التدريب",
+          "body": "افتح الطرفية في مجلد شخصي خارج مشروع المنصة. تحقق من توفر Git عبر git --version. أنشئ مجلدًا جديدًا باسم shipping-workshop وادخل إليه. أنشئ README.md واكتب فيه قاعدة المشروع: رسوم التوصيل 5 للطلب الأقل من 30، ومجانية للطلب الذي يبلغ 30 أو أكثر."
+        },
+        {
+          "heading": "اختر لغة مشروعك الأول",
+          "body": "إذا أنهيت مشروع Python فانسخ ملفي shipping.py وorders.py من الأمثلة. إذا أنهيت مشروع الويب فانسخ ملفي shipping.cjs وorders.cjs واستخدم Node.js لتشغيلهما من الطرفية. انسخ المحتوى كما هو، فالخطأ جزء من التمرين."
+        },
+        {
+          "heading": "احفظ العمل على مرحلتين",
+          "body": "يعرض git status حالة الملفات. ينسخ git add محتواها الحالي إلى منطقة التجهيز، ويحفظ git commit المحتوى المجهّز. تضبط أوامر git config --local هوية تدريب لهذا المجلد فقط. بعد الحفظ الأول أضف إلى README.md جملة تحدد أن قيم الطلبات أعداد صحيحة غير سالبة. احفظ التعديل في إدخال مستقل."
+        }
+      ],
+      "examples": [
+        {
+          "title": "Python، ملف shipping.py",
+          "code": "def shipping_fee(total):\n    return 0 if total > 30 else 5\n",
+          "explanation": "هذه الدالة تحسب الرسوم.",
+          "language": "text"
+        },
+        {
+          "title": "Python، ملف orders.py",
+          "code": "from shipping import shipping_fee\n\nfor total in [29, 30, 45]:\n    print(f\"{total} -> {shipping_fee(total)}\")\n",
+          "explanation": "يشغّل الملف الدالة على ثلاث قيم. يوقف الخيار -B كتابة ملفات Python المؤقتة عند التشغيل لاحقًا.",
+          "language": "text"
+        },
+        {
+          "title": "JavaScript، ملف shipping.cjs",
+          "code": "function shippingFee(total) {\n  return total > 30 ? 0 : 5;\n}\n\nmodule.exports = shippingFee;\n",
+          "explanation": "يتيح السطر الأخير استدعاء الدالة من الملف الآخر.",
+          "language": "text"
+        },
+        {
+          "title": "JavaScript، ملف orders.cjs",
+          "code": "const shippingFee = require(\"./shipping.cjs\");\n\nfor (const total of [29, 30, 45]) {\n  console.log(`${total} -> ${shippingFee(total)}`);\n}\n",
+          "explanation": "يستدعي الملف الدالة لكل قيمة من القيم الثلاث.",
+          "language": "text"
+        },
+        {
+          "title": "أنشئ المستودع داخل shipping-workshop",
+          "code": "git init -b main\ngit config --local user.name \"Workshop Learner\"\ngit config --local user.email \"learner@example.test\"\ngit status --short\n",
+          "explanation": "تشير علامة الاستفهام المزدوجة إلى ملف جديد لم تجهّزه بعد.",
+          "language": "text"
+        },
+        {
+          "title": "جهّز ملفات مشروعك",
+          "code": "git add README.md\n# Python\ngit add shipping.py orders.py\n# JavaScript\ngit add shipping.cjs orders.cjs\n",
+          "explanation": "نفّذ أمر README.md وأمر تجهيز ملفات لغتك فقط.",
+          "language": "text"
+        },
+        {
+          "title": "احفظ النسخة المبدئية",
+          "code": "git diff --staged\ngit commit -m \"Add shipping practice project\"\ngit log --oneline\n",
+          "explanation": "تأكد أن الفرق المجهّز يضم الملفات الثلاثة قبل الحفظ.",
+          "language": "text"
+        },
+        {
+          "title": "راجع تعديل README.md واحفظه",
+          "code": "git diff -- README.md\ngit add README.md\ngit diff --staged -- README.md\ngit commit -m \"Document valid order totals\"\ngit log --oneline\ngit status --short\n",
+          "explanation": "نفّذ هذه الأوامر بعد تعديل README.md. تتوقع إدخالين في السجل ونتيجة فارغة لأمر الحالة.",
+          "language": "text"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "git-01-e1",
+          "type": "text",
+          "prompt": "أي أمر يعرض حالة الملفات بصيغة مختصرة؟",
+          "options": [],
+          "acceptedAnswers": [
+            "git status --short"
+          ],
+          "explanation": "يعرض الأمر حالة الملفات الجديدة والمعدلة والمجهّزة.",
+          "hints": [
+            "أضف خيار --short إلى أمر الحالة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "git-01-e2",
+          "type": "text",
+          "prompt": "بعد تجهيز README.md، اكتب أمر عرض الفرق المجهّز عبر كل الملفات.",
+          "options": [],
+          "acceptedAnswers": [
+            "git diff --staged"
+          ],
+          "explanation": "يعرض الأمر محتوى التعديلات التي دخلت منطقة التجهيز.",
+          "hints": [
+            "استخدم خيار --staged مع أمر الفرق."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "راجع ما جهّزته قبل حفظه في السجل."
+    },
+    {
+      "id": "git-02",
+      "title": "اعمل على فرع وراجع الفرق",
+      "summary": "أنشئ فرعًا للإصلاح وقارنه بفرع البداية.",
+      "why": "يتيح الفرع مراجعة الإصلاح مقابل نسخة البداية.",
+      "objectives": [
+        "أنشئ فرعًا وحدد الفرع الحالي.",
+        "اختر أمر الفرق المناسب قبل الحفظ وبعده."
+      ],
+      "minutes": "15",
+      "skillIds": [
+        "git.branch"
+      ],
+      "sections": [
+        {
+          "heading": "أنشئ فرع الإصلاح",
+          "body": "داخل shipping-workshop، تحقق أن git status --short لا يطبع شيئًا. أنشئ fix-free-shipping وانتقل إليه. تعرض النجمة في نتيجة git branch اسم الفرع الحالي. يشير الفرعان في البداية إلى الإدخال نفسه."
+        },
+        {
+          "heading": "اختر المقارنة",
+          "body": "يعرض git diff تعديلات الملفات المتتبعة التي لم تُجهّز. يقارن git diff main محتوى الملفات المتتبعة الحالي بنسخة main. يعرض git diff main...HEAD الفرق بين نقطة التفرع وآخر إدخال في الفرع الحالي. لذلك سيظهر فرق فارغ عند تشغيله فور إنشاء الفرع."
+        }
+      ],
+      "examples": [
+        {
+          "title": "أنشئ الفرع وافحص نقطة البداية",
+          "code": "git status --short\ngit switch -c fix-free-shipping\ngit branch\ngit log --oneline\ngit diff main...HEAD\n",
+          "explanation": "ابقَ على فرع الإصلاح في بقية الورشة.",
+          "language": "text"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "git-02-e1",
+          "type": "text",
+          "prompt": "اكتب أمر إنشاء فرع fix-free-shipping والانتقال إليه باستخدام git switch.",
+          "options": [],
+          "acceptedAnswers": [
+            "git switch -c fix-free-shipping"
+          ],
+          "explanation": "ينشئ الخيار -c الفرع وينتقل إليه.",
+          "hints": [
+            "اكتب git switch ثم خيار الإنشاء واسم الفرع."
+          ],
+          "independent": true
+        },
+        {
+          "id": "git-02-e2",
+          "type": "text",
+          "prompt": "ما الأمر الذي يعرض الفرق المحفوظ منذ التفرع من main حتى HEAD؟",
+          "options": [],
+          "acceptedAnswers": [
+            "git diff main...HEAD"
+          ],
+          "explanation": "يقارن الأمر نقطة التفرع بآخر إدخال على الفرع الحالي.",
+          "hints": [
+            "اكتب ثلاث نقاط بين main وHEAD."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "احتفظ بـmain مرجعًا لاختبار ما غيّره الفرع."
+    },
+    {
+      "id": "git-03",
+      "title": "أعِد ظهور الخطأ وحدّد سببه",
+      "summary": "قارن الناتج الفعلي بالمتوقع عند حد رسوم التوصيل.",
+      "why": "تسجيل المدخل والناتج يجعل المشكلة قابلة للتكرار قبل تعديل الدالة.",
+      "objectives": [
+        "سجّل حالة تظهر فيها المشكلة وطريقة تشغيلها.",
+        "فسّر ما يحدث عند الحد من خلال قراءة الشرط."
+      ],
+      "minutes": "20",
+      "skillIds": [
+        "git.reproduce"
+      ],
+      "sections": [
+        {
+          "heading": "أعد ظهور المشكلة",
+          "body": "شغّل نسخة مشروعك من فرع الإصلاح. يطبع كل سطر قيمة الطلب ثم الرسوم. قارن النتائج بقاعدة README.md. سجّل أمر التشغيل والمدخل 30 والرسوم الفعلية 5 والمتوقعة 0."
+        },
+        {
+          "heading": "تتبّع استدعاء الدالة",
+          "body": "يحدد orders.py أو orders.cjs قيم الطلبات ويطبع النتائج. الشرط المسؤول في ملف shipping. عندما تكون قيمة total تساوي 30 يكون الشرط total > 30 غير محقق، فتُرجع الدالة الرسوم 5. تحقّق على الورق أن 29 و45 يعطيان رسومًا صحيحة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "شغّل مشروع Python",
+          "code": "python -B orders.py\n",
+          "explanation": "الرسوم الظاهرة بالترتيب 5 و5 و0.",
+          "language": "text"
+        },
+        {
+          "title": "شغّل مشروع JavaScript",
+          "code": "node orders.cjs\n",
+          "explanation": "الرسوم الظاهرة بالترتيب 5 و5 و0.",
+          "language": "text"
+        },
+        {
+          "title": "Python، اعزل الدالة المعيبة",
+          "code": "def shipping_fee(total):\n    return 0 if total > 30 else 5\n\nfor total in [29, 30, 45]:\n    print(f\"{total} -> {shipping_fee(total)}\")\n",
+          "explanation": "يمكن تشغيل المثال وحده. راقب رسوم الطلب 30.",
+          "language": "python"
+        },
+        {
+          "title": "JavaScript، اعزل الدالة المعيبة",
+          "code": "function shippingFee(total) {\n  return total > 30 ? 0 : 5;\n}\n\nfor (const total of [29, 30, 45]) {\n  console.log(`${total} -> ${shippingFee(total)}`);\n}\n",
+          "explanation": "يمكن تشغيل المثال وحده. راقب نتيجة الشرط عند الحد.",
+          "language": "javascript"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "git-03-e1",
+          "type": "text",
+          "prompt": "أي مدخل من 29 و30 و45 يكشف الخطأ؟ أجب بالرقم فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "30"
+          ],
+          "explanation": "الشرط يتجاوز الحد الذي تبدأ عنده المجانية.",
+          "hints": [
+            "اختبر الحد نفسه."
+          ],
+          "independent": true
+        },
+        {
+          "id": "git-03-e2",
+          "type": "text",
+          "prompt": "ما الرسوم المتوقعة عند مدخل 30؟ أجب بالرقم فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "وفق القاعدة تبدأ المجانية عند 30.",
+          "hints": [
+            "الطلب يساوي الحد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "دوّن المدخل والنتيجتين الفعلية والمتوقعة وطريقة التشغيل."
+    },
+    {
+      "id": "git-04",
+      "title": "اكتب اختبارًا يمنع رجوع الخطأ",
+      "summary": "حوّل توقعاتك عن الحد إلى اختبار آلي يفشل في النسخة المعيبة.",
+      "why": "يتيح لك تشغيل الاختبار نفسه قبل الإصلاح وبعده قياس أثر التعديل.",
+      "objectives": [
+        "اعزل حالة الحد واختبر قيمتين على جانبيه.",
+        "تحقق من سبب الفشل قبل تغيير الدالة."
+      ],
+      "minutes": "25",
+      "skillIds": [
+        "git.regression"
+      ],
+      "sections": [
+        {
+          "heading": "اختبر قاعدة المشروع",
+          "body": "أنشئ ملف الاختبار حسب لغتك. يستدعي كل اختبار دالة المشروع مستخدمًا قائمة أزواج من قيمة الطلب والرسوم المتوقعة. ابدأ من 29 برسوم 5، ثم 30 برسوم 0، ثم 31 برسوم 0."
+        },
+        {
+          "heading": "تأكد أن الاختبار يلتقط الخطأ",
+          "body": "نفّذ python -B test_shipping.py أو node test-shipping.cjs. ابحث في النهاية عن total=30: expected 0, got 5. إذا ظهر خطأ في الاستيراد أو كتابة الكود، تأكد من الأسماء والمجلد وأعد التشغيل. احتفظ بالاختبار نفسه للدّرس التالي."
+        }
+      ],
+      "examples": [
+        {
+          "title": "Python، ملف test_shipping.py",
+          "code": "from shipping import shipping_fee\n\nfor total, expected in [(29, 5), (30, 0), (31, 0)]:\n    actual = shipping_fee(total)\n    if actual != expected:\n        raise AssertionError(f\"total={total}: expected {expected}, got {actual}\")\nprint(\"PASS\")\n",
+          "explanation": "يطبع الاختبار PASS بعد اجتياز جميع الحالات.",
+          "language": "text"
+        },
+        {
+          "title": "JavaScript، ملف test-shipping.cjs",
+          "code": "const shippingFee = require(\"./shipping.cjs\");\n\nfor (const [total, expected] of [[29, 5], [30, 0], [31, 0]]) {\n  const actual = shippingFee(total);\n  if (actual !== expected) {\n    throw new Error(`total=${total}: expected ${expected}, got ${actual}`);\n  }\n}\nconsole.log(\"PASS\");\n",
+          "explanation": "يطبع الاختبار PASS بعد اجتياز جميع الحالات.",
+          "language": "text"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "git-04-e1",
+          "type": "text",
+          "prompt": "أكمل رسالة الخطأ عند 30 بإدخال الرسوم الفعلية فقط: total=30: expected 0, got ___",
+          "options": [],
+          "acceptedAnswers": [
+            "5"
+          ],
+          "explanation": "الدالة المعيبة تطلب 5 عند الحد.",
+          "hints": [
+            "راجع الناتج قبل الإصلاح."
+          ],
+          "independent": true
+        },
+        {
+          "id": "git-04-e2",
+          "type": "text",
+          "prompt": "ما أول عدد صحيح فوق الحد 30 يمكن استخدامه لاختبار استمرار المجانية؟",
+          "options": [],
+          "acceptedAnswers": [
+            "31"
+          ],
+          "explanation": "تختبر 31 أقرب قيمة أعلى من الحد.",
+          "hints": [
+            "أضف واحدًا إلى الحد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "شغّل الاختبار على النسخة المعيبة وتأكّد من فشله في الحالة المقصودة."
+    },
+    {
+      "id": "git-05",
+      "title": "أصلح المشروع واحفظ التغيير بعد المراجعة",
+      "summary": "أصلح شرط الرسوم وشغّل الاختبارات واحفظ التغيير على الفرع.",
+      "why": "يربط حفظ الاختبار مع الإصلاح سبب التغيير بالسلوك الذي يتحقق منه.",
+      "objectives": [
+        "أصلح حالة الحد وشغّل الاختبار دون تغيير القيم المتوقعة.",
+        "راجع فرق الفرع وسجّل الإصلاح والاختبار."
+      ],
+      "minutes": "30",
+      "skillIds": [
+        "git.repair"
+      ],
+      "sections": [
+        {
+          "heading": "عالج حالة الحد",
+          "body": "عدّل المقارنة في shipping.py أو shipping.cjs لتشمل الطلب الذي يبلغ الحد. شغّل أمر الاختبار من الدرس السابق وتأكد من ظهور PASS. أعد تشغيل تطبيق الطلبات وتأكد من أن الناتج الآن 29 -> 5، ثم 30 -> 0، ثم 45 -> 0."
+        },
+        {
+          "heading": "راجع التغيير داخل المستودع",
+          "body": "اعرض الحالة وراجع فرق الملفات المتتبعة قبل التجهيز. بعد التجهيز ينبغي أن يعرض الفرق تعديل الدالة وملف الاختبار الجديد. احفظ الملفين في إدخال واحد ثم راجع فرق الفرع وحالته."
+        },
+        {
+          "heading": "تحقق من الدالة داخل المنصة",
+          "body": "أكمل معمل Python أو JavaScript بحسب مسارك. يشغّل المعمل الدالة بقيم إضافية. نفّذ أوامر Git واختبار الملفات في مجلد التدريب وسجّل نتيجة الاختبار قبل الإصلاح وبعده."
+        }
+      ],
+      "examples": [
+        {
+          "title": "افحص التغيير وجهّز الملفين",
+          "code": "git status --short\ngit diff main\n# Python\ngit add shipping.py test_shipping.py\n# JavaScript\ngit add shipping.cjs test-shipping.cjs\ngit diff --staged\n",
+          "explanation": "نفّذ أمر التجهيز الذي يوافق لغتك فقط.",
+          "language": "text"
+        },
+        {
+          "title": "احفظ الإصلاح وراجع فرق الفرع",
+          "code": "git commit -m \"Fix free shipping at threshold\"\ngit log --oneline main..HEAD\ngit diff main...HEAD\ngit status --short\n",
+          "explanation": "توقع ظهور إدخال الإصلاح والملفين في فرق الفرع، ثم نتيجة فارغة لأمر الحالة.",
+          "language": "text"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "git-05-e1",
+          "type": "text",
+          "prompt": "ما معامل المقارنة المشترك بين Python وJavaScript الذي يشمل قيمة الحد؟ أجب بالرمز فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            ">="
+          ],
+          "explanation": "يعيد الشرط نتيجة صحيحة للحد وما فوقه.",
+          "hints": [
+            "استخدم أكبر من أو يساوي."
+          ],
+          "independent": true
+        },
+        {
+          "id": "git-05-e2",
+          "type": "text",
+          "prompt": "بعد التجهيز، ما أمر مراجعة الملفات التي سيحفظها Git في الإدخال التالي؟",
+          "options": [],
+          "acceptedAnswers": [
+            "git diff --staged"
+          ],
+          "explanation": "يعرض تعديل الدالة وملف الاختبار بعد تجهيزهما.",
+          "hints": [
+            "اطلب الفرق المجهّز."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "احفظ الدالة والاختبار معًا بعد توثيق الفشل القديم ونجاح الإصلاح."
+    }
+  ],
+  "skills": [
+    {
+      "id": "git.history",
+      "title": "احفظ نسخة من مشروع في Git",
+      "description": "تابع حالة الملفات من تعديلها إلى حفظها في سجل Git.",
+      "required": {
+        "anyOf": [
+          {
+            "skill": "py.automation"
+          },
+          {
+            "skill": "web.lesson12"
+          }
+        ]
+      },
+      "recommended": []
+    },
+    {
+      "id": "git.branch",
+      "title": "اعمل على فرع وراجع الفرق",
+      "description": "أنشئ فرعًا للإصلاح وقارنه بفرع البداية.",
+      "required": {
+        "skill": "git.history"
+      },
+      "recommended": []
+    },
+    {
+      "id": "git.reproduce",
+      "title": "أعِد ظهور الخطأ وحدّد سببه",
+      "description": "قارن الناتج الفعلي بالمتوقع عند حد رسوم التوصيل.",
+      "required": {
+        "skill": "git.branch"
+      },
+      "recommended": []
+    },
+    {
+      "id": "git.regression",
+      "title": "اكتب اختبارًا يمنع رجوع الخطأ",
+      "description": "حوّل توقعاتك عن الحد إلى اختبار آلي يفشل في النسخة المعيبة.",
+      "required": {
+        "skill": "git.reproduce"
+      },
+      "recommended": []
+    },
+    {
+      "id": "git.repair",
+      "title": "أصلح المشروع واحفظ التغيير بعد المراجعة",
+      "description": "أصلح شرط الرسوم وشغّل الاختبارات واحفظ التغيير على الفرع.",
+      "required": {
+        "skill": "git.regression"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "git-01",
+      "title": "احفظ نسخة من مشروع في Git",
+      "why": "تعطيك النسخة المبدئية نقطة تقارن بها سلوك المشروع بعد الإصلاح.",
+      "skillIds": [
+        "git.history"
+      ]
+    },
+    {
+      "id": "git-02",
+      "title": "اعمل على فرع وراجع الفرق",
+      "why": "يتيح الفرع مراجعة الإصلاح مقابل نسخة البداية.",
+      "skillIds": [
+        "git.branch"
+      ]
+    },
+    {
+      "id": "git-03",
+      "title": "أعِد ظهور الخطأ وحدّد سببه",
+      "why": "تسجيل المدخل والناتج يجعل المشكلة قابلة للتكرار قبل تعديل الدالة.",
+      "skillIds": [
+        "git.reproduce"
+      ]
+    },
+    {
+      "id": "git-04",
+      "title": "اكتب اختبارًا يمنع رجوع الخطأ",
+      "why": "يتيح لك تشغيل الاختبار نفسه قبل الإصلاح وبعده قياس أثر التعديل.",
+      "skillIds": [
+        "git.regression"
+      ]
+    },
+    {
+      "id": "git-05",
+      "title": "أصلح المشروع واحفظ التغيير بعد المراجعة",
+      "why": "يربط حفظ الاختبار مع الإصلاح سبب التغيير بالسلوك الذي يتحقق منه.",
+      "skillIds": [
+        "git.repair"
+      ]
+    }
+  ],
+  "labs": [
+    {
+      "id": "git-05-lab-python",
+      "lessonId": "git-05",
+      "language": "python",
+      "title": "أصلح حساب رسوم التوصيل بلغة Python",
+      "prompt": "أصلح شرط الدالة بحيث ترجع 5 للطلب الأقل من 30 وترجع 0 للطلب الذي يبلغ 30 أو أكثر. يقرأ الكود المجهز قيمة طلب صحيحة غير سالبة من كل سطر ويطبع الرسوم المقابلة لكل قيمة دون نص إضافي.",
+      "starterCode": "import sys\n\ndef shipping_fee(total):\n    return 0 if total > 30 else 5\n\nfor line in sys.stdin:\n    print(shipping_fee(int(line)))\n",
+      "solution": "import sys\n\ndef shipping_fee(total):\n    return 0 if total >= 30 else 5\n\nfor line in sys.stdin:\n    print(shipping_fee(int(line)))\n",
+      "sampleInput": "29\n30\n45\n",
+      "sampleOutput": "5\n0\n0\n",
+      "skillId": "git.repair",
+      "hiddenTests": [
+        {
+          "input": "0\n30\n31\n",
+          "expectedOutput": "5\n0\n0\n"
+        },
+        {
+          "input": "10\n29\n30\n30\n",
+          "expectedOutput": "5\n5\n0\n0\n"
+        },
+        {
+          "input": "900\n1\n50\n",
+          "expectedOutput": "0\n5\n0\n"
+        }
+      ]
+    },
+    {
+      "id": "git-05-lab-javascript",
+      "lessonId": "git-05",
+      "language": "javascript",
+      "title": "أصلح حساب رسوم التوصيل بلغة JavaScript",
+      "prompt": "أصلح شرط الدالة بحيث ترجع 5 للطلب الأقل من 30 وترجع 0 للطلب الذي يبلغ 30 أو أكثر. يقرأ الكود المجهز قيمة طلب صحيحة غير سالبة من كل سطر ويطبع الرسوم المقابلة لكل قيمة دون نص إضافي.",
+      "starterCode": "function shippingFee(total) {\n  return total > 30 ? 0 : 5;\n}\n\nconst input = require(\"fs\").readFileSync(0, \"utf8\").trim();\nfor (const line of input.split(/\\r?\\n/)) {\n  console.log(shippingFee(Number(line)));\n}\n",
+      "solution": "function shippingFee(total) {\n  return total >= 30 ? 0 : 5;\n}\n\nconst input = require(\"fs\").readFileSync(0, \"utf8\").trim();\nfor (const line of input.split(/\\r?\\n/)) {\n  console.log(shippingFee(Number(line)));\n}\n",
+      "sampleInput": "29\n30\n45\n",
+      "sampleOutput": "5\n0\n0\n",
+      "skillId": "git.repair",
+      "hiddenTests": [
+        {
+          "input": "0\n30\n31\n",
+          "expectedOutput": "5\n0\n0\n"
+        },
+        {
+          "input": "10\n29\n30\n30\n",
+          "expectedOutput": "5\n5\n0\n0\n"
+        },
+        {
+          "input": "900\n1\n50\n",
+          "expectedOutput": "0\n5\n0\n"
+        }
+      ]
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "git-03",
+      "index": 2,
+      "input": "",
+      "output": "29 -> 5\n30 -> 5\n45 -> 0\n"
+    },
+    {
+      "lessonId": "git-03",
+      "index": 3,
+      "input": "",
+      "output": "29 -> 5\n30 -> 5\n45 -> 0\n"
+    }
+  ],
+  "track": {
+    "id": "git-workshop",
+    "title": "ورشة Git وإصلاح الأخطاء",
+    "lessonIds": [
+      "git-01",
+      "git-02",
+      "git-03",
+      "git-04",
+      "git-05"
+    ]
+  },
+  "goal": {
+    "id": "git-workshop",
+    "title": "ورشة Git وإصلاح الأخطاء",
+    "description": "تتبّع مشروعًا قائمًا باستخدام Git، ثم شخّص خطأً واختبره وأصلحه على فرع محلي.",
+    "status": "sample",
+    "skillIds": [
+      "git.history",
+      "git.branch",
+      "git.reproduce",
+      "git.regression",
+      "git.repair"
+    ]
+  },
+  "project": {
+    "id": "git-shipping-repair",
+    "title": "إصلاح رسوم التوصيل",
+    "lessonId": "git-05",
+    "summary": "أصلح قاعدة التوصيل المجاني في نسخة Python أو JavaScript من مشروع التدريب وقدّم خطوات تحقق قابلة للتكرار.",
+    "criteria": [
+      "احفظ النسخة المبدئية في main والإصلاح على fix-free-shipping.",
+      "دوّن أمر التشغيل والمدخل الذي أظهر الخطأ والرسوم المتوقعة والفعلية.",
+      "اعرض نتيجة اختبار القيم 29 و30 و31 قبل الإصلاح وبعده.",
+      "راجع فرق الفرع وتأكد أنه يضم تعديل الدالة وملف الاختبار.",
+      "شغّل التطبيق بعد الإصلاح وتحقق من الناتج ومن نظافة حالة Git."
+    ]
+  },
+  "glossary": [
+    {
+      "term": "منطقة التجهيز",
+      "technical": "Staging area",
+      "definition": "محتوى الملفات المهيأ لعملية الحفظ التالية في Git."
+    },
+    {
+      "term": "اختبار منع رجوع الخطأ",
+      "technical": "Regression test",
+      "definition": "اختبار يعيد تشغيل حالة معروفة للتحقق من استمرار السلوك الصحيح بعد التعديلات."
+    },
+    {
+      "term": "فرع Git",
+      "technical": "Git branch",
+      "definition": "اسم يشير إلى إدخال في سجل Git ويتقدم عند حفظ إدخال جديد عليه."
+    }
+  ]
+}

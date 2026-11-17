@@ -38,3 +38,4 @@ coverage/
 **/dist/*
 !/phase4/dist/curriculum.json
 !/phase7/dist/curriculum.json
+!/phase8/dist/curriculum.json

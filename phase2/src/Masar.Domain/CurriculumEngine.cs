@@ -9,6 +9,7 @@ public static class CurriculumEngine
 
     public static JsonObject Plan(JsonObject bundle, string goalId,
         IEnumerable<string>? achievedSkillIds = null,
-        IEnumerable<string>? preferredSkillIds = null)
-        => Planner.Build(bundle, goalId, achievedSkillIds, preferredSkillIds);
+        IEnumerable<string>? preferredSkillIds = null,
+        IReadOnlySet<string>? allowedLessonIds = null)
+        => Planner.Build(bundle, goalId, achievedSkillIds, preferredSkillIds, allowedLessonIds);
 }

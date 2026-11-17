@@ -4,13 +4,14 @@ namespace Masar.Domain;
 
 internal static class Planner
 {
-    internal static JsonObject Build(JsonObject bundle, string goalId, IEnumerable<string>? achievedSkillIds, IEnumerable<string>? preferredSkillIds)
+    internal static JsonObject Build(JsonObject bundle, string goalId, IEnumerable<string>? achievedSkillIds,
+        IEnumerable<string>? preferredSkillIds, IReadOnlySet<string>? allowedLessonIds)
     {
         if (CurriculumEngine.Validate(bundle).Count != 0) return Empty(goalId);
         var graph = (JsonObject)bundle["graph"]!;
         var goal = ((JsonArray)graph["goals"]!).OfType<JsonObject>().FirstOrDefault(item => Text(item, "id") == goalId);
         if (goal is null) return Empty(goalId);
-        try { return new Run(graph, goal, achievedSkillIds, preferredSkillIds).Build(); }
+        try { return new Run(graph, goal, achievedSkillIds, preferredSkillIds, allowedLessonIds).Build(); }
         catch (PlanningLimitException) { return Empty(goalId); }
     }
 
@@ -55,10 +56,12 @@ internal static class Planner
         private readonly HashSet<string> preferred;
         private int work;
 
-        internal Run(JsonObject graph, JsonObject goal, IEnumerable<string>? achieved, IEnumerable<string>? preferred)
+        internal Run(JsonObject graph, JsonObject goal, IEnumerable<string>? achieved, IEnumerable<string>? preferred,
+            IReadOnlySet<string>? allowedLessonIds)
         {
             skills = ((JsonArray)graph["skills"]!).OfType<JsonObject>().ToDictionary(item => Text(item, "id"), StringComparer.Ordinal);
-            lessons = ((JsonArray)graph["lessons"]!).OfType<JsonObject>().ToArray();
+            lessons = ((JsonArray)graph["lessons"]!).OfType<JsonObject>()
+                .Where(lesson => allowedLessonIds is null || allowedLessonIds.Contains(Text(lesson, "id"))).ToArray();
             this.goal = goal;
             this.achieved = ReadInput(achieved);
             this.preferred = ReadInput(preferred);

@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ACCESS_INVALIDATED, errorText, request, type SessionScope } from './api';
-import type { Catalog, User } from './types';
+import type { Catalog, CommercialEntitlement, CommercialOffer, User } from './types';
 import { ErrorBox, Heading, Loading } from './ui';
 
-type AccessState = { scope?: SessionScope; active: boolean; loading: boolean; error: string };
+type AccessState = { scope?: SessionScope; entitlement?: CommercialEntitlement; loading: boolean; error: string; version: number };
+
+function accessKey(value?: CommercialEntitlement) {
+  return JSON.stringify([value?.active, value?.goalIds && [...value.goalIds].sort(), value?.lessonIds && [...value.lessonIds].sort()]);
+}
 
 // Entitlement is never persisted in browser storage or reused for a different session.
 export function useAccess(required: boolean, scope?: SessionScope) {
-  const [state, setState] = useState<AccessState>({ active: false, loading: false, error: '' });
+  const [state, setState] = useState<AccessState>({ loading: false, error: '', version: 0 });
   const [revision, setRevision] = useState(0);
   const reload = useCallback(() => setRevision(value => value + 1), []);
   useEffect(() => {
@@ -18,19 +22,21 @@ export function useAccess(required: boolean, scope?: SessionScope) {
       if (pending || controller.signal.aborted) return;
       pending = true;
       try {
-        const result = await request<{ required: boolean; active: boolean }>('/me/access', { scope, signal: controller.signal });
+        const result = await request<CommercialEntitlement>('/me/access', { scope, signal: controller.signal });
         if (!controller.signal.aborted && !scope?.signal.aborted) {
-          setState({ scope, active: result.active === true, loading: false, error: '' });
+          setState(previous => ({ scope, entitlement: result, loading: false, error: '',
+            version: previous.version + Number(accessKey(previous.entitlement) !== accessKey(result)) }));
         }
       } catch (cause) {
-        if (!controller.signal.aborted && !scope?.signal.aborted) setState({ scope, active: false, loading: false, error: errorText(cause) });
+        if (!controller.signal.aborted && !scope?.signal.aborted)
+          setState(previous => ({ scope, loading: false, error: errorText(cause), version: previous.version + 1 }));
       } finally { pending = false; }
     }
-    setState({ scope, active: false, loading: true, error: '' });
+    setState(previous => ({ scope, loading: true, error: '', version: previous.version }));
     const visible = () => { if (document.visibilityState === 'visible') void check(); };
     const denied = () => {
       controller.abort();
-      setState({ scope, active: false, loading: true, error: '' });
+      setState(previous => ({ scope, loading: true, error: '', version: previous.version + 1 }));
       setRevision(value => value + 1);
     };
     window.addEventListener('focus', visible);
@@ -49,7 +55,16 @@ export function useAccess(required: boolean, scope?: SessionScope) {
     };
   }, [required, scope, revision]);
   const current = state.scope === scope && !scope?.signal.aborted;
-  return { active: !required || (current && state.active), loading: required && !!scope?.userId && (!current || state.loading), error: current ? state.error : '', reload };
+  const entitlement = current ? state.entitlement : undefined;
+  return {
+    active: !required || entitlement?.active === true,
+    goalIds: entitlement?.goalIds,
+    lessonIds: entitlement?.lessonIds,
+    version: state.version,
+    loading: required && !!scope?.userId && (!current || state.loading),
+    error: current ? state.error : '',
+    reload,
+  };
 }
 
 function contactLink(value?: string | null) {
@@ -58,24 +73,52 @@ function contactLink(value?: string | null) {
   catch { return null; }
 }
 
-export function AccessGate({ user, catalog, loading, error, reload }: {
-  user: User | null; catalog: Catalog; loading: boolean; error: string; reload: () => void;
+export function formatOffer(offer: CommercialOffer) {
+  return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: offer.currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(offer.price);
+}
+
+function OfferList({ catalog }: { catalog: Catalog }) {
+  const goals = catalog.goals.filter(goal => goal.status !== 'planned');
+  const prices = new Map(catalog.offers?.map(offer => [offer.goalId, offer]));
+  if (goals.length === 0) return <p className="muted">لا توجد مسارات معروضة حاليًا.</p>;
+  return <ul className="revision-list offer-list">{goals.map(goal => {
+    const offer = prices.get(goal.id);
+    return <li key={goal.id}><div><h3>{goal.title}</h3><p>{goal.description}</p></div>
+      <span className={offer ? 'offer-price' : 'muted'}>{offer ? <bdi>{formatOffer(offer)}</bdi> : 'السعر غير محدد بعد'}</span>
+    </li>;
+  })}</ul>;
+}
+
+export function OffersPage({ catalog, user }: { catalog: Catalog; user: User | null }) {
+  const contact = contactLink(catalog.contactUrl);
+  return <><Heading title="أسعار المسارات">لكل مسار سعره. تفعّل الإدارة الوصول لحسابك بعد تأكيد السداد خارج المنصة.</Heading>
+    <section className="panel" aria-label="أسعار المسارات"><OfferList catalog={catalog} />
+      <div className="actions">{!user && <a className="btn primary" href="#auth">تسجيل الدخول أو إنشاء حساب</a>}
+        {contact && <a className="btn" href={contact} target="_blank" rel="noopener noreferrer">تواصل بشأن الشراء</a>}
+      </div>
+    </section>
+  </>;
+}
+
+export function AccessGate({ user, catalog, loading, error, reload, unavailable = false }: {
+  user: User | null; catalog: Catalog; loading: boolean; error: string; reload: () => void; unavailable?: boolean;
 }) {
   const contact = contactLink(catalog.contactUrl);
   return <section className="panel stack" aria-labelledby="access-heading">
     <Heading title="ابدأ رحلتك مع NEXORA CODE" eyebrow="الوصول إلى المنصة" />
-    <h2 id="access-heading">{user ? 'تحقق من تفعيل حسابك' : 'منصة تعلّم مدفوعة'}</h2>
-    <p>تعلّم البرمجة بخطة متدرجة ودروس وتمارين تطبيقية. يتطلب الوصول تفعيل حسابك بعد تأكيد الشراء لدى إدارة المنصة.</p>
-    <p className="notice">إنشاء الحساب وحده لا يفعّل الوصول. لا يتم تحصيل أي مبالغ من هذه الصفحة.</p>
+    <h2 id="access-heading">{unavailable ? 'هذا المحتوى غير مفعّل لحسابك' : user ? 'تحقق من تفعيل حسابك' : 'منصة تعلّم مدفوعة'}</h2>
+    <p>ادرس المسارات والدروس التي تفعّلها الإدارة لحسابك بعد تأكيد السداد خارج المنصة.</p>
     {user && <p>الحساب: <bdi>{user.userName}</bdi></p>}
-    {loading ? <Loading text="جارٍ التحقق من حالة الوصول…" /> : user && !error && <p role="status" className="notice">الوصول غير مفعّل لهذا الحساب حاليًا.</p>}
+    {loading ? <Loading text="جارٍ التحقق من حالة الوصول…" /> : user && !error && !unavailable && <p role="status" className="notice">الوصول غير مفعّل لهذا الحساب حاليًا.</p>}
     <ErrorBox message={error} retry={reload} />
     <div className="actions">
       {!user && <a className="btn primary" href="#auth">تسجيل الدخول أو إنشاء حساب</a>}
       {contact && <a className="btn" href={contact} target="_blank" rel="noopener noreferrer">تواصل مع إدارة المنصة بشأن الشراء</a>}
       {user && <button className="btn" disabled={loading} onClick={reload}>تحديث حالة الوصول</button>}
+      {unavailable && <a className="btn" href="#start">ارجع إلى محتواك</a>}
     </div>
     {!contact && <p className="field-help">لمعرفة تفاصيل الشراء والتفعيل، تواصل مع مسؤول المنصة عبر وسيلة التواصل التي حصلت منها على رابطها.</p>}
+    {catalog.offers && <div><h2>أسعار المسارات</h2><OfferList catalog={catalog} /></div>}
   </section>;
 }
 

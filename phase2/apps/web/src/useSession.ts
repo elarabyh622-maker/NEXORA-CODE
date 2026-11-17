@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { errorText, SESSION_INVALIDATED, verifySession, type SessionScope } from './api';
+import { applicationPath, errorText, SESSION_INVALIDATED, verifySession, type SessionScope } from './api';
 import type { DraftState, User } from './types';
 
 type Session = {
@@ -68,7 +68,8 @@ export function useSession() {
 
   useEffect(() => {
     if ('BroadcastChannel' in window) {
-      channel.current = new BroadcastChannel('masar-session');
+      const commercialMount = applicationPath('/') === '/nexora-commercial/';
+      channel.current = new BroadcastChannel(commercialMount ? 'masar-session-commercial' : 'masar-session');
       channel.current.onmessage = event => { if (event.data === 'changed') void refresh(true); };
     }
     const focus = () => { void refresh(); };

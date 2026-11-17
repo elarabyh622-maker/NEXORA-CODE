@@ -1,8 +1,10 @@
 const assert = require('node:assert/strict');
 const { readFile } = require('node:fs/promises');
 
-const release = 'phase4-ar-v1';
-const goals = ['explore', 'python', 'web'];
+const release = process.env.NEXORA_BROWSER_TEST_RELEASE || 'phase4-ar-v1';
+assert.ok(['phase4-ar-v1', 'phase7-ar-v1'].includes(release), 'Use a supported curriculum release for the browser test');
+const hasDataAnalysis = release === 'phase7-ar-v1';
+const goals = ['explore', 'python', 'web', ...(hasDataAnalysis ? ['data-analysis'] : [])];
 const edge = process.env.NEXORA_EDGE_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const playwright = process.env.NEXORA_PLAYWRIGHT_CORE ||
   'C:/Users/BONDOK/Documents/GitHub/OmniRoute/node_modules/playwright-core';
@@ -52,17 +54,22 @@ async function checkExample(page, expectedCode) {
   assert.match(await example.textContent(), expectedCode);
 }
 
+async function checkNoReleasePicker(page) {
+  assert.equal(await page.getByLabel('إصدار المحتوى', { exact: true }).count(), 0);
+  assert.equal(await page.getByRole('heading', { name: 'اختر إصدار المحتوى', exact: true }).count(), 0);
+}
+
 const checks = [
-  ['Active release and three beginner goals', async (page, origin) => {
+  ['Active release and beginner goals without a release picker', async (page, origin) => {
     await visitStart(page, origin);
-    assert.equal(await page.getByLabel('إصدار المحتوى').inputValue(), release);
+    await checkNoReleasePicker(page);
     const cards = page.locator('section[aria-labelledby="start-goals"] .goals a');
     const hrefs = await cards.evaluateAll(links => links.map(link => link.getAttribute('href')));
     assert.deepEqual(hrefs, goals.map(goal => `#plan/${goal}`));
     const tracks = page.locator('details.curriculum-track');
-    assert.equal(await tracks.count(), 3);
-    assert.equal(await tracks.locator('a.lesson-card').count(), 36);
-    assert.equal(await page.locator('section[aria-labelledby="curriculum-projects"] a').count(), 3);
+    assert.equal(await tracks.count(), goals.length);
+    assert.equal(await tracks.locator('a.lesson-card').count(), hasDataAnalysis ? 44 : 36);
+    assert.equal(await page.locator('section[aria-labelledby="curriculum-projects"] a').count(), goals.length);
     await page.getByRole('link', { name: 'دخول / حساب جديد' }).waitFor();
     await goalLink(page, 'explore').click();
     await page.locator('.plan-list li').first().waitFor();
@@ -128,10 +135,24 @@ const checks = [
     const archive = await readFile(await download.path());
     assert.equal(archive.subarray(0, 4).toString('hex'), '504b0304');
   }],
-  ['Current Python and legacy JavaScript console labs visible to a guest', async (page, origin) => {
+  ['Current console labs and the original sample link respect published content', async (page, origin) => {
     await openPlan(page, origin, 'python');
     await planLesson(page, 'py-02').click();
     await checkLab(page, 'Python');
+
+    await openPlan(page, origin, 'web');
+    await planLesson(page, 'web-08').click();
+    await checkLab(page, 'JavaScript');
+
+    const catalogResponse = await page.request.get(`${origin}/api/v1/catalog`);
+    assert.equal(catalogResponse.status(), 200);
+    const catalog = await catalogResponse.json();
+    if (!catalog.releases.some(item => item.releaseId === 'phase1-ar-v1' && item.status === 'published')) {
+      await page.goto(`${origin}/#lesson/step-by-step`);
+      await page.getByText('هذا الدرس غير متاح من الرابط الحالي.', { exact: false }).waitFor();
+      await checkNoReleasePicker(page);
+      return;
+    }
 
     const oldLessonPath = '/api/v1/content/phase1-ar-v1/lessons/step-by-step';
     const [oldLesson] = await Promise.all([
@@ -140,7 +161,7 @@ const checks = [
     ]);
     assert.equal(oldLesson.status(), 200);
     await checkLab(page, 'JavaScript');
-    assert.equal(await page.getByLabel('إصدار المحتوى').inputValue(), 'phase1-ar-v1');
+    await checkNoReleasePicker(page);
     const breadcrumb = page.locator('.breadcrumbs').getByRole('link', { name: 'خطتي التعليمية' });
     assert.equal(await breadcrumb.getAttribute('href'), '#plan');
   }],

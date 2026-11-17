@@ -1,0 +1,1207 @@
+{
+  "track": {
+    "id": "sql",
+    "title": "SQL وSQLite",
+    "lessonIds": [
+      "sql-01",
+      "sql-02",
+      "sql-03",
+      "sql-04",
+      "sql-05",
+      "sql-06"
+    ]
+  },
+  "goal": {
+    "id": "sql",
+    "title": "SQL وSQLite",
+    "description": "استعلم عن قاعدة SQLite ورتّب النتائج وجمّعها واربط الجداول لإعداد تقرير دراسة خيالي.",
+    "status": "sample",
+    "skillIds": [
+      "sql.select",
+      "sql.filter",
+      "sql.sort",
+      "sql.group",
+      "sql.join",
+      "sql.report"
+    ]
+  },
+  "lessons": [
+    {
+      "id": "sql-01",
+      "title": "أقرأ أعمدة من جدول باستخدام SELECT",
+      "summary": "أميّز بين الجدول والصف والعمود، وأعرض أعمدة أختارها من قاعدة SQLite تجريبية.",
+      "why": "اختيار الأعمدة اللازمة أولًا يجعل السؤال واضحًا ويسهّل فحص النتيجة.",
+      "objectives": [
+        "أقرأ جدول الجلسات وأربط كل قيمة باسم عمودها.",
+        "أكتب SELECT مع FROM لاختيار أعمدة محددة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "sql.select"
+      ],
+      "sections": [
+        {
+          "heading": "ما الذي نمثّله بجدول؟",
+          "body": "لدينا موضوعات وجلسات دراسة خيالية. كل صف في topics موضوع له معرّف id واسم name. كل صف في sessions جلسة لها id خاص بها، ومعرّف موضوع topic_id، وعدد دقائق minutes، وحالة status. done تعني مكتملة، وplanned تعني مخططة. الرقم 1 في sessions.id يعرّف جلسة؛ الرقم 1 في sessions.topic_id يشير إلى موضوع SQL."
+        },
+        {
+          "heading": "افتح قاعدة تجريبية",
+          "body": "يمكنك متابعة الشرح وتمارين النتيجة دون تثبيت أدوات. للتجربة الفعلية، افتح قاعدة جديدة فارغة في محرر SQLite على جهازك، أو شغّل sqlite3 :memory: إذا كان أمر sqlite3 مثبتًا لديك. انسخ كتلة إعداد القاعدة كاملة مرة واحدة إلى المحرر وشغّلها. بعدها نفّذ الاستعلامات منفردة في الاتصال نفسه؛ إغلاق قاعدة الذاكرة يمحو الجداول. الأمثلة المصنفة كنص هنا تُنفذ في SQLite خارج صفحة الدرس، ويمكنك العودة إلى هذه الكتلة في أي وقت."
+        },
+        {
+          "heading": "اقرأ بلا تغيير",
+          "body": "الأوامر CREATE TABLE وINSERT في الكتلة تبني بيانات التدريب مرة واحدة؛ لن نحتاج إلى كتابتها من الذاكرة. في القراءة، FROM يحدد مصدر الصفوف، وSELECT يحدد أعمدة النتيجة وترتيبها. SELECT * يعرض كل الأعمدة للفحص الأولي. الفاصلة تفصل أسماء الأعمدة والفاصلة المنقوطة تنهي الأمر. سنشرح ترتيب الصفوف في الدرس الثالث؛ لا تستنتج ترتيبًا مضمونًا من شكل النتيجة هنا."
+        }
+      ],
+      "examples": [
+        {
+          "title": "إعداد قاعدة SQLite: انسخ الكتلة كاملة مرة واحدة",
+          "language": "text",
+          "code": "CREATE TABLE topics (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL UNIQUE\n);\n\nCREATE TABLE sessions (\n  id INTEGER PRIMARY KEY,\n  topic_id INTEGER NOT NULL REFERENCES topics(id),\n  minutes INTEGER CHECK (minutes >= 0),\n  status TEXT NOT NULL CHECK (status IN ('done', 'planned'))\n);\n\nINSERT INTO topics (id, name) VALUES\n  (1, 'SQL'), (2, 'Web'), (3, 'Review'), (4, 'Notes');\n\nINSERT INTO sessions (id, topic_id, minutes, status) VALUES\n  (1, 1, 20, 'done'),\n  (2, 2, 30, 'done'),\n  (3, 1, 35, 'done'),\n  (4, 2, 15, 'planned'),\n  (5, 3, 20, 'done'),\n  (6, 3, NULL, 'planned'),\n  (7, 1, 20, 'done');",
+          "explanation": "ينشئ هذا النص جدولين ويضيف أربعة موضوعات وسبع جلسات خيالية. احتفظ بقاعدة التدريب مفتوحة للتمارين التالية."
+        },
+        {
+          "title": "مثال SQL: الدقائق أولًا ثم المعرّف",
+          "language": "text",
+          "code": "SELECT minutes, id\nFROM sessions\nORDER BY id;",
+          "explanation": "الأعمدة الناتجة بالترتيب minutes ثم id؛ الصفان الأولان هما (20, 1) و(30, 2). يظهر NULL للجلسة 6 لأن الدقائق غير مسجلة. أضفنا ORDER BY id لعرض نتيجة ثابتة؛ ستفصّله لاحقًا."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-01-q1",
+          "prompt": "أي استعلام يعرض اسم كل موضوع فقط؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "SELECT name FROM sessions;"
+            },
+            {
+              "id": "2",
+              "text": "SELECT topics FROM name;"
+            },
+            {
+              "id": "3",
+              "text": "SELECT name FROM topics;"
+            }
+          ],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "عمود name موجود في topics. SELECT name يطلب عمودًا واحدًا، وFROM topics يحدد الجدول.",
+          "hints": [
+            "ابحث عن مكان العمود name في كتلة الإعداد."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-01-q2",
+          "prompt": "نفّذ SELECT name, id FROM topics ORDER BY id; أو تتبع بياناته. ما معرّف صف Notes؟ اكتب رقمًا فقط.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "4"
+          ],
+          "explanation": "معرّف موضوع Notes هو 4؛ تقديم name على id يغيّر ترتيب الأعمدة المعروضة فقط.",
+          "hints": [
+            "موضوع Notes هو آخر موضوع في بيانات INSERT."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "تحدد FROM الجدول، وتحدد SELECT أعمدة النتيجة؛ استعلام القراءة لا يغيّر البيانات."
+    },
+    {
+      "id": "sql-02",
+      "title": "أرشّح الجلسات باستخدام WHERE",
+      "summary": "أكتب شروطًا على النص والأعداد وأفحص NULL بطريقة صحيحة.",
+      "why": "تحتاج الإجابة عن سؤال مثل الجلسات المكتملة الطويلة إلى تحديد الصفوف المؤهلة قبل عرضها.",
+      "objectives": [
+        "أجمع شرطين باستخدام AND.",
+        "أستخدم IS NULL لفحص قيمة مفقودة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "sql.filter"
+      ],
+      "sections": [
+        {
+          "heading": "ماذا يبقى بعد الترشيح؟",
+          "body": "تأتي WHERE بعد FROM. شرط status = 'done' يختار الجلسات المكتملة. علامات الاقتباس المفردة تحيط بالقيمة النصية 'done'، بينما minutes اسم عمود، والعدد 20 لا يحتاج تنصيصًا. تكتب المساواة بعلامة = واحدة. الشرط minutes >= 20 يشمل 20 نفسه."
+        },
+        {
+          "heading": "شرطان معًا",
+          "body": "AND يتطلب تحقق الشرطين في الصف نفسه، وOR يكفيه تحقق أحدهما. ابدأ بقراءة شرط واحد في كل مرة، ثم قرر إن كان السؤال يتطلبهما معًا. من بيانات التدريب، الجلسة 4 مخططة ودقائقها 15؛ لن يمررها الشرط الذي يطلب حالة done."
+        },
+        {
+          "heading": "القيمة المفقودة ليست صفرًا",
+          "body": "NULL تعني أن قيمة لم تسجل. المقارنة minutes = NULL لا تعطي TRUE حتى عندما تكون القيمة مفقودة؛ استخدم minutes IS NULL. في WHERE يبقى فقط ما تحقق شرطه. لذلك لا تمر الجلسة 6 بشرط minutes >= 20، ولا نعاملها على أنها صفر."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال SQL: جلسات مكتملة مدتها 30 دقيقة فأكثر",
+          "language": "text",
+          "code": "SELECT id, minutes\nFROM sessions\nWHERE status = 'done' AND minutes >= 30\nORDER BY id;",
+          "explanation": "يبقى الصفان (2, 30) و(3, 35). الجلسة 2 ضمن النتيجة لأن >= يشمل الحد 30."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-02-q1",
+          "prompt": "أكمل الفراغ في WHERE minutes ___ للعثور على قيمة دقائق مفقودة. اكتب الكلمتين الناقصتين بمسافة واحدة بينهما، دون فاصلة منقوطة.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "IS NULL",
+            "is null",
+            "IS null",
+            "is NULL"
+          ],
+          "explanation": "WHERE minutes IS NULL يعيد الجلسة 6. القيمة المفقودة لا تُكتشف بالمساواة مع NULL.",
+          "hints": [
+            "تحتاج إلى عبارة فحص، من كلمتين، خاصة بالقيمة المفقودة."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-02-q2",
+          "prompt": "اكتب في SQLite استعلامًا يعرض معرّفات جلسات done التي تزيد مدتها على 20 دقيقة. كم صفًا يظهر؟ اكتب رقمًا فقط.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "الشرط status = 'done' AND minutes > 20 يعيد الجلستين 2 و3. القيمة 20 لا تتجاوز الحد.",
+          "hints": [
+            "استخدم > بدلًا من >=؛ كلمة تزيد تستبعد القيمة المساوية."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-02-q3",
+          "prompt": "غيّرت الشرط إلى status = 'planned' OR minutes >= 30. أي قائمة تمثل المعرّفات مرتبة تصاعديًا؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "2, 3"
+            },
+            {
+              "id": "2",
+              "text": "2, 3, 4, 6"
+            },
+            {
+              "id": "3",
+              "text": "4, 6"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "الجلستان 2 و3 تحققان شرط الدقائق، و4 و6 تحققان شرط الحالة. تكفي حالة planned لدخول الجلسة 6 رغم أن دقائقها مفقودة.",
+          "hints": [
+            "افحص فرعي OR لكل صف على حدة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "تصف WHERE الصفوف التي أريدها، وIS NULL يفحص قيمة مفقودة صراحة."
+    },
+    {
+      "id": "sql-03",
+      "title": "أرتّب النتائج وأتعامل مع التعادل",
+      "summary": "أرتّب الجلسات حسب الدقائق وأختار عددًا محدودًا من النتائج بترتيب محدد.",
+      "why": "عند أخذ أعلى النتائج، طريقة ترتيب الصفوف المتعادلة تحدد أيها يظهر ضمن الحد.",
+      "objectives": [
+        "أستخدم ORDER BY مع ASC وDESC.",
+        "أضع معيارًا لحسم التعادل قبل LIMIT."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "sql.sort"
+      ],
+      "sections": [
+        {
+          "heading": "ترتيب صريح",
+          "body": "لا تعد SQLite بترتيب ثابت للصفوف دون ORDER BY. يطلب ASC ترتيبًا تصاعديًا، وهو الافتراضي، ويطلب DESC ترتيبًا تنازليًا. نكتب WHERE أولًا لاختيار الصفوف ثم ORDER BY لعرضها بالترتيب المطلوب."
+        },
+        {
+          "heading": "لحظة التعادل",
+          "body": "في جلسات التدريب المكتملة، الجلسات 1 و5 و7 مدتها 20 دقيقة. ORDER BY minutes DESC, id ASC يرتب أولًا بالدقائق تنازليًا ثم بالمعرّف تصاعديًا عند تساوي الدقائق. لأن معرّف الجلسة فريد، لا يبقى تعادل بين صفين بعد تطبيق المعيارين."
+        },
+        {
+          "heading": "اختيار عدد من الصفوف",
+          "body": "نكتب LIMIT بعد ORDER BY. LIMIT 3 يعرض أول ثلاثة صفوف على الأكثر بعد الترشيح والترتيب. إذا أردت أعلى ثلاث جلسات، فرتّب بالدقائق تنازليًا؛ إذا أردت الأقصر فاعكس اتجاه ترتيب الدقائق، واترك معرّف الجلسة معيارًا لحسم التعادل."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال SQL: أطول ثلاث جلسات مكتملة",
+          "language": "text",
+          "code": "SELECT id, minutes\nFROM sessions\nWHERE status = 'done'\nORDER BY minutes DESC, id ASC\nLIMIT 3;",
+          "explanation": "تخرج (3, 35) ثم (2, 30) ثم (1, 20). عند اختيار الصف الثالث تتساوى الجلسات 1 و5 و7 في الدقائق ويفوز الأصغر معرّفًا."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-03-q1",
+          "prompt": "غيّر معيار التعادل في المثال إلى id DESC واترك الباقي كما هو. ما معرّف الصف الثالث؟ اكتب رقمًا فقط.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "7"
+          ],
+          "explanation": "ترتيب الدقائق لم يتغير؛ بين الصفوف ذات 20 دقيقة، يأتي أكبر معرّف أولًا وهو 7.",
+          "hints": [
+            "أول صفين مدتهما أكبر من 20؛ قارن فقط 1 و5 و7."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-03-q2",
+          "prompt": "اكتب استعلام أقصر جلستين مكتملتين مع تقديم المعرّف الأصغر عند التعادل. أي معرّفين يظهران بالترتيب؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "3 ثم 2"
+            },
+            {
+              "id": "2",
+              "text": "1 ثم 5"
+            },
+            {
+              "id": "3",
+              "text": "7 ثم 5"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "استخدم ORDER BY minutes ASC, id ASC ثم LIMIT 2. أقصر مدة 20، ومعرّفات الصفوف المتعادلة تصاعديًا هي 1 و5 و7.",
+          "hints": [
+            "تبدأ بالأقصر، ثم ترتب أصحاب المدة الواحدة حسب المعرّف."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ضع ORDER BY ومعيارًا فريدًا لحسم التعادل قبل LIMIT للحصول على اختيار ثابت."
+    },
+    {
+      "id": "sql-04",
+      "title": "ألخّص الجلسات حسب الموضوع",
+      "summary": "أحسب عدد الجلسات ومجموع دقائقها لكل موضوع باستخدام GROUP BY.",
+      "why": "صف واحد لكل موضوع يجيب عن سؤال يخص المجموعة كلها دون إخفاء الفرق بين العدّ والجمع.",
+      "objectives": [
+        "أجمّع الصفوف حسب topic_id وأحسب COUNT وSUM.",
+        "أميّز COUNT(*) عن COUNT(minutes) عندما توجد NULL."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "sql.group"
+      ],
+      "sections": [
+        {
+          "heading": "من صف لكل جلسة إلى صف لكل موضوع",
+          "body": "WHERE يرشح صفوف الجلسات أولًا. GROUP BY topic_id يضع الصفوف الباقية في مجموعات تحمل معرّف الموضوع نفسه. في الأعمدة المعروضة نضع معرّف المجموعة ودوال تلخصها؛ لا نعرض id الجلسة لأن مجموعة واحدة قد تحوي عدة معرّفات مختلفة."
+        },
+        {
+          "heading": "عمودان مختلفان: العدد والمجموع",
+          "body": "COUNT(*) يعد كل صف في المجموعة، أما COUNT(minutes) فيعد القيم الموجودة فقط ويتخطى NULL. SUM(minutes) يجمع القيم الموجودة؛ إذا لم توجد قيمة قابلة للجمع، تكون نتيجته NULL. AS يعطي اسمًا لأحد أعمدة النتيجة، مثل AS total_minutes."
+        },
+        {
+          "heading": "مَن يغيب عن هذا الاستعلام؟",
+          "body": "الاستعلام الذي يبدأ من sessions المفلترة لا يُنشئ صفًا لموضوع لم تبقَ له جلسة. لذلك يغيب معرّف Notes من المثال. نحتاج جدول الموضوعات نفسه إذا أردنا عرض الموضوعات التي لا تظهر في سجلات الجلسات."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال SQL: عدد الجلسات المكتملة ومجموع دقائقها",
+          "language": "text",
+          "code": "SELECT topic_id, COUNT(*) AS session_count,\n       SUM(minutes) AS total_minutes\nFROM sessions\nWHERE status = 'done'\nGROUP BY topic_id\nORDER BY topic_id;",
+          "explanation": "النتيجة بالترتيب (1, 3, 75)، (2, 1, 30)، (3, 1, 20). الرقم الأوسط عدد الجلسات، والأخير مجموع الدقائق. لا يظهر موضوع 4 لأنه لا يملك صفًا مؤهلًا."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-04-q1",
+          "prompt": "في المثال، ما مجموع دقائق موضوع 1؟ اكتب رقمًا فقط.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "75"
+          ],
+          "explanation": "موضوع 1 له ثلاث جلسات مكتملة بدقائق 20 و35 و20؛ SUM يعيد 75.",
+          "hints": [
+            "اجمع الدقائق بدل أن تعد الصفوف."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-04-q2",
+          "prompt": "نفّذ SELECT COUNT(*), COUNT(minutes) FROM sessions WHERE topic_id = 3; أو تتبعه. أي زوج يظهر بالترتيب؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "1, 1"
+            },
+            {
+              "id": "2",
+              "text": "2, 2"
+            },
+            {
+              "id": "3",
+              "text": "2, 1"
+            }
+          ],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "هناك جلستان لموضوع 3، لكن جلسة واحدة فقط لها دقائق مسجلة. COUNT(*) يعيد 2، وCOUNT(minutes) يعيد 1.",
+          "hints": [
+            "انظر إلى minutes في الصفين اللذين يحملان معرّف موضوع 3."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-04-q3",
+          "prompt": "إذا استبدلت شرط الحالة في المثال بـ status = 'planned'، ما مجموع دقائق موضوع 3؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "0"
+            },
+            {
+              "id": "2",
+              "text": "NULL"
+            },
+            {
+              "id": "3",
+              "text": "20"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "موضوع 3 له جلسة مخططة واحدة ودقائقها NULL. SUM لا يجد قيمة مسجلة في المجموعة، فيعيد NULL.",
+          "hints": [
+            "استبعد صف done قبل جمع الدقائق."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "تجمع GROUP BY الصفوف بحسب المفتاح، وتوضح الدالة نوع القياس الذي أطبقه على كل مجموعة."
+    },
+    {
+      "id": "sql-05",
+      "title": "أربط الجلسات بالموضوعات وأحافظ على الصفوف غير المطابقة",
+      "summary": "أستخدم JOIN لقراءة اسم الموضوع وLEFT JOIN لإبقاء موضوع بلا جلسة مطابقة.",
+      "why": "ربط المعرفات يضيف الاسم إلى التقرير، واختيار نوع الربط يحدد هل تبقى الموضوعات التي ليس لها سجل مؤهل.",
+      "objectives": [
+        "أربط sessions.topic_id مع topics.id.",
+        "أضع شرط اختيار الجلسة في ON عند إبقاء كل الموضوعات."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "sql.join"
+      ],
+      "sections": [
+        {
+          "heading": "المفتاح الصحيح",
+          "body": "topics.id يعرّف موضوعًا واحدًا، وsessions.topic_id يحمل مرجعًا له. في SQL يمكن تسمية الجدولين مؤقتًا بـ t وs باستخدام AS. نستخدم t.id = s.topic_id بعد ON لتحديد المطابقة. المقارنة بين t.id وs.id تخلط معرّف الموضوع بمعرّف الجلسة وتعطي مطابقة خاطئة."
+        },
+        {
+          "heading": "نوع الربط",
+          "body": "JOIN (أي INNER JOIN هنا) يعرض الأزواج المطابقة فقط. LEFT JOIN يترك صفًّا لكل موضوع على اليسار حتى إن لم يجد جلسة مطابقة؛ تكون أعمدة الجلسة لهذا الصف NULL. إذا طابقت عدة جلسات موضوعًا، يظهر صف لكل مطابقة إلى أن نجمّع النتائج."
+        },
+        {
+          "heading": "تصفية الجلسات مع إبقاء الموضوعات",
+          "body": "ضع s.status = 'done' داخل ON مع شرط الربط حتى يكون شرطًا لقبول الجلسة المطابقة. وضعه وحده في WHERE بعد LEFT JOIN يستبعد الصف الذي أصبحت فيه s.status تساوي NULL، فلا يبقى موضوع بلا جلسة مكتملة. يمكنك استخدام WHERE لاحقًا لشروط تخص أعمدة جدول الموضوعات إذا كان ذلك جزءًا من السؤال."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مثال SQL: اسم الموضوع لكل جلسة مكتملة",
+          "language": "text",
+          "code": "SELECT s.id, t.name\nFROM sessions AS s\nJOIN topics AS t ON t.id = s.topic_id\nWHERE s.status = 'done'\nORDER BY s.id;",
+          "explanation": "الصف الأول (1, SQL). لا يظهر Notes لأن JOIN يحتاج إلى جلسة مطابقة، وWHERE يستبعد الجلسات المخططة."
+        },
+        {
+          "title": "مثال SQL: أبقِ كل الموضوعات حتى إن لم تطابق جلسة مكتملة",
+          "language": "text",
+          "code": "SELECT t.name, s.id\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nORDER BY t.id, s.id;",
+          "explanation": "يظهر SQL ثلاث مرات لثلاث جلسات، ويظهر Notes مرة واحدة مع id مفقود من جهة الجلسات. هذا صف موضوع غير مطابق، لا جلسة فعلية."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-05-q1",
+          "prompt": "أي شرط يربط كل جلسة بالموضوع المعرّف لها؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "t.id = s.id"
+            },
+            {
+              "id": "2",
+              "text": "t.name = s.status"
+            },
+            {
+              "id": "3",
+              "text": "t.id = s.topic_id"
+            }
+          ],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "s.topic_id مرجع لمعرّف الموضوع t.id. معرّف s.id يميّز الجلسة نفسها.",
+          "hints": [
+            "ابحث عن العمود الذي يشير إلى جدول آخر في كتلة الإعداد."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-05-q2",
+          "prompt": "في مثال LEFT JOIN، احذف شرط الحالة من ON وضع WHERE s.status = 'done' قبل ORDER BY. كم صفًا باسم Notes يبقى؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "لا يبقى صف Notes لأن حالة الجلسة في صفه غير المطابق NULL، وشرط WHERE لا يتحقق لهذا الصف.",
+          "hints": [
+            "يمر الصف عبر الربط أولًا ثم يشترط WHERE أن تكون حالته done."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اربط معرّف الموضوع بمرجعه، وضع شرط الجلسة في ON إن أردت إبقاء كل موضوعات اليسار."
+    },
+    {
+      "id": "sql-06",
+      "title": "مشروع: أعدّ تقرير الدراسة من جدولين",
+      "summary": "أجمع الترشيح والربط والتجميع والترتيب في تقرير يوضح الجلسات المكتملة لكل موضوع.",
+      "why": "يجب أن يوضح التقرير ما قاسه، وأن يميّز بين عدم وجود جلسات وغياب قيم الدقائق.",
+      "objectives": [
+        "أنتج صفًا لكل موضوع حتى إذا لم تكتمل أي جلسة له.",
+        "أختبر التعادل والحالة التي لا تسجل فيها دقائق."
+      ],
+      "minutes": "35–50",
+      "skillIds": [
+        "sql.report"
+      ],
+      "sections": [
+        {
+          "heading": "عقد التقرير: جرب قبل الاطلاع على المرجع",
+          "body": "استعمل نفس قاعدة الدرس الأول. اكتب استعلامًا يعرض ثلاثة أعمدة بالترتيب: name، ثم done_count لعدد الجلسات المكتملة، ثم total_minutes لمجموع دقائقها المسجلة. استبعد الجلسات المخططة من العدد والمجموع وأبقِ كل الموضوعات. رتّب الموضوعات بدءًا بالأكثر دقائق، وعند التعادل قدّم الاسم الأبجدي حسب الأسماء الإنجليزية في القاعدة. ضع مجموع الدقائق المفقود بعد كل القيم المعلومة. في عينة التدريب، يبدأ الناتج بصف SQL وينتهي بصف Notes."
+        },
+        {
+          "heading": "ثلاث حالات دون خلط",
+          "body": "ابدأ من topics واربط الجلسات المكتملة بواسطة LEFT JOIN. استخدم COUNT(s.id) لأن المعرّف موجود لكل جلسة فعلية، بخلاف الصف غير المطابق؛ COUNT(*) سيعد ذلك الصف. استخدم SUM(s.minutes) للدقائق المسجلة؛ إذا كان العدد صفرًا فاعرض مجموعًا 0، وإذا وُجدت جلسات مكتملة وكل دقائقها مفقودة فأبقِ المجموع NULL. يطبق CASE WHEN ... THEN ... ELSE ... END هاتين القاعدتين. في SQLite يأتي NULL بعد القيم المعلومة عند ترتيب العمود تنازليًا."
+        },
+        {
+          "heading": "اختبر التقرير دون تعديل بيانات التدريب الأصلية",
+          "body": "ابدأ بالعينة، ثم افتح قاعدة تدريب جديدة، أعد تشغيل كتلة الإعداد، وأضف جلسة مكتملة مدتها 10 دقائق لموضوع Review باستخدام أمر التجربة الأول أسفل المثال. يجب أن يتعادل مع Web عند 30، ويأتي Review قبل Web. نفّذ تجربة مستقلة في قاعدة جديدة باستخدام أمر التجربة الثاني: أعطِ Notes جلسة مكتملة بدقائق مفقودة؛ يجب أن يكون العدد 1 والمجموع NULL. اذكر في تقريرك أن المجاميع لا تشمل دقائق غير مسجلة أو جلسات مخططة، وأنها لا تقيس جودة التعلم."
+        },
+        {
+          "heading": "جسر اختياري لمن يعرف Python",
+          "body": "يمكن لبرنامج Python استخدام sqlite3 لإرسال نفس استعلام SELECT ثم قراءة الصفوف. المثال الأخير يعمل بقاعدة ذاكرة صغيرة مستقلة ويطبّق الفكرة نفسها على صفين فقط. لا تحتاج إلى Python لإكمال مسار SQL أو تسليم تقريره."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مرجع SQL: تقرير الجلسات المكتملة",
+          "language": "text",
+          "code": "SELECT t.name,\n       COUNT(s.id) AS done_count,\n       CASE WHEN COUNT(s.id) = 0 THEN 0\n            ELSE SUM(s.minutes)\n       END AS total_minutes\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nGROUP BY t.id, t.name\nORDER BY total_minutes DESC, t.name ASC;",
+          "explanation": "في عينة التدريب تظهر الصفوف (SQL, 3, 75)، (Web, 1, 30)، (Review, 1, 20)، (Notes, 0, 0). قارنها باستعلامك وفسّر الفرق بين عدد الجلسات ومجموع دقائقها."
+        },
+        {
+          "title": "تجربة 1: أنشئ تعادلًا في مجموع الدقائق",
+          "language": "text",
+          "code": "INSERT INTO sessions (id, topic_id, minutes, status) VALUES (8, 3, 10, 'done');",
+          "explanation": "شغّل هذا السطر في قاعدة تجريبية جديدة بعد الإعداد، ثم أعد تشغيل استعلام التقرير. يصبح الترتيب SQL ثم Review ثم Web ثم Notes."
+        },
+        {
+          "title": "تجربة 2: جلسة مكتملة بدقائق مفقودة",
+          "language": "text",
+          "code": "INSERT INTO sessions (id, topic_id, minutes, status) VALUES (8, 4, NULL, 'done');",
+          "explanation": "استخدم قاعدة مستقلة عن تجربة التعادل. بعد إضافة هذه الجلسة يصبح صف Notes (Notes, 1, NULL)."
+        },
+        {
+          "title": "اختياري: قراءة نتيجة SQL بواسطة Python",
+          "language": "python",
+          "code": "import sqlite3\nfrom contextlib import closing\n\nwith closing(sqlite3.connect(\":memory:\")) as db:\n    db.executescript(\"\"\"\n        CREATE TABLE sessions (id INTEGER PRIMARY KEY, status TEXT);\n        INSERT INTO sessions VALUES (1, 'done'), (2, 'planned');\n    \"\"\")\n    query = \"SELECT id FROM sessions WHERE status = ?\"\n    for (session_id,) in db.execute(query, (\"done\",)):\n        print(session_id)\n",
+          "explanation": "sqlite3 جزء من مكتبة Python القياسية. علامة ? موضع للقيمة التي يرسلها البرنامج منفصلة عن نص الاستعلام. النتيجة المطبوعة هي 1؛ قاعدة المثال مستقلة وتغلق بعد القراءة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-06-q1",
+          "prompt": "جرب التقرير على العينة. بعد SQL وWeb، ما اسم الموضوع الثالث؟ اختر الاسم كما يظهر في التقرير.",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "Notes"
+            },
+            {
+              "id": "2",
+              "text": "Review"
+            },
+            {
+              "id": "3",
+              "text": "Web"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "موضوع Review له 20 دقيقة مسجلة ويأتي بعد Web ذي 30 دقيقة وقبل Notes ذي صفر.",
+          "hints": [
+            "مجموع الدقائق هو معيار الترتيب الأول."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-06-q2",
+          "prompt": "في تجربة 2، لماذا يعطي التقرير (Notes, 1, NULL)؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "هناك جلسة مكتملة لكن لا توجد دقائق مسجلة لها."
+            },
+            {
+              "id": "2",
+              "text": "ليست هناك جلسة مكتملة."
+            },
+            {
+              "id": "3",
+              "text": "الدقائق المسجلة تساوي صفرًا."
+            }
+          ],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "COUNT(s.id) يحسب الجلسة الفعلية، وSUM لا يجد قيمة دقائق في مجموعتها. فرع الصفر في CASE خاص بعدم وجود أي جلسة مكتملة.",
+          "hints": [
+            "يُعدّ معرّف الجلسة حتى عندما تكون دقائقها مفقودة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-06-q3",
+          "prompt": "افترض أنك أضفت جلسة مخططة فقط لموضوع Notes مدتها 90 دقيقة كما في التجربة: INSERT INTO sessions VALUES (8, 4, 90, 'planned'); بعد إعداد قاعدة جديدة. ما مجموع Notes في التقرير؟ اكتب رقمًا فقط.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "شرط done داخل ON يستبعد الجلسة المخططة ويُبقي الموضوع. عدد الجلسات المكتملة صفر، فيرجع CASE مجموعًا يساوي 0.",
+          "hints": [
+            "وجود صف في sessions لا يعني أنه يطابق شروط التقرير."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "التقرير الجيد يبيّن سبب وجود كل صف، وما دخل في الحساب، وكيف يختلف الصفر عن قيمة غير مسجلة."
+    }
+  ],
+  "skills": [
+    {
+      "id": "sql.select",
+      "title": "أقرأ أعمدة من جدول باستخدام SELECT",
+      "description": "أميّز بين الجدول والصف والعمود، وأعرض أعمدة أختارها من قاعدة SQLite تجريبية.",
+      "required": null,
+      "recommended": []
+    },
+    {
+      "id": "sql.filter",
+      "title": "أرشّح الجلسات باستخدام WHERE",
+      "description": "أكتب شروطًا على النص والأعداد وأفحص NULL بطريقة صحيحة.",
+      "required": {
+        "skill": "sql.select"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sql.sort",
+      "title": "أرتّب النتائج وأتعامل مع التعادل",
+      "description": "أرتّب الجلسات حسب الدقائق وأختار عددًا محدودًا من النتائج بترتيب محدد.",
+      "required": {
+        "skill": "sql.filter"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sql.group",
+      "title": "ألخّص الجلسات حسب الموضوع",
+      "description": "أحسب عدد الجلسات ومجموع دقائقها لكل موضوع باستخدام GROUP BY.",
+      "required": {
+        "skill": "sql.sort"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sql.join",
+      "title": "أربط الجلسات بالموضوعات وأحافظ على الصفوف غير المطابقة",
+      "description": "أستخدم JOIN لقراءة اسم الموضوع وLEFT JOIN لإبقاء موضوع بلا جلسة مطابقة.",
+      "required": {
+        "skill": "sql.group"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sql.report",
+      "title": "مشروع: أعدّ تقرير الدراسة من جدولين",
+      "description": "أجمع الترشيح والربط والتجميع والترتيب في تقرير يوضح الجلسات المكتملة لكل موضوع.",
+      "required": {
+        "skill": "sql.join"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "sql-01",
+      "title": "أقرأ أعمدة من جدول باستخدام SELECT",
+      "why": "اختيار الأعمدة اللازمة أولًا يجعل السؤال واضحًا ويسهّل فحص النتيجة.",
+      "skillIds": [
+        "sql.select"
+      ]
+    },
+    {
+      "id": "sql-02",
+      "title": "أرشّح الجلسات باستخدام WHERE",
+      "why": "تحتاج الإجابة عن سؤال مثل الجلسات المكتملة الطويلة إلى تحديد الصفوف المؤهلة قبل عرضها.",
+      "skillIds": [
+        "sql.filter"
+      ]
+    },
+    {
+      "id": "sql-03",
+      "title": "أرتّب النتائج وأتعامل مع التعادل",
+      "why": "عند أخذ أعلى النتائج، طريقة ترتيب الصفوف المتعادلة تحدد أيها يظهر ضمن الحد.",
+      "skillIds": [
+        "sql.sort"
+      ]
+    },
+    {
+      "id": "sql-04",
+      "title": "ألخّص الجلسات حسب الموضوع",
+      "why": "صف واحد لكل موضوع يجيب عن سؤال يخص المجموعة كلها دون إخفاء الفرق بين العدّ والجمع.",
+      "skillIds": [
+        "sql.group"
+      ]
+    },
+    {
+      "id": "sql-05",
+      "title": "أربط الجلسات بالموضوعات وأحافظ على الصفوف غير المطابقة",
+      "why": "ربط المعرفات يضيف الاسم إلى التقرير، واختيار نوع الربط يحدد هل تبقى الموضوعات التي ليس لها سجل مؤهل.",
+      "skillIds": [
+        "sql.join"
+      ]
+    },
+    {
+      "id": "sql-06",
+      "title": "مشروع: أعدّ تقرير الدراسة من جدولين",
+      "why": "يجب أن يوضح التقرير ما قاسه، وأن يميّز بين عدم وجود جلسات وغياب قيم الدقائق.",
+      "skillIds": [
+        "sql.report"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "معرّف الصف",
+      "technical": "Primary key",
+      "definition": "عمود أو مجموعة أعمدة تعرّف صفًا واحدًا في الجدول بصورة فريدة."
+    },
+    {
+      "term": "مفتاح مرجعي",
+      "technical": "Foreign key",
+      "definition": "عمود أو مجموعة أعمدة تشير إلى مفتاح في جدول مرتبط."
+    },
+    {
+      "term": "قيمة مفقودة",
+      "technical": "NULL",
+      "definition": "علامة على أن قيمة غير متاحة أو غير مسجلة؛ ليست صفرًا ولا نصًا فارغًا."
+    },
+    {
+      "term": "ربط يحافظ على اليسار",
+      "technical": "LEFT JOIN",
+      "definition": "ربط يحتفظ بصفوف المصدر الأيسر حتى عند غياب مطابقة في المصدر الأيمن."
+    }
+  ],
+  "labs": [],
+  "project": {
+    "id": "sql-study-report",
+    "title": "تقرير جلسات الدراسة من SQLite",
+    "lessonId": "sql-06",
+    "summary": "اكتب استعلامًا لتقرير الموضوعات بالعدد والمجموع مستخدمًا بيانات خيالية، وجرّبه على التعادل والقيم المفقودة.",
+    "criteria": [
+      "إرجاع صف لكل موضوع مع الاسم وعدد الجلسات المكتملة ومجموع دقائقها المسجلة.",
+      "إبقاء الموضوعات بلا جلسات مكتملة، واستبعاد الجلسات المخططة، والتمييز بين 0 وNULL حسب العقد.",
+      "ترتيب التقرير بالمجموع تنازليًا ثم الاسم تصاعديًا، وعرض المقادير المفقودة بعد القيم المعلومة.",
+      "مقارنة التقرير مع العينة وتجربتي التعادل والدقائق المفقودة، وذكر حدود البيانات الخيالية."
+    ]
+  },
+  "exampleChecks": [
+    {
+      "lessonId": "sql-06",
+      "index": 3,
+      "input": "",
+      "output": "1\n"
+    }
+  ],
+  "sqlSetup": "CREATE TABLE topics (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL UNIQUE\n);\n\nCREATE TABLE sessions (\n  id INTEGER PRIMARY KEY,\n  topic_id INTEGER NOT NULL REFERENCES topics(id),\n  minutes INTEGER CHECK (minutes >= 0),\n  status TEXT NOT NULL CHECK (status IN ('done', 'planned'))\n);\n\nINSERT INTO topics (id, name) VALUES\n  (1, 'SQL'), (2, 'Web'), (3, 'Review'), (4, 'Notes');\n\nINSERT INTO sessions (id, topic_id, minutes, status) VALUES\n  (1, 1, 20, 'done'),\n  (2, 2, 30, 'done'),\n  (3, 1, 35, 'done'),\n  (4, 2, 15, 'planned'),\n  (5, 3, 20, 'done'),\n  (6, 3, NULL, 'planned'),\n  (7, 1, 20, 'done');",
+  "sqlChecks": [
+    {
+      "id": "sql-01-example-2",
+      "lessonId": "sql-01",
+      "query": "SELECT minutes, id\nFROM sessions\nORDER BY id;",
+      "expectedRows": [
+        [
+          20,
+          1
+        ],
+        [
+          30,
+          2
+        ],
+        [
+          35,
+          3
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          20,
+          5
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          20,
+          7
+        ]
+      ],
+      "index": 1
+    },
+    {
+      "id": "sql-01-exercise-name-id",
+      "lessonId": "sql-01",
+      "query": "SELECT name, id FROM topics ORDER BY id;",
+      "expectedRows": [
+        [
+          "SQL",
+          1
+        ],
+        [
+          "Web",
+          2
+        ],
+        [
+          "Review",
+          3
+        ],
+        [
+          "Notes",
+          4
+        ]
+      ]
+    },
+    {
+      "id": "sql-02-example-1",
+      "lessonId": "sql-02",
+      "query": "SELECT id, minutes\nFROM sessions\nWHERE status = 'done' AND minutes >= 30\nORDER BY id;",
+      "expectedRows": [
+        [
+          2,
+          30
+        ],
+        [
+          3,
+          35
+        ]
+      ],
+      "index": 0
+    },
+    {
+      "id": "sql-02-exercise-null",
+      "lessonId": "sql-02",
+      "query": "SELECT id FROM sessions WHERE minutes IS NULL ORDER BY id;",
+      "expectedRows": [
+        [
+          6
+        ]
+      ]
+    },
+    {
+      "id": "sql-02-exercise-strict-boundary",
+      "lessonId": "sql-02",
+      "query": "SELECT id FROM sessions WHERE status = 'done' AND minutes > 20 ORDER BY id;",
+      "expectedRows": [
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ]
+    },
+    {
+      "id": "sql-02-exercise-or",
+      "lessonId": "sql-02",
+      "query": "SELECT id FROM sessions WHERE status = 'planned' OR minutes >= 30 ORDER BY id;",
+      "expectedRows": [
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ]
+      ]
+    },
+    {
+      "id": "sql-03-example-1",
+      "lessonId": "sql-03",
+      "query": "SELECT id, minutes\nFROM sessions\nWHERE status = 'done'\nORDER BY minutes DESC, id ASC\nLIMIT 3;",
+      "expectedRows": [
+        [
+          3,
+          35
+        ],
+        [
+          2,
+          30
+        ],
+        [
+          1,
+          20
+        ]
+      ],
+      "index": 0
+    },
+    {
+      "id": "sql-03-exercise-reverse-tie",
+      "lessonId": "sql-03",
+      "query": "SELECT id FROM sessions WHERE status = 'done' ORDER BY minutes DESC, id DESC LIMIT 3;",
+      "expectedRows": [
+        [
+          3
+        ],
+        [
+          2
+        ],
+        [
+          7
+        ]
+      ]
+    },
+    {
+      "id": "sql-03-exercise-shortest",
+      "lessonId": "sql-03",
+      "query": "SELECT id FROM sessions WHERE status = 'done' ORDER BY minutes ASC, id ASC LIMIT 2;",
+      "expectedRows": [
+        [
+          1
+        ],
+        [
+          5
+        ]
+      ]
+    },
+    {
+      "id": "sql-04-example-1",
+      "lessonId": "sql-04",
+      "query": "SELECT topic_id, COUNT(*) AS session_count,\n       SUM(minutes) AS total_minutes\nFROM sessions\nWHERE status = 'done'\nGROUP BY topic_id\nORDER BY topic_id;",
+      "expectedRows": [
+        [
+          1,
+          3,
+          75
+        ],
+        [
+          2,
+          1,
+          30
+        ],
+        [
+          3,
+          1,
+          20
+        ]
+      ],
+      "index": 0
+    },
+    {
+      "id": "sql-04-exercise-count-null",
+      "lessonId": "sql-04",
+      "query": "SELECT COUNT(*), COUNT(minutes) FROM sessions WHERE topic_id = 3;",
+      "expectedRows": [
+        [
+          2,
+          1
+        ]
+      ]
+    },
+    {
+      "id": "sql-04-exercise-sum-null",
+      "lessonId": "sql-04",
+      "query": "SELECT topic_id, SUM(minutes) FROM sessions WHERE status = 'planned' GROUP BY topic_id ORDER BY topic_id;",
+      "expectedRows": [
+        [
+          2,
+          15
+        ],
+        [
+          3,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "sql-05-example-1",
+      "lessonId": "sql-05",
+      "query": "SELECT s.id, t.name\nFROM sessions AS s\nJOIN topics AS t ON t.id = s.topic_id\nWHERE s.status = 'done'\nORDER BY s.id;",
+      "expectedRows": [
+        [
+          1,
+          "SQL"
+        ],
+        [
+          2,
+          "Web"
+        ],
+        [
+          3,
+          "SQL"
+        ],
+        [
+          5,
+          "Review"
+        ],
+        [
+          7,
+          "SQL"
+        ]
+      ],
+      "index": 0
+    },
+    {
+      "id": "sql-05-example-2",
+      "lessonId": "sql-05",
+      "query": "SELECT t.name, s.id\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nORDER BY t.id, s.id;",
+      "expectedRows": [
+        [
+          "SQL",
+          1
+        ],
+        [
+          "SQL",
+          3
+        ],
+        [
+          "SQL",
+          7
+        ],
+        [
+          "Web",
+          2
+        ],
+        [
+          "Review",
+          5
+        ],
+        [
+          "Notes",
+          null
+        ]
+      ],
+      "index": 1
+    },
+    {
+      "id": "sql-05-exercise-filter-after-left-join",
+      "lessonId": "sql-05",
+      "query": "SELECT t.name, s.id FROM topics AS t LEFT JOIN sessions AS s ON t.id = s.topic_id WHERE s.status = 'done' ORDER BY t.id, s.id;",
+      "expectedRows": [
+        [
+          "SQL",
+          1
+        ],
+        [
+          "SQL",
+          3
+        ],
+        [
+          "SQL",
+          7
+        ],
+        [
+          "Web",
+          2
+        ],
+        [
+          "Review",
+          5
+        ]
+      ]
+    },
+    {
+      "id": "sql-06-example-1",
+      "lessonId": "sql-06",
+      "query": "SELECT t.name,\n       COUNT(s.id) AS done_count,\n       CASE WHEN COUNT(s.id) = 0 THEN 0\n            ELSE SUM(s.minutes)\n       END AS total_minutes\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nGROUP BY t.id, t.name\nORDER BY total_minutes DESC, t.name ASC;",
+      "expectedRows": [
+        [
+          "SQL",
+          3,
+          75
+        ],
+        [
+          "Web",
+          1,
+          30
+        ],
+        [
+          "Review",
+          1,
+          20
+        ],
+        [
+          "Notes",
+          0,
+          0
+        ]
+      ],
+      "index": 0
+    },
+    {
+      "id": "sql-06-report-tie",
+      "lessonId": "sql-06",
+      "query": "SELECT t.name,\n       COUNT(s.id) AS done_count,\n       CASE WHEN COUNT(s.id) = 0 THEN 0\n            ELSE SUM(s.minutes)\n       END AS total_minutes\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nGROUP BY t.id, t.name\nORDER BY total_minutes DESC, t.name ASC;",
+      "expectedRows": [
+        [
+          "SQL",
+          3,
+          75
+        ],
+        [
+          "Review",
+          2,
+          30
+        ],
+        [
+          "Web",
+          1,
+          30
+        ],
+        [
+          "Notes",
+          0,
+          0
+        ]
+      ],
+      "setupSql": "INSERT INTO sessions (id, topic_id, minutes, status) VALUES (8, 3, 10, 'done');"
+    },
+    {
+      "id": "sql-06-report-missing-minutes",
+      "lessonId": "sql-06",
+      "query": "SELECT t.name,\n       COUNT(s.id) AS done_count,\n       CASE WHEN COUNT(s.id) = 0 THEN 0\n            ELSE SUM(s.minutes)\n       END AS total_minutes\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nGROUP BY t.id, t.name\nORDER BY total_minutes DESC, t.name ASC;",
+      "expectedRows": [
+        [
+          "SQL",
+          3,
+          75
+        ],
+        [
+          "Web",
+          1,
+          30
+        ],
+        [
+          "Review",
+          1,
+          20
+        ],
+        [
+          "Notes",
+          1,
+          null
+        ]
+      ],
+      "setupSql": "INSERT INTO sessions (id, topic_id, minutes, status) VALUES (8, 4, NULL, 'done');"
+    },
+    {
+      "id": "sql-06-report-planned-only",
+      "lessonId": "sql-06",
+      "query": "SELECT t.name,\n       COUNT(s.id) AS done_count,\n       CASE WHEN COUNT(s.id) = 0 THEN 0\n            ELSE SUM(s.minutes)\n       END AS total_minutes\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nGROUP BY t.id, t.name\nORDER BY total_minutes DESC, t.name ASC;",
+      "expectedRows": [
+        [
+          "SQL",
+          3,
+          75
+        ],
+        [
+          "Web",
+          1,
+          30
+        ],
+        [
+          "Review",
+          1,
+          20
+        ],
+        [
+          "Notes",
+          0,
+          0
+        ]
+      ],
+      "setupSql": "INSERT INTO sessions (id, topic_id, minutes, status) VALUES (8, 4, 90, 'planned');"
+    },
+    {
+      "id": "sql-06-report-no-completed-sessions",
+      "lessonId": "sql-06",
+      "query": "SELECT t.name,\n       COUNT(s.id) AS done_count,\n       CASE WHEN COUNT(s.id) = 0 THEN 0\n            ELSE SUM(s.minutes)\n       END AS total_minutes\nFROM topics AS t\nLEFT JOIN sessions AS s\n  ON t.id = s.topic_id AND s.status = 'done'\nGROUP BY t.id, t.name\nORDER BY total_minutes DESC, t.name ASC;",
+      "expectedRows": [
+        [
+          "Notes",
+          0,
+          0
+        ],
+        [
+          "Review",
+          0,
+          0
+        ],
+        [
+          "SQL",
+          0,
+          0
+        ],
+        [
+          "Web",
+          0,
+          0
+        ]
+      ],
+      "setupSql": "DELETE FROM sessions WHERE status = 'done';"
+    }
+  ]
+}

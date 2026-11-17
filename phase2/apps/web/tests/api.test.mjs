@@ -10,6 +10,25 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 const scope = (userId = 'account-a', signal = new AbortController().signal) => ({ userId, signal });
 const account = (id) => ({ user: { id, userName: id, displayName: id, role: 'Learner' } });
 
+test('public app mounts send catalogue requests and downloads to their own path', async t => {
+  const originalWindow = globalThis.window;
+  t.after(() => { globalThis.window = originalWindow; });
+  const urls = [];
+  t.mock.method(globalThis, 'fetch', async url => { urls.push(url); return json({}); });
+  const cases = [
+    ['/nexora-commercial/', '/nexora-commercial'],
+    ['/nexora-pilot/', '/nexora-pilot'],
+    ['/nexora-commercial-preview/', ''],
+  ];
+  for (const [pathname, prefix] of cases) {
+    globalThis.window = { location: { pathname } };
+    const mounted = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}#${pathname}`);
+    await mounted.request('/catalog');
+    assert.equal(urls.at(-1), `${prefix}/api/v1/catalog`);
+    assert.equal(mounted.applicationPath('/projects/web-starter-v1.zip'), `${prefix}/projects/web-starter-v1.zip`);
+  }
+});
+
 function responses(t, ...values) {
   const calls = [];
   t.mock.method(globalThis, 'fetch', async (url, options) => {

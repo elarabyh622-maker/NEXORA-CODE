@@ -100,30 +100,40 @@ public static class Content
                 description = Input.String(goal["description"]),
                 status = Input.String(goal["status"]),
                 skillIds = (goal["skillIds"] as JsonArray ?? []).Select(Input.String).ToArray()
-            });
+            }).ToArray();
             var catalog = new Dictionary<string, object?>
             {
                 ["releases"] = rows.Select(row => row.Release), ["goals"] = goals,
                 ["activeReleaseId"] = active.Release?.releaseId, ["accessRequired"] = commercial.Required
             };
             if (commercial.ContactUrl is not null) catalog["contactUrl"] = commercial.ContactUrl;
+            if (commercial.Required)
+            {
+                var offeredGoals = goals.Where(goal => goal.status == "sample").Select(goal => goal.id)
+                    .ToHashSet(StringComparer.Ordinal);
+                catalog["offers"] = (await CommercialAccess.ReadOffers(conn, ct))
+                    .Where(offer => offeredGoals.Contains(offer.GoalId)).ToArray();
+            }
             return Results.Ok(catalog);
         });
 
-        app.MapGet("/api/v1/content/{releaseId}", async (string releaseId, Db db, CancellationToken ct) =>
+        app.MapGet("/api/v1/content/{releaseId}", async (string releaseId, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var release = await Find(conn, releaseId, ct);
-            var clean = PublicBundle(release.Bundle);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            var clean = CommercialLearning.ProjectContent(PublicBundle(release.Bundle), access, release);
             return Results.Ok(new { release.Id, release.ReleaseId, release.Title, release.Status, sample = clean["sample"], graph = clean["graph"] });
-        });
-        app.MapGet("/api/v1/content/{releaseId}/lessons/{lessonId}", async (string releaseId, string lessonId, Db db, CancellationToken ct) =>
+        }).WithMetadata(new ScopedCommercialEndpoint());
+        app.MapGet("/api/v1/content/{releaseId}/lessons/{lessonId}", async (string releaseId, string lessonId, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var release = await Find(conn, releaseId, ct);
+            lessonId = Input.Id(lessonId);
+            CommercialLearning.RequireLesson(await CommercialAccess.ReadEntitlements(ctx, db, ct), release, lessonId);
             var safe = release with { Bundle = PublicBundle(release.Bundle) };
-            return Results.Ok(Lesson(safe, Input.Id(lessonId)));
-        });
+            return Results.Ok(Lesson(safe, lessonId));
+        }).WithMetadata(new ScopedCommercialEndpoint());
         app.MapGet("/api/v1/admin/releases", async (Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);

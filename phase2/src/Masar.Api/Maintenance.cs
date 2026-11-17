@@ -118,8 +118,21 @@ public static class Maintenance
             ["python"] = [.. LessonRange("core", 12), .. LessonRange("py", 12)],
             ["web"] = [.. LessonRange("core", 12), .. LessonRange("web", 12)]
         };
-        if (release == "phase7-ar-v1") paths.Add("data-analysis", [.. paths["python"], .. LessonRange("data", 8)]);
-        else if (release != "phase4-ar-v1") throw new MigrationFailure("unsupported_reviewed_curriculum");
+        if (release is "phase7-ar-v1" or "phase8-ar-v1")
+            paths.Add("data-analysis", [.. paths["python"], .. LessonRange("data", 8)]);
+        if (release == "phase8-ar-v1")
+        {
+            paths.Add("sql", LessonRange("sql", 6));
+            paths.Add("web-data", [.. paths["web"], .. LessonRange("web-data", 5)]);
+            paths.Add("git-workshop", [.. paths["python"], .. LessonRange("git", 5)]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "git-workshop", ["web.lesson12"]), LessonRange("git", 5));
+            VerifyPlan(CurriculumEngine.Plan(bundle, "git-workshop", ["py.automation"]), LessonRange("git", 5));
+            var workshopLessons = paths["git-workshop"].ToHashSet(StringComparer.Ordinal);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "git-workshop", ["web.lesson11"], allowedLessonIds: workshopLessons),
+                paths["git-workshop"]);
+        }
+        else if (release is not ("phase4-ar-v1" or "phase7-ar-v1"))
+            throw new MigrationFailure("unsupported_reviewed_curriculum");
 
         var exercises = Content.Lessons(bundle).SelectMany(Content.Exercises).ToArray();
         foreach (var exercise in exercises)
@@ -134,13 +147,15 @@ public static class Maintenance
                 throw new MigrationFailure("curriculum_grade_check_failed");
         }
         foreach (var (goal, expected) in paths)
-        {
-            var plan = CurriculumEngine.Plan(bundle, goal);
-            var actual = plan["steps"]!.AsArray().Select(step => Input.String(step?["lessonId"]));
-            if (!actual.SequenceEqual(expected, StringComparer.Ordinal) || plan["uncoveredSkillIds"]!.AsArray().Count != 0)
-                throw new MigrationFailure("curriculum_plan_check_failed");
-        }
+            VerifyPlan(CurriculumEngine.Plan(bundle, goal), expected);
         Console.WriteLine($"Curriculum checked: {Content.Lessons(bundle).Count()} lessons, {exercises.Length} graded exercises, {paths.Count} complete learning paths.");
+    }
+
+    private static void VerifyPlan(JsonObject plan, IEnumerable<string> expected)
+    {
+        var actual = plan["steps"]!.AsArray().Select(step => Input.String(step?["lessonId"]));
+        if (!actual.SequenceEqual(expected, StringComparer.Ordinal) || plan["uncoveredSkillIds"]!.AsArray().Count != 0)
+            throw new MigrationFailure("curriculum_plan_check_failed");
     }
 
     private static string[] LessonRange(string prefix, int count) =>
@@ -152,7 +167,7 @@ public static class Maintenance
         var releaseId = Input.String(bundle["sample"]?["releaseId"]);
         if (reviewedHash is not null)
         {
-            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1") || hash != reviewedHash.ToLowerInvariant())
+            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1" or "phase8-ar-v1") || hash != reviewedHash.ToLowerInvariant())
                 throw new MigrationFailure("reviewed_curriculum_digest_mismatch");
             VerifyCurriculum(bundle);
         }
@@ -196,7 +211,12 @@ public static class Maintenance
     {
         var active = await Db.Scalar<string>(conn, tx, "SELECT value FROM public.settings WHERE key='active_release_id'");
         if (active == releaseId && status == "published") return;
-        var requiredPredecessor = releaseId == "phase7-ar-v1" ? "phase4-ar-v1" : "phase1-ar-v1";
+        var requiredPredecessor = releaseId switch
+        {
+            "phase8-ar-v1" => "phase7-ar-v1",
+            "phase7-ar-v1" => "phase4-ar-v1",
+            _ => "phase1-ar-v1"
+        };
         if (active != requiredPredecessor || status is not ("draft" or "published"))
             throw new MigrationFailure("unexpected_local_release_state");
         if (status == "draft")

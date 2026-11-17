@@ -142,8 +142,6 @@ details { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 16
 summary { color: var(--brand); cursor: pointer; min-height: 44px; padding-block: 8px; }
 details .plan-step { padding: 14px 0; border: 0; border-top: 1px solid var(--border); border-radius: 0; }
 .history { margin-top: 28px; }
-.release-picker { margin-bottom: 24px; }
-.release-picker > .muted { margin-block: 8px 16px; }
 .revision-list .actions { margin: 0; }
 .revision-list { list-style: none; padding: 0; margin: 8px 0 0; }
 .revision-list li { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding-block: 18px; border-bottom: 1px solid var(--border); }

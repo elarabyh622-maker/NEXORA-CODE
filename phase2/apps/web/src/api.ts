@@ -9,9 +9,12 @@ type Csrf = { token: string; userId: string | null };
 type RequestOptions = { method?: string; body?: unknown; signal?: AbortSignal; scope?: SessionScope };
 export const SESSION_INVALIDATED = 'masar:session-invalidated';
 export const ACCESS_INVALIDATED = 'masar:access-invalidated';
-const API = typeof window !== 'undefined' && window.location.pathname.startsWith('/nexora-pilot/')
-  ? '/nexora-pilot/api/v1'
-  : '/api/v1';
+export function applicationPath(path: string) {
+  const pathname = typeof window === 'undefined' ? '' : window.location?.pathname ?? '';
+  const mount = ['/nexora-pilot', '/nexora-commercial'].find(base => pathname === base || pathname.startsWith(`${base}/`));
+  return `${mount ?? ''}${path}`;
+}
+const API = applicationPath('/api/v1');
 const fallback: Record<number, string> = {
   400: 'راجع البيانات المدخلة ثم حاول مجددًا.',
   401: 'يلزم تسجيل الدخول، أو انتهت جلستك. سجّل الدخول ثم أعد المحاولة.',

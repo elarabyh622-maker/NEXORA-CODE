@@ -16,8 +16,8 @@ export function PlanSteps({ plan, content, currentRelease }: { plan: Plan; conte
   </>;
 }
 
-export function PlanPage({ content, releaseId, user, scope, onRelease, refreshProgress, initialGoal }: { content: Content | null; releaseId: string; user: User | null; scope: SessionScope; onRelease: (id: string) => void; refreshProgress: number; initialGoal?: string }) {
-  const goals = content?.graph.goals ?? [];
+export function PlanPage({ content, releaseId, user, scope, onRelease, refreshProgress, initialGoal, allowedGoalIds }: { content: Content | null; releaseId: string; user: User | null; scope: SessionScope; onRelease: (id: string) => void; refreshProgress: number; initialGoal?: string; allowedGoalIds?: string[] }) {
+  const goals = content?.graph.goals.filter(goal => !allowedGoalIds || allowedGoalIds.includes(goal.id)) ?? [];
   const [goalId, setGoalId] = useState(goals.find(goal => goal.id === initialGoal)?.id ?? goals[0]?.id ?? '');
   const [preview, setPreview] = useState<Plan | null>(null);
   const [busy, setBusy] = useState(false);
@@ -32,7 +32,7 @@ export function PlanPage({ content, releaseId, user, scope, onRelease, refreshPr
   const [previewTick, setPreviewTick] = useState(0);
   useEffect(() => {
     setPreview(null); setError(''); setNotice('');
-    if (!goalId || !content) return;
+    if (!goalId || !content || (allowedGoalIds && !allowedGoalIds.includes(goalId))) return;
     const controller = new AbortController();
     const active = () => !controller.signal.aborted && !scope.signal.aborted;
     setBusy(true);
@@ -40,7 +40,7 @@ export function PlanPage({ content, releaseId, user, scope, onRelease, refreshPr
       .then(plan => { if (active()) setPreview(plan); })
       .catch(cause => { if (active()) setError(errorText(cause)); }).finally(() => { if (active()) setBusy(false); });
     return () => controller.abort();
-  }, [releaseId, goalId, scope, content, refreshProgress, previewTick]);
+  }, [releaseId, goalId, scope, content, refreshProgress, previewTick, allowedGoalIds]);
   async function save() {
     if (!user || !preview || current.loading || current.error) return;
     setBusy(true); setError(''); setNotice('');

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ApiError, errorText, request, segment, type SessionScope } from './api';
+import { ApiError, applicationPath, errorText, request, segment, type SessionScope } from './api';
 import { CodeLab } from './CodeLab';
 import { useResource } from './hooks';
 import { planLink } from './lessonLinks';
@@ -114,7 +114,7 @@ export function Lesson({ releaseId, lessonId, goalParam, user, scope, language, 
       {project && <section className="lesson-section objectives" aria-label="المشروع التطبيقي">
         <h2>{project.title}</h2><p>{project.summary}</p>
         <ul>{project.criteria.map(criterion => <li key={criterion}>{criterion}</li>)}</ul>
-        {project.download && <div className="actions"><a className="btn" href={project.download} download>نزّل ملفات البداية</a></div>}
+        {project.download && <div className="actions"><a className="btn" href={applicationPath(project.download)} download>نزّل ملفات البداية</a></div>}
       </section>}
       <section className="exercise-list"><h2>الآن دورك</h2><p className="muted">فكر وتتبع الخطوات. بعد إرسال الإجابة، يصححها النظام ويحفظ المحاولة في حسابك.</p>{lesson.exercises.map(exercise => <Exercise key={`${user?.id ?? 'guest'}/${releaseId}/${exercise.id}`} {...{ exercise, releaseId, lessonId, user, scope, store, onAttempt }} />)}</section>
       <CodeLab {...{ releaseId, lessonId, goalParam, user, scope, language, store, onAttempt }} />

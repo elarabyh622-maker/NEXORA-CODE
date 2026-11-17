@@ -1,7 +1,12 @@
 export type User = { id: string; userName: string; displayName: string; role: string };
 export type Goal = { id: string; title: string; description: string; status: string; skillIds: string[] };
 export type Release = { id: string; releaseId: string; title: string; status: string; version?: number };
-export type Catalog = { releases: Release[]; goals: Goal[]; activeReleaseId: string | null; accessRequired?: boolean; contactUrl?: string | null };
+export type CommercialOffer = { goalId: string; price: number; currency: string };
+export type CommercialEntitlement = { required: boolean; active: boolean; goalIds?: string[]; lessonIds?: string[] };
+export type CommercialTarget = { id: string; title: string };
+export type CommercialTargets = { goals: CommercialTarget[]; lessons: CommercialTarget[] };
+export type CommercialAccount = { userName: string; displayName: string; fullAccess: boolean; goalIds: string[]; lessonIds: string[] };
+export type Catalog = { releases: Release[]; goals: Goal[]; activeReleaseId: string | null; accessRequired?: boolean; contactUrl?: string | null; offers?: CommercialOffer[] };
 export type Exercise = { id: string; type: 'choice' | 'text'; prompt: string; options: { id: string; text: string }[]; hints: string[]; independent: boolean };
 export type Lesson = { id: string; title: string; summary: string; why: string; minutes: string; skillIds: string[]; objectives: string[];
   sections: { heading: string; body: string; language?: string }[];

@@ -1,0 +1,832 @@
+{
+  "lessons": [
+    {
+      "id": "web-data-01",
+      "title": "أجلب قائمة من JSON",
+      "summary": "أطلب بيانات الكتالوج عبر fetch وأقرأ مصفوفة المنتجات من جسم الاستجابة.",
+      "why": "تصبح القائمة قابلة للتحديث من ملف بيانات مستقل عن HTML.",
+      "objectives": [
+        "أميز مسار الطلب ورمز الاستجابة وجسمها.",
+        "أستخدم await مرتين لقراءة البيانات."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "web-data.fetch"
+      ],
+      "sections": [
+        {
+          "heading": "الطلب والاستجابة",
+          "body": "يرسل المتصفح طلب GET للمسار /products.json. تعيد الاستجابة رمز حالة وجسمًا. نتفق في هذا المسار على جسم JSON من الشكل {\"items\": [{\"name\": \"دفتر\", \"category\": \"قرطاسية\"}]}. تعني items: [] أن القائمة فارغة."
+        },
+        {
+          "heading": "قراءة JSON",
+          "body": "يُرجع fetch وعدًا يصل إلى كائن Response. بعدها يعيد response.json() وعدًا يصل إلى قيمة JavaScript عندما ينتهي تحليل الجسم. داخل دالة async انتظر النتيجتين بـ await. عند استعمال fetch في المتصفح، دع الخادم المحلي يقدّم الصفحة وملف JSON من الأصل نفسه."
+        },
+        {
+          "heading": "بديل محلي قابل للتكرار",
+          "body": "نمرر إلى العميل دالة request لها واجهة fetch. في المثال تستدعي الدالة JSON.parse على نص محفوظ في الذاكرة وتعيد وعدًا من دون شبكة. يمكن استبدال request بدالة المتصفح fetch عند تقديم ملف JSON عبر الخادم المحلي في المشروع."
+        }
+      ],
+      "examples": [
+        {
+          "title": "جلب الأسماء من استجابة في الذاكرة",
+          "language": "javascript",
+          "code": "async function readNames(request) {\n  const response = await request(\"/products.json\");\n  const body = await response.json();\n  return body.items.map(item => item.name);\n}\n\nasync function mockFetch(path) {\n  if (path !== \"/products.json\") throw new Error(\"مسار غير مدعوم في المثال\");\n  return { status: 200, ok: true, json: async () => JSON.parse('{\"items\":[{\"name\":\"دفتر\",\"category\":\"قرطاسية\"}]}') };\n}\n\nreadNames(mockFetch).then(names => console.log(names.join(\"، \")));\n",
+          "explanation": "تقرأ الدالة مصفوفة الأسماء من الاستجابة المحلية كما ستقرأها من fetch عند تشغيل الكتالوج."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "web-data-01-q1",
+          "prompt": "أين تجد أسماء المنتجات بعد تنفيذ await response.json()؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "داخل رابط الطلب"
+            },
+            {
+              "id": "b",
+              "text": "داخل status"
+            },
+            {
+              "id": "c",
+              "text": "داخل items, أي مصفوفة العناصر في الجسم"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "items حقل متفق عليه في جسم الاستجابة.",
+          "hints": [
+            "حدد ما يعود من json().",
+            "راجع بنية الحقول داخل الجسم."
+          ],
+          "independent": true
+        },
+        {
+          "id": "web-data-01-q2",
+          "prompt": "أي ترتيب يجلب JSON من /products.json؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "أنتظر fetch ثم أنتظر response.json()"
+            },
+            {
+              "id": "b",
+              "text": "أستدعي json() على الرابط أولًا"
+            },
+            {
+              "id": "c",
+              "text": "أقرأ items من fetch مباشرة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يجلب fetch الاستجابة، ثم يحلل json() الجسم.",
+          "hints": [
+            "كل خطوة تعيد وعدًا.",
+            "حصلنا على response بعد أول await."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أطلب بيانات الكتالوج عبر fetch وأقرأ مصفوفة المنتجات من جسم الاستجابة."
+    },
+    {
+      "id": "web-data-02",
+      "title": "أميز أخطاء الطلب والجسم",
+      "summary": "أفحص response.ok قبل قراءة JSON وأميز بين فشل الاتصال وخطأ HTTP وبيانات غير صالحة.",
+      "why": "تتغير رسالة المستخدم وطريقة المعالجة بحسب مكان الفشل.",
+      "objectives": [
+        "أصنف حالة HTTP من خلال ok وstatus.",
+        "أحدد أين أستخدم try وcatch لتمييز أنواع الفشل."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "web-data.errors"
+      ],
+      "sections": [
+        {
+          "heading": "رمز HTTP",
+          "body": "تعني response.ok أن الرمز بين 200 و299. قد يصل Response برمز 404 أو 503 ويظل وعد fetch محققًا. افحص ok أولًا وخذ status من الاستجابة لتمييز رمز الخطأ."
+        },
+        {
+          "heading": "أين فشل المسار؟",
+          "body": "إذا تعذر الوصول للخادم، فقد يرفض fetch الوعد قبل الحصول على Response. إذا نجح HTTP فقد يفشل response.json() لأن الجسم لا يطابق صيغة JSON. يمكن لفحص Array.isArray بعد التحليل اكتشاف JSON صالح بصيغة لا يتوقعها الكتالوج."
+        },
+        {
+          "heading": "رموز للتدريب",
+          "body": "يعيد عميل التدريب network إذا رفض الطلب، وhttp:CODE عند HTTP غير ناجح، وdata إذا تعذر التحليل أو غابت مصفوفة items، وok:N عند نجاح قراءة N عنصر. مثال المشروع يتحقق أيضًا من حقول كل منتج."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ثلاث استجابات مختلفة",
+          "language": "javascript",
+          "code": "async function classify(request) {\n  let response;\n  try {\n    response = await request(\"/products.json\");\n  } catch {\n    return \"network\";\n  }\n  if (!response.ok) return \"http:\" + response.status;\n\n  try {\n    const body = await response.json();\n    if (!Array.isArray(body?.items)) return \"data\";\n    return \"ok:\" + body.items.length;\n  } catch {\n    return \"data\";\n  }\n}\n\nasync function run() {\n  console.log(await classify(async () => { throw new Error(\"offline\"); }));\n  console.log(await classify(async () => ({ ok: false, status: 503 })));\n  console.log(await classify(async () => ({ ok: true, json: async () => JSON.parse(\"broken\") })));\n}\nrun();\n",
+          "explanation": "يوقف فحص HTTP المسار مبكرًا، لذلك يكفي أن يوفر بديل 503 رمز الحالة دون دالة json."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "web-data-02-q1",
+          "prompt": "جاءت استجابة 503 والجسم يحتوي JSON سليمًا. أي فرع يعمل أولًا؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "فرع HTTP لأن response.ok تساوي false"
+            },
+            {
+              "id": "b",
+              "text": "فرع البيانات لأن الجسم له نص"
+            },
+            {
+              "id": "c",
+              "text": "فرع الشبكة لأن كل 503 يرفض fetch"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "503 استجابة فعلية وفحص الحالة يسبق قراءة الجسم.",
+          "hints": [
+            "هل حصل المتصفح على Response؟",
+            "افحص ok عند وجود الاستجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "web-data-02-q2",
+          "prompt": "الرمز 200 والجسم {items: []} بلا علامات اقتباس حول المفتاح. ما النتيجة؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "خطأ اتصال لأن الجسم فيه أقواس"
+            },
+            {
+              "id": "b",
+              "text": "خطأ بيانات لأن المفتاح في JSON يحتاج علامات اقتباس"
+            },
+            {
+              "id": "c",
+              "text": "قائمة فارغة لأن الرمز 200"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "حالة HTTP سليمة لكن تحليل JSON يفشل.",
+          "hints": [
+            "افصل الرمز عن صلاحية الجسم.",
+            "راجع صياغة مفتاح JSON."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أفحص response.ok قبل قراءة JSON وأميز بين فشل الاتصال وخطأ HTTP وبيانات غير صالحة."
+    },
+    {
+      "id": "web-data-03",
+      "title": "أعرض حالات التحميل والنتائج",
+      "summary": "أعرض حالة مفهومة أثناء التحميل وعند النجاح أو الفراغ أو الفشل.",
+      "why": "تبقى الصفحة مفهومة حتى عند بطء الاستجابة أو غياب المنتجات.",
+      "objectives": [
+        "أحدث رسالة التحميل قبل انتظار الوعد.",
+        "أميز قائمة فارغة عن خطأ في الطلب."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "web-data.states"
+      ],
+      "sections": [
+        {
+          "heading": "حالة واحدة في كل لحظة",
+          "body": "عند بدء الطلب اعرض جارٍ تحميل المنتجات… وامنع تشغيل الطلب الثاني أثناء الأول. بعد اكتمال الطلب اعرض العناصر أو رسالة القائمة الفارغة أو رسالة خطأ. أعد تفعيل أدوات الواجهة عند نهاية التحميل."
+        },
+        {
+          "heading": "من المنطق إلى الصفحة",
+          "body": "دالة viewState تستقبل loading وerror وعناصر items. التحميل له الأولوية، ثم الخطأ، ثم الفراغ عندما يكون طول القائمة صفرًا. تضبط دالة العرض textContent لمنطقة حالة تحمل role=\"status\" حتى يعلن قارئ الشاشة التحديث من دون نقل التركيز."
+        },
+        {
+          "heading": "جرب إعادة المحاولة",
+          "body": "اعرض رسالة خطأ مع زر إعادة التحميل. أفرغ العناصر السابقة عند بدء طلب جديد حتى تعبر النتائج عن الطلب الحالي. نفّذ فرع empty بعد نجاح الطلب أو بعد تطبيق المرشح على نتيجة ناجحة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مسار الحالات",
+          "language": "javascript",
+          "code": "function viewState({ loading, error, items }) {\n  if (loading) return \"loading\";\n  if (error) return \"error\";\n  if (items.length === 0) return \"empty\";\n  return \"ready\";\n}\n\nconsole.log(viewState({ loading: true, error: true, items: [] }));\nconsole.log(viewState({ loading: false, error: true, items: [] }));\nconsole.log(viewState({ loading: false, error: false, items: [] }));\nconsole.log(viewState({ loading: false, error: false, items: [{ name: \"دفتر\" }] }));\n",
+          "explanation": "تحميل ثم خطأ ثم قائمة فارغة ثم قائمة جاهزة. يختار كل استدعاء حالة واحدة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "web-data-03-q1",
+          "prompt": "بدأ طلب جديد ومصفوفة العرض حاليًا فارغة. أي رسالة تظهر قبل اكتماله؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "لا توجد منتجات"
+            },
+            {
+              "id": "b",
+              "text": "جارٍ تحميل المنتجات"
+            },
+            {
+              "id": "c",
+              "text": "تعذّر الاتصال"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يمثل التحميل العمل الجاري حتى تصل نتيجة الطلب.",
+          "hints": [
+            "هل اكتمل الطلب؟",
+            "راجع أولوية الحالات."
+          ],
+          "independent": true
+        },
+        {
+          "id": "web-data-03-q2",
+          "prompt": "نجح الطلب وأعاد items فارغة. ما الحالة؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "loading"
+            },
+            {
+              "id": "b",
+              "text": "error"
+            },
+            {
+              "id": "c",
+              "text": "empty"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "القائمة الفارغة نتيجة ناجحة بلا عناصر.",
+          "hints": [
+            "هل وصل جسم صالح؟",
+            "احسب طول القائمة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أعرض حالة مفهومة أثناء التحميل وعند النجاح أو الفراغ أو الفشل."
+    },
+    {
+      "id": "web-data-04",
+      "title": "أبحث وأرشح بالفئة",
+      "summary": "أطبق البحث والفئة معًا على البيانات الأصلية مع الحفاظ على ترتيب النتائج.",
+      "why": "يسمح الكتالوج بتضييق النتائج وتوسيعها فورًا بعد جلب القائمة.",
+      "objectives": [
+        "أوحّد صيغة البحث بإزالة مسافات الطرفين وتوحيد حالة الحروف.",
+        "أجمع شرط الاسم وشرط الفئة داخل filter."
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "web-data.filters"
+      ],
+      "sections": [
+        {
+          "heading": "أصل واحد ونتائج متعددة",
+          "body": "احتفظ بمصفوفة items كما وصلت. مع كل حدث input للبحث أو change لاختيار الفئة، استدع دالة الترشيح على items الأصلية. يحافظ filter على ترتيب العناصر ويتاح البحث مجددًا بعد مسح الحقل."
+        },
+        {
+          "heading": "المطابقة",
+          "body": "نزيل مسافات طرفي query بـ trim ونوحّد حالة الحروف بـ toLowerCase في الاسم وكلمة البحث، ثم نبحث بجزء الاسم باستخدام includes. مطابقة الفئة حرفية، وقيمة الفئة الفارغة تعني جميع الفئات. نستخدم && لأن على المنتج اجتياز الشرطين."
+        },
+        {
+          "heading": "صفر مطابقات",
+          "body": "إذا لم يجد البحث نتائج وأصل القائمة ممتلئ، اعرض لا توجد نتائج تطابق البحث. إذا كان أصل القائمة فارغًا، اعرض الكتالوج فارغ. تستفيد الحالتان من نتيجة empty مع رسالتين حسب طول مصفوفة المصدر."
+        }
+      ],
+      "examples": [
+        {
+          "title": "بحث وفئة في الوقت نفسه",
+          "language": "javascript",
+          "code": "function filterItems(items, query, category) {\n  const needle = query.trim().toLowerCase();\n  return items.filter(item => {\n    const matchesName = item.name.toLowerCase().includes(needle);\n    const matchesCategory = category === \"\" || item.category === category;\n    return matchesName && matchesCategory;\n  });\n}\n\nconst items = [\n  { name: \"دفتر A5\", category: \"قرطاسية\" },\n  { name: \"ملف A5\", category: \"أدوات\" },\n  { name: \"دفتر كبير\", category: \"قرطاسية\" },\n];\nconsole.log(filterItems(items, \"  a5 \", \"قرطاسية\").map(item => item.name).join(\",\"));\nconsole.log(filterItems(items, \"\", \"\").length);\n",
+          "explanation": "يطابق a5 جزءًا من اسمين، لكن الفئة تبقي عنصرًا واحدًا. مسح المرشحين يعيد كل العناصر."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "web-data-04-q1",
+          "prompt": "الاسم يطابق البحث لكن الفئة مختلفة. ماذا يفعل الترشيح؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "يعدل فئته"
+            },
+            {
+              "id": "b",
+              "text": "يبقيه لأن شرط الاسم يكفي"
+            },
+            {
+              "id": "c",
+              "text": "يستبعد المنتج لأن الشرطين مطلوبان"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "&& تتطلب تحقق المطابقتين.",
+          "hints": [
+            "ركز على عامل &&.",
+            "شرط الفئة مستقل عن شرط الاسم."
+          ],
+          "independent": true
+        },
+        {
+          "id": "web-data-04-q2",
+          "prompt": "بحث المستخدم عن كلمة لا تطابق أي منتج ثم مسحها. أي مصفوفة نمررها إلى filter؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "المصفوفة الأصلية"
+            },
+            {
+              "id": "b",
+              "text": "المصفوفة الفارغة من البحث السابق"
+            },
+            {
+              "id": "c",
+              "text": "عناصر DOM المعروضة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "تمرير الأصل يسمح باستعادة النتائج عند توسيع البحث.",
+          "hints": [
+            "مسح البحث قد يزيد النتائج.",
+            "هل تحتوي المصفوفة الفارغة على العناصر لاستعادتها؟"
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أطبق البحث والفئة معًا على البيانات الأصلية مع الحفاظ على ترتيب النتائج."
+    },
+    {
+      "id": "web-data-05",
+      "title": "مشروع كتالوج منتجات محلي",
+      "summary": "أبني صفحة عربية تحمل منتجات من JSON وتعرض حالات الطلب ونتائج البحث والترشيح.",
+      "why": "يجمع المشروع الاتصال وعرض الحالات وأحداث الإدخال في صفحة واحدة قابلة للاختبار.",
+      "objectives": [
+        "أوصل fetch أو بديله بنفس عميل الكتالوج.",
+        "أعرض النتائج في DOM وأتحقق من كل مسار مستخدم."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "web-data.catalogue"
+      ],
+      "sections": [
+        {
+          "heading": "جهّز ملفات المشروع",
+          "body": "أنشئ مجلدًا وأضف إليه index.html وproducts.json وapp.js. انسخ محتوى الأمثلة الثلاثة إلى الملفات المطابقة. افتح index.html مباشرة لتجربة البيانات المحاكية. لا يحتاج الوضع الافتراضي إلى اتصال."
+        },
+        {
+          "heading": "جرّب HTTP المحلي",
+          "body": "من مجلد المشروع شغّل python -m http.server 8000 --bind 127.0.0.1 ثم افتح http://127.0.0.1:8000. اختر «ملف JSON عبر HTTP» واضغط «حمّل المنتجات». يستدعي العميل fetch الحقيقي ويطلب /products.json من الخادم الذي قدم الصفحة. راقب طلب GET ورمز 200 في تبويب Network في أدوات المطور. جرّب إعادة تسمية products.json مؤقتًا وأعد التحميل لتلاحظ 404، ثم أعد الاسم. أوقف الخادم المحلي بـ Ctrl+C بعد التمرين."
+        },
+        {
+          "heading": "اختبر حالات الواجهة",
+          "body": "اختر البيانات المحاكية واضغط الزر لترى حالة التحميل، ثم ابحث عن a5 واختر «قرطاسية» لتجد دفتر A5 وحده. جرّب بحثًا بعيدًا ثم امسحه لتعود النتائج. اختبر «قائمة فارغة» ورسائل HTTP والاتصال والجسم الفاسد، ثم استعد البيانات المحاكية. راقب نص الحالة والنتائج في كل خطوة."
+        },
+        {
+          "heading": "أعد استخدام الدوال",
+          "body": "يتحقق loadCatalogue من الاستجابة ويحسب render النتائج باستخدام filterItems وviewState. قارنها بأمثلة الدروس السابقة. تستخدم الواجهة textContent لعرض الأسماء القادمة من البيانات. اكتب في المختبر الجزء الذي يجلب ويحصر النتائج في دالة report لتختبره دون متصفح."
+        }
+      ],
+      "examples": [
+        {
+          "title": "احفظ باسم index.html",
+          "language": "text",
+          "code": "<!doctype html>\n<html lang=\"ar\" dir=\"rtl\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>كتالوج المنتجات</title>\n  <style>\n    body { max-width: 42rem; margin: 2rem auto; padding-inline: 1rem; font-family: system-ui, sans-serif; }\n    .control { display: grid; gap: .35rem; margin-block: 1rem; }\n    input, select, button { font: inherit; padding: .5rem; }\n    input:focus-visible, select:focus-visible, button:focus-visible { outline: 3px solid #175a80; }\n    li { padding-block: .25rem; }\n  </style>\n</head>\n<body>\n  <main>\n    <h1>كتالوج المنتجات</h1>\n    <div class=\"control\">\n      <label for=\"source\">مصدر البيانات</label>\n      <select id=\"source\">\n        <option value=\"sample\">بيانات محاكية</option>\n        <option value=\"file\">ملف JSON عبر HTTP</option>\n        <option value=\"empty\">قائمة فارغة</option>\n        <option value=\"http\">خطأ HTTP</option>\n        <option value=\"network\">تعذر الاتصال</option>\n        <option value=\"data\">جسم JSON فاسد</option>\n      </select>\n    </div>\n    <button id=\"load\" type=\"button\">حمّل المنتجات</button>\n    <div class=\"control\">\n      <label for=\"query\">البحث بالاسم</label>\n      <input id=\"query\" type=\"search\">\n    </div>\n    <div class=\"control\">\n      <label for=\"category\">الفئة</label>\n      <select id=\"category\"><option value=\"\">كل الفئات</option></select>\n    </div>\n    <p id=\"status\" role=\"status\"></p>\n    <ul id=\"items\"></ul>\n  </main>\n  <script src=\"app.js\"></script>\n</body>\n</html>\n",
+          "explanation": "اربط أدوات الإدخال بالملف app.js، واحتفظ بمنطقة الحالة لرسائل التحميل والنتائج."
+        },
+        {
+          "title": "احفظ باسم products.json",
+          "language": "text",
+          "code": "{\n  \"items\": [\n    {\n      \"name\": \"دفتر A5\",\n      \"category\": \"قرطاسية\"\n    },\n    {\n      \"name\": \"قلم حبر\",\n      \"category\": \"قرطاسية\"\n    },\n    {\n      \"name\": \"كوب\",\n      \"category\": \"أدوات\"\n    },\n    {\n      \"name\": \"ملف A5\",\n      \"category\": \"أدوات\"\n    }\n  ]\n}\n",
+          "explanation": "تقدم نسخة الملف هذه البيانات نفسها التي يستخدمها البديل المحاكي."
+        },
+        {
+          "title": "احفظ باسم app.js",
+          "language": "javascript",
+          "code": "async function loadCatalogue(request) {\n  let response;\n  try {\n    response = await request(\"/products.json\");\n  } catch {\n    return { error: \"تعذر الاتصال بالخادم.\", items: [] };\n  }\n  if (!response.ok) {\n    return { error: \"خطأ HTTP (\" + response.status + \").\", items: [] };\n  }\n  try {\n    const body = await response.json();\n    if (!Array.isArray(body?.items) || !body.items.every(item =>\n      item && typeof item.name === \"string\" && item.name.trim() !== \"\" &&\n      typeof item.category === \"string\" && item.category.trim() !== \"\"\n    )) {\n      return { error: \"بيانات المنتجات غير صالحة.\", items: [] };\n    }\n    return { error: \"\", items: body.items };\n  } catch {\n    return { error: \"تعذر قراءة JSON.\", items: [] };\n  }\n}\n\nfunction viewState({ loading, error, items }) {\n  if (loading) return \"loading\";\n  if (error) return \"error\";\n  if (items.length === 0) return \"empty\";\n  return \"ready\";\n}\n\nfunction filterItems(items, query, category) {\n  const needle = query.trim().toLowerCase();\n  return items.filter(item => {\n    const matchesName = item.name.toLowerCase().includes(needle);\n    const matchesCategory = category === \"\" || item.category === category;\n    return matchesName && matchesCategory;\n  });\n}\n\nconst seed = [\n  {\n    \"name\": \"دفتر A5\",\n    \"category\": \"قرطاسية\"\n  },\n  {\n    \"name\": \"قلم حبر\",\n    \"category\": \"قرطاسية\"\n  },\n  {\n    \"name\": \"كوب\",\n    \"category\": \"أدوات\"\n  },\n  {\n    \"name\": \"ملف A5\",\n    \"category\": \"أدوات\"\n  }\n];\n\nfunction makeMock(mode, delay = 0) {\n  return async function mockFetch(path) {\n    if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay));\n    if (mode === \"network\") throw new Error(\"offline\");\n    if (path !== \"/products.json\" || mode === \"http\") {\n      return { status: 404, ok: false };\n    }\n    const body = mode === \"data\" ? \"{\" : JSON.stringify({ items: mode === \"empty\" ? [] : seed });\n    return { status: 200, ok: true, json: async () => JSON.parse(body) };\n  };\n}\n\nfunction startPage() {\n  const source = document.querySelector(\"#source\");\n  const query = document.querySelector(\"#query\");\n  const category = document.querySelector(\"#category\");\n  const button = document.querySelector(\"#load\");\n  const status = document.querySelector(\"#status\");\n  const list = document.querySelector(\"#items\");\n  let items = [];\n  let loading = false;\n  let error = \"\";\n\n  function render() {\n    const matches = filterItems(items, query.value, category.value);\n    const state = viewState({ loading, error, items: matches });\n    list.replaceChildren();\n    if (state === \"loading\") status.textContent = \"جارٍ تحميل المنتجات…\";\n    if (state === \"error\") status.textContent = error;\n    if (state === \"empty\") {\n      status.textContent = items.length === 0 ? \"الكتالوج فارغ.\" : \"لا توجد نتائج تطابق البحث.\";\n    }\n    if (state === \"ready\") {\n      status.textContent = \"عدد النتائج: \" + matches.length;\n      for (const item of matches) {\n        const row = document.createElement(\"li\");\n        row.textContent = item.name + \" | \" + item.category;\n        list.append(row);\n      }\n    }\n  }\n\n  async function reload() {\n    if (loading) return;\n    const request = source.value === \"file\" ? fetch : makeMock(source.value, 500);\n    loading = true;\n    items = [];\n    error = \"\";\n    source.disabled = query.disabled = category.disabled = button.disabled = true;\n    category.replaceChildren(new Option(\"كل الفئات\", \"\"));\n    render();\n\n    const result = await loadCatalogue(request);\n    items = result.items;\n    error = result.error;\n    for (const name of new Set(items.map(item => item.category))) {\n      category.add(new Option(name, name));\n    }\n    loading = false;\n    source.disabled = query.disabled = category.disabled = button.disabled = false;\n    render();\n  }\n\n  query.addEventListener(\"input\", render);\n  category.addEventListener(\"change\", render);\n  button.addEventListener(\"click\", reload);\n  reload();\n}\n\nasync function preview() {\n  const sample = await loadCatalogue(makeMock(\"sample\"));\n  const matches = filterItems(sample.items, \"a5\", \"قرطاسية\");\n  console.log(matches.map(item => item.name).join(\",\"));\n  const empty = await loadCatalogue(makeMock(\"empty\"));\n  console.log(viewState({ loading: false, ...empty }));\n  const missing = await loadCatalogue(makeMock(\"http\"));\n  console.log(missing.error);\n}\n\nif (typeof document === \"undefined\") {\n  preview();\n} else {\n  startPage();\n}\n",
+          "explanation": "مع المتصفح، تعرض الشيفرة الواجهة وتحمل البيانات المحاكية أولًا. في بيئة تشغيل المثال داخل المنهج، تختبر preview منطق العميل ببدائل محلية وتطبع نتيجة البحث وحالة الفراغ ورسالة HTTP."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "web-data-05-q1",
+          "prompt": "شغّلت «ملف JSON عبر HTTP» وقدّم الخادم /products.json برمز 404. ما نتيجة الصفحة؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "رسالة خطأ HTTP (404) وقائمة عرض فارغة"
+            },
+            {
+              "id": "b",
+              "text": "عرض البيانات المحاكية تلقائيًا"
+            },
+            {
+              "id": "c",
+              "text": "رسالة «الكتالوج فارغ»"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "عميل الصفحة يعرض خطأ HTTP ويُفرغ نتائج العرض أثناء بدء تحميل جديد.",
+          "hints": [
+            "حدد مصدر البيانات المختار.",
+            "راجع كيفية معالجة الرمز غير الناجح."
+          ],
+          "independent": true
+        },
+        {
+          "id": "web-data-05-q2",
+          "prompt": "بعد اختيار «قرطاسية» وكتابة a5، أي ناتج تعيده دالة الترشيح مع البيانات المرفقة؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "دفتر A5 وملف A5"
+            },
+            {
+              "id": "b",
+              "text": "دفتر A5 فقط"
+            },
+            {
+              "id": "c",
+              "text": "دفتر A5 وقلم حبر"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "دفتر A5 يطابق النص والفئة. ملف A5 من «أدوات» وقلم حبر لا يطابق النص.",
+          "hints": [
+            "شغّل الشرطين على كل اسم.",
+            "افحص فئة ملف A5."
+          ],
+          "independent": true
+        },
+        {
+          "id": "web-data-05-q3",
+          "prompt": "أي خاصية تستعملها لكي يظهر اسم المنتج كنص داخل عنصر li؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "a",
+              "text": "href"
+            },
+            {
+              "id": "b",
+              "text": "innerHTML"
+            },
+            {
+              "id": "c",
+              "text": "textContent"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تضع textContent الاسم كنص ظاهر، بما فيه رموز HTML إن وجدت.",
+          "hints": [
+            "الاسم قيمة نصية من JSON.",
+            "أي خاصية تعامل العلامات كنص؟"
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أبني صفحة عربية تحمل منتجات من JSON وتعرض حالات الطلب ونتائج البحث والترشيح."
+    }
+  ],
+  "skills": [
+    {
+      "id": "web-data.fetch",
+      "title": "أجلب قائمة من JSON",
+      "description": "أطلب بيانات الكتالوج عبر fetch وأقرأ مصفوفة المنتجات من جسم الاستجابة.",
+      "required": {
+        "skill": "web.lesson12"
+      },
+      "recommended": []
+    },
+    {
+      "id": "web-data.errors",
+      "title": "أميز أخطاء الطلب والجسم",
+      "description": "أفحص response.ok قبل قراءة JSON وأميز بين فشل الاتصال وخطأ HTTP وبيانات غير صالحة.",
+      "required": {
+        "skill": "web-data.fetch"
+      },
+      "recommended": []
+    },
+    {
+      "id": "web-data.states",
+      "title": "أعرض حالات التحميل والنتائج",
+      "description": "أعرض حالة مفهومة أثناء التحميل وعند النجاح أو الفراغ أو الفشل.",
+      "required": {
+        "skill": "web-data.errors"
+      },
+      "recommended": []
+    },
+    {
+      "id": "web-data.filters",
+      "title": "أبحث وأرشح بالفئة",
+      "description": "أطبق البحث والفئة معًا على البيانات الأصلية مع الحفاظ على ترتيب النتائج.",
+      "required": {
+        "skill": "web-data.states"
+      },
+      "recommended": []
+    },
+    {
+      "id": "web-data.catalogue",
+      "title": "مشروع كتالوج منتجات محلي",
+      "description": "أبني صفحة عربية تحمل منتجات من JSON وتعرض حالات الطلب ونتائج البحث والترشيح.",
+      "required": {
+        "skill": "web-data.filters"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "web-data-01",
+      "title": "أجلب قائمة من JSON",
+      "why": "تصبح القائمة قابلة للتحديث من ملف بيانات مستقل عن HTML.",
+      "skillIds": [
+        "web-data.fetch"
+      ]
+    },
+    {
+      "id": "web-data-02",
+      "title": "أميز أخطاء الطلب والجسم",
+      "why": "تتغير رسالة المستخدم وطريقة المعالجة بحسب مكان الفشل.",
+      "skillIds": [
+        "web-data.errors"
+      ]
+    },
+    {
+      "id": "web-data-03",
+      "title": "أعرض حالات التحميل والنتائج",
+      "why": "تبقى الصفحة مفهومة حتى عند بطء الاستجابة أو غياب المنتجات.",
+      "skillIds": [
+        "web-data.states"
+      ]
+    },
+    {
+      "id": "web-data-04",
+      "title": "أبحث وأرشح بالفئة",
+      "why": "يسمح الكتالوج بتضييق النتائج وتوسيعها فورًا بعد جلب القائمة.",
+      "skillIds": [
+        "web-data.filters"
+      ]
+    },
+    {
+      "id": "web-data-05",
+      "title": "مشروع كتالوج منتجات محلي",
+      "why": "يجمع المشروع الاتصال وعرض الحالات وأحداث الإدخال في صفحة واحدة قابلة للاختبار.",
+      "skillIds": [
+        "web-data.catalogue"
+      ]
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "web-data-01",
+      "id": "web-data-01-lab",
+      "language": "javascript",
+      "title": "عدد المنتجات من جسم استجابة",
+      "prompt": "تقرأ دالة mockFetch جسم JSON صالحًا من stdin. استدعها بالمسار /products.json داخل دالة async، ثم اقرأ JSON واطبع عدد عناصر items كسطر واحد. يضمن الإدخال وجود items كمصفوفة.",
+      "starterCode": "const input = require(\"fs\").readFileSync(0, \"utf8\");\n\nasync function mockFetch(path) {\n  if (path !== \"/products.json\") throw new Error(\"مسار غير مدعوم في المختبر\");\n  return { status: 200, ok: true, json: async () => JSON.parse(input) };\n}\n\nasync function run() {\n  // اطلب الاستجابة ثم اطبع عدد العناصر\n}\n\nrun();\n",
+      "sampleInput": "{\"items\":[{\"name\":\"دفتر\"}]}\n",
+      "sampleOutput": "1\n",
+      "skillId": "web-data.fetch",
+      "hiddenTests": [
+        {
+          "input": "{\"items\":[]}\n",
+          "expectedOutput": "0\n"
+        },
+        {
+          "input": "{\"items\":[{\"name\":\"كوب\"},{\"name\":\"قلم\"},{\"name\":\"كوب\"}]}\n",
+          "expectedOutput": "3\n"
+        }
+      ],
+      "solution": "const input = require(\"fs\").readFileSync(0, \"utf8\");\n\nasync function mockFetch(path) {\n  if (path !== \"/products.json\") throw new Error(\"مسار غير مدعوم في المختبر\");\n  return { status: 200, ok: true, json: async () => JSON.parse(input) };\n}\n\nasync function run() {\n  const response = await mockFetch(\"/products.json\");\n  const { items } = await response.json();\n  console.log(items.length);\n}\n\nrun();\n"
+    },
+    {
+      "lessonId": "web-data-02",
+      "id": "web-data-02-lab",
+      "language": "javascript",
+      "title": "شخّص الاستجابة",
+      "prompt": "اقرأ كائن JSON من stdin فيه fail (قيمة منطقية) وstatus (عدد صحيح) وbody (سلسلة تمثل جسم الاستجابة). أكمل classify لطباعة سطر من العقد السابق: network، أو http:CODE، أو data، أو ok:N.",
+      "starterCode": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst { fail, status, body } = JSON.parse(input);\n\nasync function request() {\n  if (fail) throw new Error(\"offline\");\n  return { status, ok: status >= 200 && status <= 299, json: async () => JSON.parse(body) };\n}\n\nasync function classify(request) {\n  // افحص الطلب ثم الجسم\n}\n\nclassify(request).then(result => console.log(result));\n",
+      "sampleInput": "{\"fail\":false,\"status\":200,\"body\":\"{\\\"items\\\":[{}]}\"}\n",
+      "sampleOutput": "ok:1\n",
+      "skillId": "web-data.errors",
+      "hiddenTests": [
+        {
+          "input": "{\"fail\":true,\"status\":200,\"body\":\"bad\"}\n",
+          "expectedOutput": "network\n"
+        },
+        {
+          "input": "{\"fail\":false,\"status\":404,\"body\":\"bad\"}\n",
+          "expectedOutput": "http:404\n"
+        },
+        {
+          "input": "{\"fail\":false,\"status\":200,\"body\":\"bad\"}\n",
+          "expectedOutput": "data\n"
+        }
+      ],
+      "solution": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst { fail, status, body } = JSON.parse(input);\n\nasync function request() {\n  if (fail) throw new Error(\"offline\");\n  return { status, ok: status >= 200 && status <= 299, json: async () => JSON.parse(body) };\n}\n\nasync function classify(request) {\n  let response;\n  try {\n    response = await request(\"/products.json\");\n  } catch {\n    return \"network\";\n  }\n  if (!response.ok) return \"http:\" + response.status;\n\n  try {\n    const body = await response.json();\n    if (!Array.isArray(body?.items)) return \"data\";\n    return \"ok:\" + body.items.length;\n  } catch {\n    return \"data\";\n  }\n}\n\nclassify(request).then(result => console.log(result));\n"
+    },
+    {
+      "lessonId": "web-data-03",
+      "id": "web-data-03-lab",
+      "language": "javascript",
+      "title": "حدد حالة القائمة",
+      "prompt": "اقرأ كائن JSON من stdin فيه loading وerror بقيم منطقية وitems كمصفوفة. اطبع loading إذا كانت loading صحيحة، ثم error إذا كانت error صحيحة، ثم empty إذا لا عناصر، وإلا ready.",
+      "starterCode": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst state = JSON.parse(input);\n\nfunction viewState(state) {\n  // أعد اسم حالة واحدة\n}\n\nconsole.log(viewState(state));\n",
+      "sampleInput": "{\"loading\":true,\"error\":false,\"items\":[]}\n",
+      "sampleOutput": "loading\n",
+      "skillId": "web-data.states",
+      "hiddenTests": [
+        {
+          "input": "{\"loading\":false,\"error\":true,\"items\":[1]}\n",
+          "expectedOutput": "error\n"
+        },
+        {
+          "input": "{\"loading\":false,\"error\":false,\"items\":[]}\n",
+          "expectedOutput": "empty\n"
+        },
+        {
+          "input": "{\"loading\":false,\"error\":false,\"items\":[1]}\n",
+          "expectedOutput": "ready\n"
+        }
+      ],
+      "solution": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst state = JSON.parse(input);\n\nfunction viewState({ loading, error, items }) {\n  if (loading) return \"loading\";\n  if (error) return \"error\";\n  if (items.length === 0) return \"empty\";\n  return \"ready\";\n}\n\nconsole.log(viewState(state));\n"
+    },
+    {
+      "lessonId": "web-data-04",
+      "id": "web-data-04-lab",
+      "language": "javascript",
+      "title": "أسماء نتائج المرشح",
+      "prompt": "اقرأ كائن JSON فيه items وquery وcategory. مفاتيح name وcategory في العناصر نصية. أزل مسافات طرفي query ووحّد حالة الحروف في الاسم وكلمة البحث. الفئة الفارغة تعني كل الفئات. أعد الأسماء المطابقة بالترتيب الأصلي واطبعها في سطر JSON بمساعدة JSON.stringify.",
+      "starterCode": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst { items, query, category } = JSON.parse(input);\n\nfunction filterItems(items, query, category) {\n  // أعد المنتجات التي تطابق الشرطين\n}\n\nconst names = filterItems(items, query, category).map(item => item.name);\nconsole.log(JSON.stringify(names));\n",
+      "sampleInput": "{\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\" a5 \",\"category\":\"قرطاسية\"}\n",
+      "sampleOutput": "[\"دفتر A5\"]\n",
+      "skillId": "web-data.filters",
+      "hiddenTests": [
+        {
+          "input": "{\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\"a5\",\"category\":\"\"}\n",
+          "expectedOutput": "[\"دفتر A5\",\"ملف A5\"]\n"
+        },
+        {
+          "input": "{\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\" \",\"category\":\"أدوات\"}\n",
+          "expectedOutput": "[\"كوب\",\"ملف A5\"]\n"
+        },
+        {
+          "input": "{\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\"كوب\",\"category\":\"قرطاسية\"}\n",
+          "expectedOutput": "[]\n"
+        }
+      ],
+      "solution": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst { items, query, category } = JSON.parse(input);\n\nfunction filterItems(items, query, category) {\n  const needle = query.trim().toLowerCase();\n  return items.filter(item => {\n    const matchesName = item.name.toLowerCase().includes(needle);\n    const matchesCategory = category === \"\" || item.category === category;\n    return matchesName && matchesCategory;\n  });\n}\n\nconst names = filterItems(items, query, category).map(item => item.name);\nconsole.log(JSON.stringify(names));\n"
+    },
+    {
+      "lessonId": "web-data-05",
+      "id": "web-data-05-lab",
+      "language": "javascript",
+      "title": "من الطلب إلى قائمة النتائج",
+      "prompt": "اقرأ من stdin كائن JSON فيه mode (ok أو network أو http أو data) وitems وquery وcategory. دالة request المحاكية والعميل ودوال العرض والترشيح جاهزة. أكمل report باستدعاء العميل: اطبع error عند أي خطأ، وempty عند نجاح الطلب مع صفر مطابقات، وإلا اطبع ready: متبوعًا بمصفوفة أسماء المطابقات بصيغة JSON على السطر نفسه. مرر query وcategory كما وردا إلى filterItems.",
+      "starterCode": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst { mode, items, query, category } = JSON.parse(input);\n\nasync function request() {\n  if (mode === \"network\") throw new Error(\"offline\");\n  if (mode === \"http\") return { ok: false, status: 503 };\n  const body = mode === \"data\" ? \"{\" : JSON.stringify({ items });\n  return { ok: true, status: 200, json: async () => JSON.parse(body) };\n}\n\nasync function loadCatalogue(request) {\n  let response;\n  try {\n    response = await request(\"/products.json\");\n  } catch {\n    return { error: \"تعذر الاتصال بالخادم.\", items: [] };\n  }\n  if (!response.ok) {\n    return { error: \"خطأ HTTP (\" + response.status + \").\", items: [] };\n  }\n  try {\n    const body = await response.json();\n    if (!Array.isArray(body?.items) || !body.items.every(item =>\n      item && typeof item.name === \"string\" && item.name.trim() !== \"\" &&\n      typeof item.category === \"string\" && item.category.trim() !== \"\"\n    )) {\n      return { error: \"بيانات المنتجات غير صالحة.\", items: [] };\n    }\n    return { error: \"\", items: body.items };\n  } catch {\n    return { error: \"تعذر قراءة JSON.\", items: [] };\n  }\n}\n\nfunction viewState({ loading, error, items }) {\n  if (loading) return \"loading\";\n  if (error) return \"error\";\n  if (items.length === 0) return \"empty\";\n  return \"ready\";\n}\n\nfunction filterItems(items, query, category) {\n  const needle = query.trim().toLowerCase();\n  return items.filter(item => {\n    const matchesName = item.name.toLowerCase().includes(needle);\n    const matchesCategory = category === \"\" || item.category === category;\n    return matchesName && matchesCategory;\n  });\n}\n\nasync function report(request, query, category) {\n  // اجلب البيانات ثم حدد النتيجة\n}\n\nreport(request, query, category).then(result => console.log(result));\n",
+      "sampleInput": "{\"mode\":\"ok\",\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\" A5 \",\"category\":\"قرطاسية\"}\n",
+      "sampleOutput": "ready:[\"دفتر A5\"]\n",
+      "skillId": "web-data.catalogue",
+      "hiddenTests": [
+        {
+          "input": "{\"mode\":\"ok\",\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\"a5\",\"category\":\"\"}\n",
+          "expectedOutput": "ready:[\"دفتر A5\",\"ملف A5\"]\n"
+        },
+        {
+          "input": "{\"mode\":\"ok\",\"items\":[],\"query\":\"\",\"category\":\"\"}\n",
+          "expectedOutput": "empty\n"
+        },
+        {
+          "input": "{\"mode\":\"http\",\"items\":[{\"name\":\"دفتر A5\",\"category\":\"قرطاسية\"},{\"name\":\"قلم حبر\",\"category\":\"قرطاسية\"},{\"name\":\"كوب\",\"category\":\"أدوات\"},{\"name\":\"ملف A5\",\"category\":\"أدوات\"}],\"query\":\"\",\"category\":\"\"}\n",
+          "expectedOutput": "error\n"
+        }
+      ],
+      "solution": "const input = require(\"fs\").readFileSync(0, \"utf8\");\nconst { mode, items, query, category } = JSON.parse(input);\n\nasync function request() {\n  if (mode === \"network\") throw new Error(\"offline\");\n  if (mode === \"http\") return { ok: false, status: 503 };\n  const body = mode === \"data\" ? \"{\" : JSON.stringify({ items });\n  return { ok: true, status: 200, json: async () => JSON.parse(body) };\n}\n\nasync function loadCatalogue(request) {\n  let response;\n  try {\n    response = await request(\"/products.json\");\n  } catch {\n    return { error: \"تعذر الاتصال بالخادم.\", items: [] };\n  }\n  if (!response.ok) {\n    return { error: \"خطأ HTTP (\" + response.status + \").\", items: [] };\n  }\n  try {\n    const body = await response.json();\n    if (!Array.isArray(body?.items) || !body.items.every(item =>\n      item && typeof item.name === \"string\" && item.name.trim() !== \"\" &&\n      typeof item.category === \"string\" && item.category.trim() !== \"\"\n    )) {\n      return { error: \"بيانات المنتجات غير صالحة.\", items: [] };\n    }\n    return { error: \"\", items: body.items };\n  } catch {\n    return { error: \"تعذر قراءة JSON.\", items: [] };\n  }\n}\n\nfunction viewState({ loading, error, items }) {\n  if (loading) return \"loading\";\n  if (error) return \"error\";\n  if (items.length === 0) return \"empty\";\n  return \"ready\";\n}\n\nfunction filterItems(items, query, category) {\n  const needle = query.trim().toLowerCase();\n  return items.filter(item => {\n    const matchesName = item.name.toLowerCase().includes(needle);\n    const matchesCategory = category === \"\" || item.category === category;\n    return matchesName && matchesCategory;\n  });\n}\n\nasync function report(request, query, category) {\n  const result = await loadCatalogue(request);\n  if (result.error) return \"error\";\n\n  const matches = filterItems(result.items, query, category);\n  const state = viewState({ loading: false, error: \"\", items: matches });\n  if (state === \"empty\") return \"empty\";\n  return \"ready:\" + JSON.stringify(matches.map(item => item.name));\n}\n\nreport(request, query, category).then(result => console.log(result));\n"
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "web-data-01",
+      "index": 0,
+      "input": "",
+      "output": "دفتر\n"
+    },
+    {
+      "lessonId": "web-data-02",
+      "index": 0,
+      "input": "",
+      "output": "network\nhttp:503\ndata\n"
+    },
+    {
+      "lessonId": "web-data-03",
+      "index": 0,
+      "input": "",
+      "output": "loading\nerror\nempty\nready\n"
+    },
+    {
+      "lessonId": "web-data-04",
+      "index": 0,
+      "input": "",
+      "output": "دفتر A5\n3\n"
+    },
+    {
+      "lessonId": "web-data-05",
+      "index": 2,
+      "input": "",
+      "output": "دفتر A5\nempty\nخطأ HTTP (404).\n"
+    }
+  ],
+  "track": {
+    "id": "web-data",
+    "title": "تطبيقات الويب والبيانات",
+    "lessonIds": [
+      "web-data-01",
+      "web-data-02",
+      "web-data-03",
+      "web-data-04",
+      "web-data-05"
+    ]
+  },
+  "goal": {
+    "id": "web-data",
+    "title": "تطبيقات الويب والبيانات",
+    "description": "اجلب بيانات JSON وعالج حالات الطلب ثم أنشئ كتالوجًا عربيًا يدعم البحث والترشيح.",
+    "status": "sample",
+    "skillIds": [
+      "web-data.fetch",
+      "web-data.errors",
+      "web-data.states",
+      "web-data.filters",
+      "web-data.catalogue"
+    ]
+  },
+  "project": {
+    "id": "web-data-catalogue",
+    "title": "كتالوج منتجات محلي",
+    "lessonId": "web-data-05",
+    "summary": "ابنِ كتالوجًا عربيًا قابلاً للبحث يعرض منتجات خيالية من ملف JSON محلي أو بديل قابل للتكرار.",
+    "criteria": [
+      "اعرض البيانات نفسها في الوضع المحاكي ووضع HTTP المحلي.",
+      "اعرض التحميل ثم النتائج أو الفراغ أو الخطأ، ومكّن إعادة التحميل بعد المحاولة.",
+      "طبّق بحث الاسم وترشيح الفئة معًا على البيانات الأصلية.",
+      "أظهر رسالة مختلفة حين تكون القائمة فارغة وحين ينتهي البحث بلا نتائج.",
+      "اربط أدوات التحكم بالتسميات واعرض الأسماء باستخدام textContent.",
+      "اختبر الطلب الناجح و404 والجسم الفاسد واستعادة النتائج بعد مسح المرشح."
+    ]
+  },
+  "glossary": [
+    {
+      "term": "واجهة الجلب",
+      "technical": "fetch",
+      "definition": "دالة تطلب موردًا وتعيد وعدًا يصل إلى كائن الاستجابة."
+    },
+    {
+      "term": "رمز حالة HTTP",
+      "technical": "HTTP status code",
+      "definition": "رقم في الاستجابة يصف نتيجة الطلب مثل 200 و404."
+    },
+    {
+      "term": "صيغة تبادل البيانات",
+      "technical": "JSON",
+      "definition": "ترميز نصي للكائنات والمصفوفات والقيم الأساسية."
+    },
+    {
+      "term": "البديل المحاكي",
+      "technical": "Mock",
+      "definition": "دالة قابلة للتكرار تحاكي استجابات الخدمة أثناء التعلّم والاختبار."
+    }
+  ]
+}

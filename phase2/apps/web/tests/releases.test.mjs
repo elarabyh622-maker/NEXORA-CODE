@@ -11,26 +11,20 @@ const published = { id: 'release-b-id', releaseId: 'release-b', title: 'الإص
 const retired = { id: 'release-a-id', releaseId: 'release-a', title: 'الإصدار المتقاعد', status: 'retired' };
 const catalog = (releases, activeReleaseId) => ({ releases, activeReleaseId, goals: [] });
 
-test('a published replacement without an active release must be selected explicitly', () => {
-  assert.deepEqual(catalogReleaseOptions(catalog([published], null), ''), {
-    published: [published], initialId: '', needsChoice: true,
+test('published content without an active release stays inactive for visitors', () => {
+  assert.deepEqual(catalogReleaseOptions(catalog([published], null)), {
+    published: [published], activeId: '',
   });
 });
 
 test('an activated published release opens automatically for a new visitor', () => {
-  assert.deepEqual(catalogReleaseOptions(catalog([published], published.releaseId), ''), {
-    published: [published], initialId: published.releaseId, needsChoice: false,
+  assert.deepEqual(catalogReleaseOptions(catalog([published], published.releaseId)), {
+    published: [published], activeId: published.releaseId,
   });
 });
 
-test('changing the default does not replace an explicitly selected release or historical plan', () => {
-  const options = catalogReleaseOptions(catalog([published], published.releaseId), retired.releaseId);
-  assert.equal(options.initialId, '');
-  assert.equal(options.needsChoice, false);
-});
-
-test('the chooser remains hidden when there is no published replacement', () => {
-  assert.deepEqual(catalogReleaseOptions(catalog([retired], null), ''), {
-    published: [], initialId: '', needsChoice: false,
+test('an invalid retired selection does not open retired content', () => {
+  assert.deepEqual(catalogReleaseOptions(catalog([published, retired], retired.releaseId)), {
+    published: [published], activeId: '',
   });
 });

@@ -1,13 +1,29 @@
 [CmdletBinding()]
-param()
+param(
+    [ValidateSet('phase4-ar-v1','phase7-ar-v1','phase8-ar-v1')][string]$ExpectedRelease,
+    [string]$BaseUrl,
+    [switch]$Test
+)
 
 . (Join-Path (Split-Path -Parent $PSScriptRoot) 'phase2\scripts\Local-Environment.ps1')
-$origin = 'http://127.0.0.1:5186'
+$database = if ($Test) { 'masar_phase6_tests' } else { 'masar_phase6_commercial' }
+if (-not $ExpectedRelease) { $ExpectedRelease = if ($Test) { 'phase7-ar-v1' } else { 'phase8-ar-v1' } }
+if (-not $BaseUrl) {
+    $BaseUrl = if ($Test) { 'http://127.0.0.1:5196' } else { 'https://desktop-phkhegp.tail3372f6.ts.net:10000/nexora-commercial' }
+}
+$origin = $BaseUrl.TrimEnd('/')
 $health = Invoke-RestMethod -Uri "$origin/api/v1/health" -TimeoutSec 6
 $catalog = Invoke-RestMethod -Uri "$origin/api/v1/catalog" -TimeoutSec 6
 if ($health.status -ne 'ok' -or $health.database -ne 'available' -or
-    $catalog.activeReleaseId -ne 'phase4-ar-v1' -or $catalog.accessRequired -ne $true) {
+    $catalog.activeReleaseId -ne $ExpectedRelease -or $catalog.accessRequired -ne $true) {
     throw 'Commercial candidate failed readiness.'
+}
+$requiredGoals = switch ($ExpectedRelease) {
+    'phase7-ar-v1' { 'data-analysis' }
+    'phase8-ar-v1' { 'data-analysis', 'sql', 'web-data', 'git-workshop' }
+}
+foreach ($id in $requiredGoals) {
+    if ($catalog.goals.id -notcontains $id) { throw "The active commercial catalog is missing the reviewed track $id." }
 }
 
 $sql = @'
@@ -19,6 +35,6 @@ SELECT json_build_object(
     'timeLimitsLast24h', count(*) FILTER (WHERE status='timed_out')
 ) FROM public.code_lab_runs WHERE created_at > now() - interval '24 hours';
 '@
-$lab = Invoke-MasarPortableSql -Database masar_phase6_commercial -Role App -TupleOnly -Sql $sql | ConvertFrom-Json
+$lab = Invoke-MasarPortableSql -Database $database -Role App -TupleOnly -Sql $sql | ConvertFrom-Json
 [pscustomobject]@{ status = 'ready'; database = $health.database; activeRelease = $catalog.activeReleaseId; codeLab = $lab } |
     ConvertTo-Json -Depth 3

@@ -7,7 +7,7 @@ import { ErrorBox, Heading, Loading } from './ui';
 
 const labels: Record<string, string> = { draft: 'مسودة', technical_review: 'مراجعة تقنية', learning_review: 'مراجعة تعليمية', published: 'منشور', retired: 'متقاعد' };
 const next: Record<string, string> = { draft: 'technical_review', technical_review: 'learning_review', learning_review: 'published', published: 'retired' };
-export function Admin({ user, scope, onPublished, commercial = false }: { user: User; scope: SessionScope; onPublished: () => void; commercial?: boolean }) {
+export function Admin({ user, scope, onPublished, commercial = false, commercialSettings = false }: { user: User; scope: SessionScope; onPublished: () => void; commercial?: boolean; commercialSettings?: boolean }) {
   const releases = useResource<{ releases: Release[]; activeReleaseId: string | null }>('/admin/releases', 0, false, scope);
   const [bundle, setBundle] = useState('');
   const [busy, setBusy] = useState(false);
@@ -52,7 +52,9 @@ export function Admin({ user, scope, onPublished, commercial = false }: { user: 
     finally { setBusy(false); }
   }
   return <><Heading title="إصدارات المحتوى" eyebrow="مساحة فريق المحتوى">المحتوى يمر بالمراجعة قبل النشر. لإجراء تغيير، أنشئ إصدارًا جديدًا.</Heading><ErrorBox message={error} />{notice && <p role="status" className="feedback success">{notice}</p>}
-    {commercial && user.role === 'Admin' && <AccessAdmin scope={scope} />}
+    {commercial && user.role === 'Admin' && (commercialSettings
+      ? <p className="notice">الأسعار وتفعيل وصول المتعلمين في <a href="#users">إعدادات المستخدمين</a>.</p>
+      : <AccessAdmin scope={scope} />)}
     <section className="panel">
       <h2>الإصدارات والمراجعات</h2>
       <ErrorBox message={releases.error} retry={releases.reload} />

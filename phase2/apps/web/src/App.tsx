@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Admin } from './Admin';
-import { AccessGate, useAccess } from './Access';
+import { AccessGate, OffersPage, useAccess } from './Access';
 import { errorText, request, segment } from './api';
 import { Auth } from './Auth';
 import { BRAND_ASSETS, PRODUCT_DESCRIPTOR, PRODUCT_NAME } from './brand';
+import { CommercialSettings } from './CommercialSettings';
 import { useResource } from './hooks';
 import { Lesson } from './Lesson';
 import { lessonLink, linkedLessonRelease } from './lessonLinks';
 import { GoalCards, PlanPage, ProgressPage } from './Plans';
 import { catalogReleaseOptions } from './releaseSelection';
-import type { Catalog, Content, Lesson as LessonData, Release } from './types';
+import type { Catalog, Content, Lesson as LessonData } from './types';
 import { ErrorBox, Heading, Icon, Loading } from './ui';
 import { useSession } from './useSession';
 
@@ -19,14 +20,18 @@ function useRoute() {
   return hash.slice(1).split('/');
 }
 
-function ReleasePicker({ releases, select }: { releases: Release[]; select: (id: string) => void }) {
-  return <section className="panel release-picker" aria-labelledby="pick-release">
-    <h2 id="pick-release">اختر إصدار المحتوى</h2>
-    <p className="muted">اختر إصدارًا منشورًا لعرض دروسه وخططه.</p>
-    <ul className="revision-list">{releases.map(release => <li key={release.id}>
-      <div><h3>{release.title}</h3><p><bdi>{release.releaseId}</bdi></p></div>
-      <button className="btn compact" onClick={() => select(release.releaseId)} aria-label={`عرض ${release.title}، ${release.releaseId}`}>عرض الإصدار</button>
-    </li>)}</ul>
+function LessonCards({ lessons, releaseId }: { lessons: LessonData[]; releaseId: string }) {
+  return <div className="lesson-cards">{lessons.map((lesson, index) => (
+    <a className="panel lesson-card" key={lesson.id} href={lessonLink(lesson.id, releaseId)}>
+      <span className="step-number">{index + 1}</span><h3>{lesson.title}</h3>
+      <p>{lesson.summary}</p><span className="field-help">{lesson.minutes} دقيقة تقريبًا</span>
+    </a>
+  ))}</div>;
+}
+
+function UnlockedLessons({ lessons, releaseId }: { lessons: LessonData[]; releaseId: string }) {
+  return <section aria-labelledby="unlocked-lessons"><div className="section-title"><h2 id="unlocked-lessons">دروسك المفعّلة</h2></div>
+    {lessons.length ? <LessonCards lessons={lessons} releaseId={releaseId} /> : <p className="muted">لا توجد دروس مفعّلة لحسابك في هذا الإصدار.</p>}
   </section>;
 }
 
@@ -41,23 +46,35 @@ export default function App() {
   const [logoutError, setLogoutError] = useState('');
   const [sessionNotice, setSessionNotice] = useState('');
   const [busy, setBusy] = useState(false);
-  const [selection, setReleaseId] = useState('');
+  const [planReleaseId, setPlanReleaseId] = useState('');
   const [preferredLanguage, setLanguage] = useState<string>();
   const language = preferredLanguage ?? (route === 'lesson' && routeLanguage === 'javascript' ? 'javascript' : 'python');
   const [progressRevision, setProgressRevision] = useState(0);
   const [catalogTick, setCatalogTick] = useState(0);
+  const refreshOffersOnExit = useRef(false);
   const catalog = useResource<Catalog>('/catalog', catalogTick);
   const commercial = catalog.data?.accessRequired === true;
+  const commercialSettings = commercial && Array.isArray(catalog.data?.offers);
   const access = useAccess(commercial, session?.scope);
   const canReadContent = !!catalog.data && (!commercial || (!checking && access.active));
-  const { published, initialId, needsChoice } = catalogReleaseOptions(catalog.data, selection);
+  const scopedAccess = commercial && (access.goalIds !== undefined || access.lessonIds !== undefined);
+  const { published, activeId } = catalogReleaseOptions(catalog.data);
   const lessonRelease = route === 'lesson' ? linkedLessonRelease(routeParam, routeRelease) : null;
   const linkedReleaseId = lessonRelease && published.some(item => item.releaseId === lessonRelease) ? lessonRelease : null;
-  const releaseId = linkedReleaseId ?? selection;
-  const content = useResource<Content>(releaseId && canReadContent ? `/content/${segment(releaseId)}` : null, catalogTick + (commercial ? session?.generation ?? 0 : 0), false, commercial ? session?.scope : undefined);
+  const releaseId = linkedReleaseId ?? (route === 'plan' && planReleaseId ? planReleaseId : activeId);
+  const needsContent = !['auth', 'admin', 'users', 'offers'].includes(route);
+  const content = useResource<Content>(releaseId && canReadContent && needsContent ? `/content/${segment(releaseId)}` : null,
+    catalogTick + (commercial ? (session?.generation ?? 0) + access.version : 0), false, commercial ? session?.scope : undefined);
   const mainRef = useRef<HTMLElement>(null);
   const management = !!user && ['Author', 'Reviewer', 'Admin'].includes(user.role);
-  useEffect(() => { const next = linkedReleaseId || initialId; if (next) setReleaseId(next); }, [initialId, linkedReleaseId]);
+  const canManageAccess = commercialSettings && user?.role === 'Admin';
+  const reloadCatalog = () => setCatalogTick(value => value + 1);
+  useEffect(() => {
+    if (route === 'users' || !refreshOffersOnExit.current) return;
+    refreshOffersOnExit.current = false;
+    setCatalogTick(value => value + 1);
+  }, [route]);
+  useEffect(() => { if (route === 'start') setPlanReleaseId(''); }, [route]);
   useEffect(() => { mainRef.current?.focus(); window.scrollTo({ top: 0, behavior: 'instant' }); }, [route, routeParam]);
   useEffect(() => {
     const beforeUnload = (event: BeforeUnloadEvent) => {
@@ -84,77 +101,85 @@ export default function App() {
   }
   const navigation = [ ['start', 'نقطة البداية', 'home'], ['plan', 'خطتي التعليمية', 'route'], ['progress', 'تقدمي', 'chart'], ['glossary', 'قاموس المصطلحات', 'book'] ] as const;
   const selected = route === 'lesson' ? 'plan' : route;
-  const picker = published.length > 0 && <ReleasePicker releases={published} select={setReleaseId} />;
   function page() {
     if (route === 'auth') {
       if (checking) return <Loading text="جارٍ التحقق من الجلسة…" />;
       return session && <Auth key={session.generation} commercial={commercial} user={user} scope={session.scope} onIdentity={async id => (await authenticationChanged())?.user?.id === id} />;
     }
+    if (route === 'offers') {
+      if (catalog.loading) return <Loading text="جارٍ قراءة أسعار المسارات…" />;
+      if (catalog.error) return <ErrorBox message={catalog.error} retry={catalog.reload} />;
+      if (commercialSettings && catalog.data) return <OffersPage catalog={catalog.data} user={user} />;
+      return <><Heading title="أسعار المسارات" /><a className="btn" href="#start">العودة إلى نقطة البداية</a></>;
+    }
+    if (route === 'users') {
+      if (checking || catalog.loading) return <Loading />;
+      if (canManageAccess && session) return <CommercialSettings key={session.generation} scope={session.scope} onOffersChanged={() => { refreshOffersOnExit.current = true; }} />;
+      return <><Heading title="إعدادات المستخدمين" /><p className="notice">هذه الصفحة متاحة لإدارة المنصة. <a href="#auth">الانتقال إلى الحساب</a></p></>;
+    }
     if (route === 'admin') {
       if (checking) return <Loading />;
-      if (management && user && session) return <Admin key={session.generation} commercial={commercial} user={user} scope={session.scope} onPublished={() => setCatalogTick(value => value + 1)} />;
+      if (management && user && session) return <Admin key={session.generation} commercial={commercial} commercialSettings={commercialSettings} user={user} scope={session.scope} onPublished={reloadCatalog} />;
       return <><Heading title="مساحة فريق المحتوى" /><p className="notice">هذه المساحة متاحة للحسابات المصرح لها بمراجعة المحتوى. <a href="#auth">الانتقال إلى الحساب</a></p></>;
     }
     if (commercial && (!access.active || checking)) {
       return checking ? <Loading text="جارٍ التحقق من الحساب…" /> : <AccessGate user={user} catalog={catalog.data!} loading={access.loading} error={access.error} reload={access.reload} />;
     }
+    const restricted = () => <AccessGate user={user} catalog={catalog.data!} loading={access.loading} error={access.error} reload={access.reload} unavailable />;
     if (route === 'plan') {
-      if (checking || catalog.loading || content.loading || initialId) return <Loading text="جارٍ قراءة الخطة والمحتوى…" />;
+      if (checking || catalog.loading || content.loading) return <Loading text="جارٍ قراءة الخطة والمحتوى…" />;
+      if (scopedAccess && planGoal && !access.goalIds?.includes(planGoal)) return restricted();
+      if (scopedAccess && content.data && !content.data.graph.goals.length)
+        return <><Heading title="تابع تعلّمك" /><UnlockedLessons lessons={content.data.sample.lessons} releaseId={releaseId} /></>;
       return <><ErrorBox message={catalog.error} retry={catalog.reload} /><ErrorBox message={content.error} retry={content.reload} />
-        {!content.data && picker}
-        {catalog.data && !published.length && <p className="notice">لا يوجد محتوى منشور متاح الآن.</p>}
-        {session && <PlanPage key={`${releaseId}/${session.generation}/${planGoal ?? ''}`} content={content.data} releaseId={releaseId} user={user} scope={session.scope} refreshProgress={progressRevision} onRelease={setReleaseId} initialGoal={planGoal} />}
+        {catalog.data && !releaseId && <p className="notice">لا يوجد محتوى مفعّل متاح الآن.</p>}
+        {session && <PlanPage key={`${releaseId}/${session.generation}/${planGoal ?? ''}/${access.version}`} content={content.data} releaseId={releaseId} user={user} scope={session.scope} refreshProgress={progressRevision} onRelease={setPlanReleaseId} initialGoal={planGoal} allowedGoalIds={scopedAccess ? access.goalIds ?? [] : undefined} />}
       </>;
     }
-    if (catalog.loading || initialId || (releaseId && content.loading)) return <Loading />;
+    if (catalog.loading || (releaseId && content.loading)) return <Loading />;
     if (catalog.error) return <ErrorBox message={catalog.error} retry={catalog.reload} />;
-    if (content.error) return <><ErrorBox message={content.error} retry={content.reload} />{picker}</>;
-    if (needsChoice) return <><Heading title="ابدأ بإصدار منشور" />{picker}</>;
+    if (content.error) return <ErrorBox message={content.error} retry={content.reload} />;
     if (!releaseId || !content.data) return <section className="panel empty"><Heading title="نجهز خطوتك الأولى" /><p>لا يوجد محتوى منشور متاح الآن. حاول مجددًا لاحقًا.</p><button className="btn" onClick={catalog.reload}>تحديث المحتوى</button></section>;
     const data = content.data;
     if (route === 'progress') return checking ? <Loading /> : <ProgressPage key={session?.generation} user={user} scope={session?.scope} releaseId={releaseId} content={data} revision={progressRevision} />;
     if (route === 'lesson' && routeParam) {
       if (lessonRelease && lessonRelease !== releaseId)
-        return <ErrorBox message="إصدار الدرس غير متاح للقراءة. اختر إصدارًا منشورًا." />;
+        return <ErrorBox message="هذا الدرس غير متاح من الرابط الحالي. ارجع إلى خطتك لفتح الدروس المتاحة." />;
       let lessonId: string;
       try { lessonId = decodeURIComponent(routeParam); } catch { return <ErrorBox message="رابط الدرس غير صحيح. ارجع إلى الخطة واختر الدرس مجددًا." />; }
+      if (scopedAccess && !data.sample.lessons.some(lesson => lesson.id === lessonId)) return restricted();
       const project = data.sample.projects?.find(item => item.lessonId === lessonId);
       return checking ? <Loading /> : <Lesson key={`${releaseId}/${session?.generation ?? 'public'}/${lessonId}`} releaseId={releaseId} lessonId={lessonId} goalParam={routeGoal} user={user} scope={session?.scope} language={language} store={session?.drafts} project={project} onAttempt={() => setProgressRevision(value => value + 1)} />;
     }
     if (route === 'glossary') return <><Heading title="كلمات جديدة، بمعنى واضح" eyebrow="قاموس المصطلحات">ارجع إلى هذه المعاني كلما احتجت. لا تحتاج إلى حفظها كلها دفعة واحدة.</Heading><dl className="glossary">{data.sample.glossary.map(item => <div className="panel" key={item.term}><dt>{item.term} <span lang="en" dir="ltr">{item.technical}</span></dt><dd>{item.definition}</dd></div>)}</dl></>;
     if (route !== 'start') return <><Heading title="لم نجد هذه الصفحة" /><a className="btn primary" href="#start">العودة إلى نقطة البداية</a></>;
-    const lessonCards = (lessons: LessonData[]) => <div className="lesson-cards">{lessons.map((lesson, index) => (
-      <a className="panel lesson-card" key={lesson.id} href={lessonLink(lesson.id, releaseId)}>
-        <span className="step-number">{index + 1}</span><h3>{lesson.title}</h3>
-        <p>{lesson.summary}</p><span className="field-help">{lesson.minutes} دقيقة تقريبًا</span>
-      </a>
-    ))}</div>;
+    const goals = scopedAccess ? data.graph.goals.filter(goal => access.goalIds?.includes(goal.id)) : data.graph.goals;
     return <>
       {commercial && <p className="feedback success" role="status">الوصول مفعّل لحسابك. يمكنك متابعة خطتك ودروسك.</p>}
       <section className="hero" aria-labelledby="start-title">
         <div className="hero-copy">
           <h1 id="start-title">{PRODUCT_DESCRIPTOR}<br />من الصفر</h1>
           <p>اختر لغة أو تخصصًا يناسب هدفك. سنرتّب لك ما تحتاج إلى فهمه أولًا، ونرشدك إلى خطوتك التالية.</p>
-          <a className="btn primary" href="#plan">استكشف خطتك <Icon name="arrow" /></a>
+          <a className="btn primary" href="#plan">{scopedAccess && !goals.length ? 'افتح دروسك' : 'استكشف خطتك'} <Icon name="arrow" /></a>
         </div>
         <div className="hero-art">
           <img src={BRAND_ASSETS.wordmark} width="1445" height="530" alt={`${PRODUCT_NAME} — Learn to Think. Code to Create.`} lang="en" dir="ltr" />
         </div>
       </section>
-      <section aria-labelledby="start-goals">
+      {!!goals.length && <section aria-labelledby="start-goals">
         <div className="section-title"><h2 id="start-goals">اختر نقطة البداية</h2></div>
-        <GoalCards goals={data.graph.goals} curriculum={!!data.sample.tracks} />
-      </section>
+        <GoalCards goals={goals} curriculum={!!data.sample.tracks} />
+      </section>}
       <section className="panel intro"><h2>{data.sample.title}</h2><p>{data.sample.intro}</p></section>
-      <section aria-labelledby="sample-lessons">
+      {scopedAccess ? <UnlockedLessons lessons={data.sample.lessons} releaseId={releaseId} /> : <section aria-labelledby="sample-lessons">
         <div className="section-title"><h2 id="sample-lessons">{data.sample.tracks ? 'وحدات المنهج' : 'دروس العينة'}</h2></div>
         {data.sample.tracks ? data.sample.tracks.map((track, index) => (
           <details className="panel curriculum-track" key={track.id} open={index === 0}>
             <summary>{track.title} · {track.lessonIds.length} درسًا</summary>
-            {lessonCards(data.sample.lessons.filter(lesson => track.lessonIds.includes(lesson.id)))}
+            <LessonCards lessons={data.sample.lessons.filter(lesson => track.lessonIds.includes(lesson.id))} releaseId={releaseId} />
           </details>
-        )) : lessonCards(data.sample.lessons)}
-      </section>
+        )) : <LessonCards lessons={data.sample.lessons} releaseId={releaseId} />}
+      </section>}
       {!!data.sample.projects?.length && <section aria-labelledby="curriculum-projects">
         <div className="section-title"><h2 id="curriculum-projects">مشروعات تطبيقية</h2></div>
         <div className="lesson-cards">{data.sample.projects.map(project => <a className="panel lesson-card" key={project.id} href={lessonLink(project.lessonId, releaseId)}><h3>{project.title}</h3><p>{project.summary}</p></a>)}</div>
@@ -163,7 +188,7 @@ export default function App() {
     </>;
   }
   const pageLabel = navigation.find(([id]) => id === selected)?.[1]
-    ?? (route === 'auth' ? 'الحساب' : route === 'admin' ? 'إصدارات المحتوى' : 'التعلّم');
+    ?? (route === 'auth' ? 'الحساب' : route === 'admin' ? 'إصدارات المحتوى' : route === 'users' ? 'إعدادات المستخدمين' : route === 'offers' ? 'أسعار المسارات' : 'التعلّم');
 
   return <>
     <a href="#main" className="skip-link" onClick={event => { event.preventDefault(); mainRef.current?.focus(); }}>انتقل إلى المحتوى</a>
@@ -175,7 +200,9 @@ export default function App() {
         </a>
         <nav className="nav" aria-label="التنقل الرئيسي">
           {navigation.map(([id, title, icon]) => <a key={id} href={`#${id}`} className={selected === id ? 'active' : ''} aria-current={selected === id ? 'page' : undefined}><Icon name={icon} />{title}</a>)}
+          {commercialSettings && <a href="#offers" className={route === 'offers' ? 'active' : ''} aria-current={route === 'offers' ? 'page' : undefined}><Icon name="route" />أسعار المسارات</a>}
           {management && <a href="#admin" className={route === 'admin' ? 'active' : ''} aria-current={route === 'admin' ? 'page' : undefined}><Icon name="book" />إصدارات المحتوى</a>}
+          {canManageAccess && <a href="#users" className={route === 'users' ? 'active' : ''} aria-current={route === 'users' ? 'page' : undefined}><Icon name="person" />إعدادات المستخدمين</a>}
         </nav>
       </aside>
       <div className="workspace">
@@ -190,14 +217,7 @@ export default function App() {
         </header>
         <main className="main" id="main" ref={mainRef} tabIndex={-1}>
           <ErrorBox message={sessionError || logoutError} retry={refreshProtection} />
-          {route !== 'auth' && canReadContent && <div className="preferences">
-            {published.length > 0 && <label>إصدار المحتوى
-              <select value={releaseId} onChange={event => { setReleaseId(event.target.value); if (route === 'lesson') window.location.hash = '#start'; }}>
-                <option value="" disabled>اختر إصدارًا منشورًا</option>
-                {!published.some(item => item.releaseId === releaseId) && releaseId && <option value={releaseId}>{releaseId}</option>}
-                {published.map(item => <option key={item.id} value={item.releaseId}>{item.title} · {item.releaseId}</option>)}
-              </select>
-            </label>}
+          {needsContent && canReadContent && <div className="preferences">
             <label>لغة الأمثلة
               <select value={language} onChange={event => setLanguage(event.target.value)}><option value="python">Python</option><option value="javascript">JavaScript</option></select>
             </label>

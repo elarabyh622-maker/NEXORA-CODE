@@ -34,6 +34,9 @@ var commercialValue = builder.Configuration["MASAR_COMMERCIAL_ENABLED"];
 if (commercialValue is not null && !bool.TryParse(commercialValue, out _))
     throw new InvalidOperationException("Masar: MASAR_COMMERCIAL_ENABLED must be true or false.");
 var commercialRequired = commercialValue is not null && bool.Parse(commercialValue);
+if (pilotFunnel && commercialRequired)
+    throw new InvalidOperationException("Masar: the pilot and commercial profiles must use separate listeners.");
+var commercialProxy = CommercialProxy.Read(builder.Configuration, commercialRequired, development);
 var contactUrl = builder.Configuration["MASAR_COMMERCIAL_CONTACT_URL"];
 if (contactUrl is not null && (!Uri.TryCreate(contactUrl, UriKind.Absolute, out var contactUri) ||
     contactUri.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(contactUri.UserInfo)))
@@ -57,10 +60,12 @@ foreach (var value in configuredUrls)
     if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") ||
         !string.IsNullOrEmpty(uri.UserInfo) || uri.AbsolutePath != "/")
         throw new InvalidOperationException("Masar: invalid listening address.");
-    if (!development && uri.Scheme != "https")
+    if (!development && commercialProxy is null && uri.Scheme != "https")
         throw new InvalidOperationException("Masar: HTTPS is required outside Development.");
     if (development && uri.Host != "localhost" && !(IPAddress.TryParse(uri.Host, out var ip) && IPAddress.IsLoopback(ip)))
         throw new InvalidOperationException("Masar: Development must listen on localhost only.");
+    if (commercialProxy is not null && !CommercialProxy.IsLoopbackListener(uri))
+        throw new InvalidOperationException("Masar: the commercial proxy backend must listen on loopback only.");
 }
 builder.WebHost.UseUrls(urls);
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 1_048_576);
@@ -103,6 +108,8 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Strict;
     options.Cookie.SecurePolicy = development ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    if (commercialProxy?.PathBase is { HasValue: true } publicPath)
+        options.Cookie.Path = publicPath.Value;
 });
 builder.Services.AddRateLimiter(options =>
 {
@@ -125,6 +132,7 @@ var app = builder.Build();
 var protectionProbe = app.Services.GetRequiredService<IDataProtectionProvider>().CreateProtector("Masar.StartupProbe");
 _ = protectionProbe.Unprotect(protectionProbe.Protect("key-ring-check"));
 if (pilotFunnel) app.UsePathBase(pilotPath);
+commercialProxy?.UseForwarding(app);
 app.Use(async (ctx, next) =>
 {
     ctx.Response.Headers.XContentTypeOptions = "nosniff";
@@ -134,6 +142,7 @@ app.Use(async (ctx, next) =>
     if (ctx.Request.Path.StartsWithSegments("/api")) ctx.Response.Headers.CacheControl = "no-store";
     try
     {
+        commercialProxy?.RequirePublicTarget(ctx);
         if (!development && !ctx.Request.IsHttps) throw new ApiError(400, "https_required", "يلزم اتصال HTTPS.");
         if (development && ctx.Connection.RemoteIpAddress is { } remote && !IPAddress.IsLoopback(remote))
             throw new ApiError(403, "localhost_only", "بيئة التطوير متاحة محليًا فقط.");
@@ -212,7 +221,13 @@ app.MapGet("/api/v1/health", async (Db db, CommercialOptions commercial, Cancell
         await using var conn = await db.Open(ct);
         var ready = await Db.Scalar<bool>(conn, null, """
             SELECT to_regclass('public.users') IS NOT NULL AND to_regclass('public.masar_schema_migrations') IS NOT NULL
-                AND (NOT @commercial OR to_regclass('public.commercial_access') IS NOT NULL)
+                AND (NOT @commercial OR (
+                    to_regclass('public.commercial_access') IS NOT NULL
+                    AND to_regclass('public.commercial_scope_access') IS NOT NULL
+                    AND to_regclass('public.commercial_offers') IS NOT NULL
+                    AND has_table_privilege(current_user, to_regclass('public.commercial_scope_access'), 'SELECT')
+                    AND has_table_privilege(current_user, to_regclass('public.commercial_offers'), 'SELECT')
+                ))
             """, ct, ("commercial", commercial.Required));
         return ready ? Results.Ok(new { status = "ok", database = "available" })
             : Results.Json(new { code = "database_not_initialized", message = "قاعدة البيانات غير مهيأة." }, statusCode: 503);

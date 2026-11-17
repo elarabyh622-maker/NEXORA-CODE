@@ -24,28 +24,38 @@ internal static class CodeLab
     {
         var lab = app.MapGroup("/api/v1/lab");
         lab.MapGet("/exercises/{releaseId}/{lessonId}", async (
-            string releaseId, string lessonId, Db db, CodeLabRunner runner, CancellationToken ct) =>
+            string releaseId, string lessonId, HttpContext ctx, Db db, CodeLabRunner runner, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var release = await Content.Find(conn, releaseId, ct);
             lessonId = Input.Id(lessonId);
+            CommercialLearning.RequireLesson(await CommercialAccess.ReadEntitlements(ctx, db, ct), release, lessonId);
             Content.Lesson(release, lessonId);
             var exercises = CodeLabCatalog.ForRelease(release).Where(definition => definition.LessonId == lessonId)
                 .Select(definition => definition.Exercise).ToArray();
             return Results.Ok(new { available = runner.Available, exercises });
-        });
+        }).WithMetadata(new ScopedCommercialEndpoint());
 
         lab.MapGet("/drafts/{releaseId}/{exerciseId}", async (
             string releaseId, string exerciseId, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            if (!access.FullAccess)
+            {
+                var release = await Content.Find(conn, releaseId, ct, requirePublished: false);
+                if (release.Status is not ("published" or "retired")) throw ApiError.Missing();
+                var definition = CodeLabCatalog.ForRelease(release).SingleOrDefault(x => x.Exercise.Id == Input.Id(exerciseId))
+                    ?? throw ApiError.Missing();
+                CommercialLearning.RequireLesson(access, release, definition.LessonId);
+            }
             var drafts = await Db.Query(conn, null, """
                 SELECT code,version FROM public.code_lab_drafts
                 WHERE user_id=@user AND release_id=@release AND exercise_id=@exercise
                 """, row => new { code = row.GetString(0), version = row.GetInt32(1) }, ct,
                 ("user", Input.UserId(ctx)), ("release", Input.Id(releaseId)), ("exercise", Input.Id(exerciseId)));
             return Results.Ok(drafts.FirstOrDefault() ?? throw ApiError.Missing());
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         lab.MapPut("/drafts/{releaseId}/{exerciseId}", async (
             string releaseId, string exerciseId, CodeLabDraftRequest request, HttpContext ctx, Db db, CancellationToken ct) =>
@@ -57,8 +67,9 @@ internal static class CodeLab
             await using var conn = await db.Open(ct);
             await using var tx = await conn.BeginTransactionAsync(ct);
             var release = await CodeLabQueue.RequirePublished(conn, tx, Input.Id(releaseId), ct);
-            if (!CodeLabCatalog.ForRelease(release).Any(definition => definition.Exercise.Id == exerciseId))
-                throw ApiError.Missing();
+            var definition = CodeLabCatalog.ForRelease(release).SingleOrDefault(x => x.Exercise.Id == exerciseId)
+                ?? throw ApiError.Missing();
+            CommercialLearning.RequireLesson(await CommercialAccess.ReadEntitlements(ctx, db, ct), release, definition.LessonId);
 
             var userId = Input.UserId(ctx);
             var changed = expectedVersion == 0
@@ -74,37 +85,61 @@ internal static class CodeLab
             if (changed != 1) throw ApiError.Conflict("draft_version_conflict");
             await tx.CommitAsync(ct);
             return Results.Ok(new { code, version = expectedVersion.Value + 1 });
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         lab.MapPost("/runs", async (
-            CodeLabRunRequest request, HttpContext ctx, CodeLabQueue queue, CodeLabRunner runner, CancellationToken ct) =>
+            CodeLabRunRequest request, HttpContext ctx, Db db, CodeLabQueue queue, CodeLabRunner runner, CancellationToken ct) =>
         {
-            if (!runner.Available) throw new ApiError(503, "lab_unavailable", "تشغيل الكود غير متاح حاليًا.");
             if (request.Mode is not ("run" or "assess")) throw ApiError.Invalid();
             var input = request.Input is null ? null : BoundedText(request.Input, 0, InputBytes);
             var submission = new CodeLabSubmission(Input.Id(request.ReleaseId), Input.Id(request.LessonId),
                 Input.Id(request.ExerciseId), BoundedText(request.Code, 1, CodeBytes), request.Mode,
                 request.Mode == "run" ? input : null);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            if (!access.FullAccess)
+            {
+                await using var conn = await db.Open(ct);
+                var release = await Content.Find(conn, submission.ReleaseId, ct);
+                CommercialLearning.RequireLesson(access, release, submission.LessonId);
+            }
+            if (!runner.Available) throw new ApiError(503, "lab_unavailable", "تشغيل الكود غير متاح حاليًا.");
             var key = Input.Text(request.IdempotencyKey, 1, 128, false);
             var result = await queue.Submit(Input.UserId(ctx), submission, key, ct);
             return Results.Json(result, statusCode: result.Status == "running" ? 202 : 200);
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
-        lab.MapGet("/runs/{id:guid}", async (Guid id, HttpContext ctx, CodeLabQueue queue, CancellationToken ct) =>
-            Results.Ok(await queue.Find(Input.UserId(ctx), id, ct))).RequireAuthorization();
+        lab.MapGet("/runs/{id:guid}", async (Guid id, HttpContext ctx, Db db, CodeLabQueue queue, CancellationToken ct) =>
+        {
+            var userId = Input.UserId(ctx);
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            if (!access.FullAccess)
+            {
+                await using var conn = await db.Open(ct);
+                var scope = (await Db.Query(conn, null, """
+                    SELECT release_id,lesson_id FROM public.code_lab_runs WHERE id=@id AND user_id=@user
+                    """, row => (ReleaseId: row.GetString(0), LessonId: row.GetString(1)), ct,
+                    ("id", id), ("user", userId))).SingleOrDefault();
+                if (scope.ReleaseId is null) throw ApiError.Missing();
+                var release = await Content.Find(conn, scope.ReleaseId, ct, requirePublished: false);
+                CommercialLearning.RequireLesson(access, release, scope.LessonId);
+            }
+            return Results.Ok(await queue.Find(userId, id, ct));
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
 
         lab.MapGet("/evidence", async (string releaseId, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var release = await Content.Find(conn, releaseId, ct, requirePublished: false);
             if (release.Status is not ("published" or "retired")) throw ApiError.Missing();
+            var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
+            var lessons = access.FullAccess ? Array.Empty<string>() : CommercialLearning.AllowedLessons(access, release).ToArray();
             var evidence = await Db.Query(conn, null, """
                 SELECT skill_id,exercise_id,awarded_at FROM public.code_lab_evidence
-                WHERE user_id=@user AND release_id=@release ORDER BY awarded_at,exercise_id
+                WHERE user_id=@user AND release_id=@release AND (@full OR lesson_id=ANY(@lessons)) ORDER BY awarded_at,exercise_id
                 """, row => new { skillId = row.GetString(0), exerciseId = row.GetString(1), awardedAt = row.GetDateTime(2) }, ct,
-                ("user", Input.UserId(ctx)), ("release", release.ReleaseId));
+                ("user", Input.UserId(ctx)), ("release", release.ReleaseId), ("full", access.FullAccess), ("lessons", lessons));
             return Results.Ok(evidence);
-        }).RequireAuthorization();
+        }).RequireAuthorization().WithMetadata(new ScopedCommercialEndpoint());
     }
 
     private static string BoundedText(string? value, int minimum, int maximumBytes)
