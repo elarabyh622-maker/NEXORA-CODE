@@ -1,0 +1,1016 @@
+{
+  "lessons": [
+    {
+      "id": "solve-01",
+      "title": "أحوّل نص المسألة إلى عقد قابل للفحص",
+      "summary": "أحدّد المدخل والمخرج والحدود قبل كتابة حل، وأكسر التخمين بمثال مضاد.",
+      "why": "الحل الصحيح يطابق كل الحالات المسموحة في العقد، لا المثال الجميل وحده.",
+      "objectives": [
+        "أكتب عقدًا يحدد النوع والحدود وسياسة اختيار تطابق من عدة تطابقات.",
+        "أختار حالات فارغة وصفرية ومكررة ومثالًا مضادًا لقرار التوقف المبكر.",
+        "أفسر لماذا يغيّر تعديل كلمة «أول» إلى «آخر» سلوك الحل واختباراته."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "solve.contracts"
+      ],
+      "sections": [
+        {
+          "heading": "من الخوارزميات إلى المسألة",
+          "body": "أكملت alg.recursion وتعرف البحث الخطي في alg-02. سنغيّر عقده بدل تكرار سؤال أول تطابق: أعد آخر فهرس لقيمة تساوي الهدف، أو -1 إذا غابت. عند التكرار نفَضّل الفهرس الأكبر؛ هذه سياسة اختيار معلنة. الفهرس يبدأ من صفر؛ لا تطبع القيمة نفسها. المدخل قائمة طولها من 0 إلى 20 من أعداد صحيحة، والهدف عدد صحيح. لا نفترض أن القائمة مرتبة، ولا نشترط OOP."
+        },
+        {
+          "heading": "سياسة الاختيار تغيّر الجواب",
+          "body": "للقائمة [0, 5, 0] والهدف 0 تكون النتيجة 2، وللقائمة [] تكون -1، وللقائمة [5, 5] والهدف 5 تكون 1. البحث الذي يعيد أول تطابق ينجح على [5] ويفشل على [5,5]. هذا مثال مضاد للتوقف المبكر في العقد الجديد، رغم أن الخوارزمية نفسها كانت صحيحة لعقد «أول». لا تحكم على حل دون قراءة سياسة الاختيار."
+        },
+        {
+          "heading": "الحالات المخفية ليست لغزًا",
+          "body": "كوّن جدولًا: فارغ، عنصر موجود، عنصر غائب، هدف صفر، تكرار، تطابق عند الطرف الأخير. أضف عمودين لنتيجة «أول» ونتيجة «آخر»؛ يظهر الفرق عند التكرار فقط. الاختبارات المخفية تفحص العقد نفسه ولا تضيف شروطًا سرية. لا تنقل اختبارات مسألة مشابهة وتفترض أن النتيجة المطلوبة لم تتغير."
+        },
+        {
+          "heading": "أحتفظ بمرشح ثم أرجعه",
+          "body": "نهيئ found=-1. تمر الحلقة من اليسار إلى اليمين، وكل مساواة تحدّث found ولا تنهي الدالة. بعد قراءة أول t عناصر، يمثل found آخر تطابق في هذا الجزء؛ تطابق لاحق يستبدله وإلا يبقى كما هو. return بعد الحلقة يثبت أننا لم نتجاهل تطابقًا لاحقًا. في Python enumerate يعطي الفهرس والقيمة معًا، وفي JavaScript نستعمل i ونقرأ items[i]. المثالان مستقلان ولا يقرآن stdin."
+        }
+      ],
+      "examples": [
+        {
+          "title": "آخر فهرس وفق السياسة الجديدة",
+          "language": "python",
+          "code": "def last_index(items, target):\n    found = -1\n    for index, value in enumerate(items):\n        if value == target:\n            found = index\n    return found\n\nprint(last_index([0, 5, 0], 0))\nprint(last_index([], 0))\nprint(last_index([5, 5], 5))\n",
+          "explanation": "لا نتوقف عند أول مساواة؛ الناتج 2 ثم -1 ثم 1."
+        },
+        {
+          "title": "تحديث المرشح في JavaScript",
+          "language": "javascript",
+          "code": "function lastIndex(items, target) {\n  let found = -1;\n  for (let i = 0; i < items.length; i++) {\n    if (items[i] === target) found = i;\n  }\n  return found;\n}\nconsole.log(lastIndex([0, 5, 0], 0));\nconsole.log(lastIndex([], 0));\nconsole.log(lastIndex([5, 5], 5));\n",
+          "explanation": "المساواة الصارمة تقارن أعدادًا، وfound يحتفظ بآخر فهرس مناسب حتى الآن."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "solve-01-e1",
+          "type": "choice",
+          "prompt": "كتبت return index داخل شرط المساواة في حل عقد «آخر تطابق». ما التعديل اللازم؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "أعيد القيمة بدل الفهرس"
+            },
+            {
+              "id": "b",
+              "text": "أحدّث found وأؤخر return إلى بعد الحلقة"
+            },
+            {
+              "id": "c",
+              "text": "أحذف حالة القائمة الفارغة"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "احفظ الفهرس عند كل مساواة وأعد المرشح بعد اكتمال المرور؛ التوقف المبكر يفوّت تطابقًا لاحقًا.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-01-e2",
+          "type": "choice",
+          "prompt": "أي مدخل يكشف خطأ حل يعيد أول تطابق بدل آخر تطابق؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "[4] مع الهدف 4"
+            },
+            {
+              "id": "b",
+              "text": "[4,4] مع الهدف 4"
+            },
+            {
+              "id": "c",
+              "text": "[] مع الهدف 4"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تكرار الهدف في [4,4] يجعل أول فهرس 0 وآخر فهرس 1.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-01-e3",
+          "type": "text",
+          "prompt": "ما القيمة المعادة عند البحث عن 0 في [] وفق العقد؟",
+          "options": [],
+          "acceptedAnswers": [
+            "-1"
+          ],
+          "explanation": "الصفر قيمة صالحة وليست علامة للغياب؛ اخترنا -1 لأنه ليس فهرسًا صالحًا.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "العقد يسبق الخوارزمية: ثبّت معنى النتيجة ثم اختبر الحدود التي يمكن أن تكسر فكرتك."
+    },
+    {
+      "id": "solve-02",
+      "title": "أعدّ التكرارات بخريطة عدّ",
+      "summary": "أحوّل تكرار المسح إلى مرور واحد يسجل عدد ظهور كل قيمة.",
+      "why": "الخريطة تحفظ معلومة قابلة لإعادة الاستخدام بدل إعادة عدّ العناصر لكل سؤال.",
+      "objectives": [
+        "أبني خريطة عدّ تدريجيًا وأشرح القيمة الافتراضية صفرًا.",
+        "أميّز بين عدد القيم المختلفة وعدد مرات الظهور.",
+        "أحافظ على ترتيب أول ظهور في المخرج دون فرز مفاجئ."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "solve.counting"
+      ],
+      "sections": [
+        {
+          "heading": "العقد الجديد",
+          "body": "ندخل قائمة صغيرة من أعداد صحيحة بين -9 و9، بطول من 0 إلى 30. نعيد أزواج [القيمة، عددها] بترتيب أول ظهور للقيمة. [2,0,2,0,2] تعطي [[2,3],[0,2]]، والفارغ يعطي []. لا نزيل الأصفار؛ الصفر مفتاح مثل أي عدد. ترتيب المخرج هنا مختلف عن ترتيب الأعداد تصاعديًا."
+        },
+        {
+          "heading": "ما الذي تحفظه الخريطة؟",
+          "body": "بعد قراءة أول ثلاثة عناصر من [2,0,2]، تكون معلومتنا 2 ← 2 و0 ← 1. في Python dict.get(value, 0) يقرأ العدد أو صفرًا عند الغياب. في JavaScript Map.get يعيد undefined عند الغياب، ونستعمل ?? 0 لاختيار صفر فقط عند غياب القيمة. set يكتب العدد الجديد، ولا يضيف عنصرًا جديدًا في ترتيب المفاتيح عندما نحدّث مفتاحًا موجودًا."
+        },
+        {
+          "heading": "من العدّ إلى المخرج",
+          "body": "قواميس Python وMap في JavaScript تحتفظ بترتيب إضافة المفاتيح. Python items ينتج أزواج المفتاح والقيمة؛ نبني قوائم صغيرة لتطبع كـJSON. Array.from في JavaScript يحوّل أزواج Map إلى مصفوفة. نحصر القيم في أعداد صحيحة صغيرة حتى يبقى معنى المفتاح واحدًا في اللغتين. لا تستخدم كائن JavaScript عاديًا هنا لأن ترتيب المفاتيح الرقمية قد يفاجئك."
+        },
+        {
+          "heading": "تكلفة يمكن تفسيرها وحدود المختبر",
+          "body": "بدل استدعاء count لكل عنصر، نحدّث خريطة مرة لكل عنصر. نفترض في هذا النموذج كلفة متوسطة ثابتة لقراءة/كتابة مفتاح؛ المرور خطي ومساحة الخريطة بحسب القيم المختلفة. المختبران يقرآن JSON صالحًا كاملًا من stdin ولو امتد على عدة أسطر. import json وimport sys يجلبان مكتبتين قياسيتين؛ json.load(sys.stdin) يفك الإدخال كله وjson.dumps يكتب JSON، وseparators يحذف مسافات المخرج فقط. يقبل عقد JSON عددًا بلا جزء كسري مثل 2.0 مثل 2، وتستبعد whole_number النوع bool وتعيد int لتوحيد المفاتيح والفهارس؛ 2.5 خارج العقد. في Node ملف .cjs أو المختبر يعمل بنظام CommonJS: require(\"node:fs\") يجلب مكتبة الملفات القياسية؛ readFileSync(0,\"utf8\") يقرأ stdin كله من الوصف 0. JSON.parse يفك النص وJSON.stringify يكتب النتيجة، وNumber.isInteger يستبعد bool والجزء الكسري. لا حاجة إلى npm."
+        }
+      ],
+      "examples": [
+        {
+          "title": "عدّ يحفظ ترتيب أول ظهور",
+          "language": "python",
+          "code": "import json\n\ndef frequencies(items):\n    counts = {}\n    for value in items:\n        counts[value] = counts.get(value, 0) + 1\n    return [[value, count] for value, count in counts.items()]\n\nprint(json.dumps(frequencies([2, 0, 2, 0, 2]), separators=(\",\", \":\")))\nprint(json.dumps(frequencies([])))\n",
+          "explanation": "المخرج أزواج JSON؛ لا تعني المفاتيح المختلفة عدد العناصر."
+        },
+        {
+          "title": "Map تحفظ ترتيب الإضافة",
+          "language": "javascript",
+          "code": "function frequencies(items) {\n  const counts = new Map();\n  for (const value of items) {\n    counts.set(value, (counts.get(value) ?? 0) + 1);\n  }\n  return Array.from(counts);\n}\nconsole.log(JSON.stringify(frequencies([2, 0, 2, 0, 2])));\nconsole.log(JSON.stringify(frequencies([])));\n",
+          "explanation": "نحوّل Map إلى أزواج صريحة؛ JSON.stringify(new Map()) وحده لا يطبع هذه الأزواج."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "solve-02-e1",
+          "type": "text",
+          "prompt": "كم عدد القيم المختلفة في [0,2,0,2,2]؟",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "المفتاحان هما 0 و2؛ عدد مرات الظهور الكلي خمسة.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-02-e2",
+          "type": "text",
+          "prompt": "ما عدد ظهور 2 بعد قراءة [2,0,2,2]؟",
+          "options": [],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "نبدأ بصفر ونضيف واحدًا عند كل ظهور للعدد 2.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-02-e3",
+          "type": "choice",
+          "prompt": "أي ترتيب للمفاتيح يطابق عقد [3,1,3]؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "3 ثم 1"
+            },
+            {
+              "id": "b",
+              "text": "1 ثم 3"
+            },
+            {
+              "id": "c",
+              "text": "3 ثم 1 ثم 3"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "نحتفظ بترتيب أول ظهور: 3 ثم 1، ولا نفرز المفاتيح.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "حدّث العدد عند قراءة كل عنصر، وافصل ترتيب المخرج عن عملية العدّ."
+    },
+    {
+      "id": "solve-03",
+      "title": "أبحث بمؤشرين من طرفي قائمة مرتبة",
+      "summary": "أستفيد من الترتيب لاستبعاد احتمالات مع شرح كل حركة.",
+      "why": "حركة المؤشر تصبح صحيحة عندما يبررها شرط واضح؛ نقل المؤشرات عشوائيًا قد يفوّت الحل.",
+      "objectives": [
+        "أحدد شرط الترتيب ولماذا لا أستعمل العنصر نفسه مرتين.",
+        "أبرر تحريك اليسار عند مجموع صغير واليمين عند مجموع كبير.",
+        "أعيد أول زوج يجده المسار المحدد وأختبر السالب والتكرار."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "solve.pointers"
+      ],
+      "sections": [
+        {
+          "heading": "عقد زوج المجموع",
+          "body": "المدخل قائمة أعداد صحيحة مرتبة تصاعديًا، وقد تحوي سالبًا وصفرًا وتكرارًا. طولها من 0 إلى 30، والقيم بين -20 و20. نبحث عن فهرسين مختلفين مجموع قيمتيهما يساوي target. نعيد [left,right] عند أول تطابق يجده المرور من الطرفين، أو [] إذا غاب. لا نعد بكل الأزواج ولا نعد بأصغر زوج معجميًا. في [1,1,2,3] وهدف 4 نعيد [0,3]."
+        },
+        {
+          "heading": "سبب الحركة أهم من شكلها",
+          "body": "ابدأ left=0 وright=n-1. إن كان المجموع أصغر من الهدف، فكل اختيار مع left ويمين أصغر لن يزيد المجموع؛ لذلك نستبعد left بزيادته. إن كان أكبر، فكل اختيار مع right ويسار أكبر لن ينقصه؛ لذلك نستبعد right بإنقاصه. هذا الاستدلال يعتمد على ترتيب القائمة. لا تفرزها بصمت إذا كان المطلوب فهارس القائمة الأصلية، لأن الفرز يغيّر الفهارس."
+        },
+        {
+          "heading": "حد التوقف وحالة التكرار",
+          "body": "نستمر ما دام left < right، لا <=؛ العنصر الواحد ليس زوجًا حتى لو كان ضعفه يساوي الهدف. [2,2] مع هدف 4 حل صالح بفهرسين 0 و1، أما [2] فليست كذلك. عند الفارغ يبدأ right=-1 فلا تدخل الحلقة. كل خطوة تقرّب المؤشرين؛ عدد مقارنات المجاميع لا يتجاوز n-1 إذا كان n أكبر من صفر. المساحة الإضافية ثابتة."
+        },
+        {
+          "heading": "أتأكد من الحل قبل تسميته تحسينًا",
+          "body": "قارنه لحالات صغيرة بحل حلقتين يجرب i<j إذا أردت فحص وجود حل. قد تختلف الفهارس عندما توجد حلول متعددة؛ افحص صحة الفهارس والمجموع أو ثبّت مسار الطرفين في العقد كما فعلنا. لا تعمم الطريقة على قائمة غير مرتبة. المثالان يطبعان فهارس لا قيمًا، ويتعمدان اختبار حالة عنصر واحد."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مؤشران في Python",
+          "language": "python",
+          "code": "import json\n\ndef pair_sum(items, target):\n    left, right = 0, len(items) - 1\n    while left < right:\n        total = items[left] + items[right]\n        if total == target:\n            return [left, right]\n        if total < target:\n            left += 1\n        else:\n            right -= 1\n    return []\n\nprint(json.dumps(pair_sum([-2, 0, 0, 2], 0), separators=(\",\", \":\")))\nprint(json.dumps(pair_sum([2], 4)))\n",
+          "explanation": "عند الطرفين -2 و2 نجد الهدف فورًا؛ لا نستعمل العنصر 2 الوحيد مرتين."
+        },
+        {
+          "title": "الحركة نفسها في JavaScript",
+          "language": "javascript",
+          "code": "function pairSum(items, target) {\n  let left = 0, right = items.length - 1;\n  while (left < right) {\n    const total = items[left] + items[right];\n    if (total === target) return [left, right];\n    if (total < target) left++;\n    else right--;\n  }\n  return [];\n}\nconsole.log(JSON.stringify(pairSum([-2, 0, 0, 2], 0)));\nconsole.log(JSON.stringify(pairSum([2], 4)));\n",
+          "explanation": "left وright فهرسان، وitems[left] وitems[right] قيمتان في القائمة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "solve-03-e1",
+          "type": "choice",
+          "prompt": "القائمة مرتبة والمجموع الحالي أصغر من الهدف. أي مؤشر نحرك؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "ننقص right"
+            },
+            {
+              "id": "b",
+              "text": "نزيد left"
+            },
+            {
+              "id": "c",
+              "text": "ننقص left"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "استبعاد القيمة اليسرى الصغيرة يمكن أن يزيد المجموع؛ إنقاص اليمين لن يساعد.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-03-e2",
+          "type": "text",
+          "prompt": "ما نتيجة pair_sum([2], 4) بحسب العقد؟",
+          "options": [],
+          "acceptedAnswers": [
+            "[]"
+          ],
+          "explanation": "نحتاج فهرسين مختلفين؛ شرط left < right يمنع تكرار الفهرس نفسه.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-03-e3",
+          "type": "choice",
+          "prompt": "هل يمكن تطبيق برهان الحركة نفسه مباشرة على [4,1,3] غير المرتبة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "نعم دائمًا"
+            },
+            {
+              "id": "b",
+              "text": "لا، يحتاج شرط الترتيب"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "دون ترتيب لا يضمن تحريك أي طرف اتجاه تغيّر المجموع.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "كل حركة تستبعد مجموعة احتمالات بسبب الترتيب، وشرط left < right يحمي استقلال الفهرسين."
+    },
+    {
+      "id": "solve-04",
+      "title": "أحرّك نافذة ثابتة بلا خطأ في الحدود",
+      "summary": "أحسب أكبر مجموع لمقطع متجاور طوله k بإزالة الخارج وإضافة الداخل.",
+      "why": "تحديث المجموع يوفر إعادة جمع كل نافذة، لكن البداية والنهاية وحالة الصفر تحدد صحة النتيجة.",
+      "objectives": [
+        "أفرق بين مقطع متجاور واختيار عناصر متفرقة.",
+        "أهيّئ أفضل مجموع من النافذة الأولى عندما k>0.",
+        "أتتبع الفهرسين right وright-k وأعالج k=0 والقائمة الفارغة."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "solve.windows"
+      ],
+      "sections": [
+        {
+          "heading": "عقد نافذة ثابتة",
+          "body": "المدخل items قائمة من 0 إلى 30 عددًا صحيحًا بين -20 و20 وk عدد صحيح بين 0 وطول القائمة. نعيد أكبر مجموع لمقطع متجاور طوله k، لا عدد المقاطع ولا موضعها. إذا k=0 نعيد 0 حتى للقائمة الفارغة؛ هذا تعريف صريح للمقطع الخالي. k أكبر من الطول خارج عقد المختبر ولا نحتاج تخمين نتيجة له."
+        },
+        {
+          "heading": "أهيّئ دون انحياز للصفر",
+          "body": "إذا k>0، اجمع أول k عناصر وضع current وbest مساويين لهذا المجموع. لا تبدأ best بصفر، فالقائمة [-5,-2,-4] مع k=2 أفضل مجموعها -6، والصفر ليس مجموع نافذة صالحة. في هذه الوحدة نسمح بالأعداد السالبة لأن النافذة ثابتة الطول؛ قواعد نافذة متغيرة للمدخلات الموجبة موضوع آخر."
+        },
+        {
+          "heading": "من نافذة إلى التالية",
+          "body": "نجمع أول k عناصر بحلقة فهارس دون نسخ مقطع من القائمة، ثم نبدأ right=k. أضف items[right] واطرح items[right-k]؛ الآن تمثل current النافذة المنتهية عند right. قارنها بـbest بعد التحديث. الحد الأخير right=n-1 مشمول. عندما k=n لا تبقى نافذة أخرى، وعندما k=1 يصبح المطلوب أكبر عنصر. لا نحتاج مساحة إضافية تنمو بطول القائمة؛ نحتفظ بالمجموع والمؤشرات فقط."
+        },
+        {
+          "heading": "أعدّ العمل وأختبر الحافة",
+          "body": "إعادة جمع n-k+1 نوافذ تحتاج k*(n-k+1) زيارات للعناصر. التحديث يحتاج k زيارة للتهيئة ثم عمليتي قراءة لكل نافذة لاحقة: k+2*(n-k) عندما k>0. هذا عدّ قراءة العناصر وفق نموذج محدد، لا قياس زمن الجهاز. جرّب الأفضل عند آخر نافذة، والسالب كله، وk=0، وk=n. الإدخال في المختبر كائن JSON يحوي items وk؛ شرح json وnode:fs في solve-02 ينطبق هنا، والبرنامج كله ملف واحد."
+        }
+      ],
+      "examples": [
+        {
+          "title": "نافذة تنتهي عند آخر عنصر",
+          "language": "python",
+          "code": "def max_window(items, k):\n    if k == 0:\n        return 0\n    current = 0\n    for i in range(k):\n        current += items[i]\n    best = current\n    for right in range(k, len(items)):\n        current += items[right] - items[right - k]\n        best = max(best, current)\n    return best\n\nprint(max_window([1, 2, 8], 2))\nprint(max_window([-5, -2, -4], 2))\nprint(max_window([], 0))\n",
+          "explanation": "أكبر نافذة هي [2,8]، ثم مثال سالب يرفض تهيئة best بصفر."
+        },
+        {
+          "title": "حدود النافذة في JavaScript",
+          "language": "javascript",
+          "code": "function maxWindow(items, k) {\n  if (k === 0) return 0;\n  let current = 0;\n  for (let i = 0; i < k; i++) current += items[i];\n  let best = current;\n  for (let right = k; right < items.length; right++) {\n    current += items[right] - items[right - k];\n    best = Math.max(best, current);\n  }\n  return best;\n}\nconsole.log(maxWindow([1, 2, 8], 2));\nconsole.log(maxWindow([-5, -2, -4], 2));\nconsole.log(maxWindow([], 0));\n",
+          "explanation": "لا تدخل الحلقة الثانية إذا كان k بطول القائمة؛ النافذة الأولى هي الوحيدة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "solve-04-e1",
+          "type": "text",
+          "prompt": "items=[1,2,8] وk=2. عند right=2 ما فهرس العنصر الخارج؟",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "right-k يساوي 0؛ نطرح 1 ونضيف 8.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-04-e2",
+          "type": "text",
+          "prompt": "ما أكبر مجموع نافذة بطول 2 في [-5,-2,-4]؟",
+          "options": [],
+          "acceptedAnswers": [
+            "-6"
+          ],
+          "explanation": "النافذتان -7 و-6؛ الصفر ليس اختيارًا مسموحًا.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-04-e3",
+          "type": "text",
+          "prompt": "ما نتيجة items=[] وk=0 وفق العقد؟",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "تعريف النافذة الخالية هنا يعيد صفرًا قبل محاولة قراءة أي عنصر.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اضبط العقد والتهيئة ثم أضف الداخل واطرح الخارج؛ تشمل الإجابة آخر نافذة والسالب والصفر."
+    },
+    {
+      "id": "solve-05",
+      "title": "أفصل الدوال وأقارن عدد العمليات",
+      "summary": "أفصل القراءة والحساب والعرض وأستخدم حلًا بسيطًا مرجعًا بدل الاعتماد على سرعة الجهاز.",
+      "why": "الدالة ذات المدخل والمخرج الواضحين أسهل في الفحص والمقارنة وإعادة الاستخدام من برنامج تختلط فيه الطباعة بالحساب.",
+      "objectives": [
+        "أضع الحساب في دالة لا تقرأ ولا تطبع ولا تغير القائمة.",
+        "أقارن ناتج حل مباشر بناتج نافذة محدثة لحالات صغيرة.",
+        "أعرّف العملية المعدودة وأفسر الفرق دون ادعاء زمن تشغيل."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "solve.decomposition"
+      ],
+      "sections": [
+        {
+          "heading": "ثلاث مسؤوليات منفصلة",
+          "body": "طبقة الإدخال تفك JSON، ودالة الحساب تستقبل قائمة وk وتعيد نتيجة، وطبقة العرض تكتب JSON. يتيح ذلك استدعاء الحساب من اختبار دون محاكاة لوحة المفاتيح. لا تحتاج أصنافًا لهذا الفصل. في أمثلة هذا الدرس نعيد [أفضل مجموع، عدد قراءات العناصر] حتى تكون التكلفة قابلة للتتبع؛ عدّ القراءات تعليمي وليس جزءًا من واجهة دالة المشروع النهائية."
+        },
+        {
+          "heading": "المرجع البسيط ليس عيبًا",
+          "body": "جرّب كل بداية من 0 إلى n-k واجمع k عناصر. يصلح هذا الحل مرجعًا لمسائل صغيرة. عند k=0 نعيد [0,0] في الحلين. عند k>0 نهيّئ best من نتيجة نافذة فعلية لا من صفر. يمكن مقارنة النتيجة الأولى فقط بين الحلين، أما عدّ العمليات فيختلف عمدًا."
+        },
+        {
+          "heading": "ما الذي نعدّه بالضبط؟",
+          "body": "نزيد reads عند كل قراءة من items تدخل في جمع أو تحديث المجموع. لا نعد مقارنة best أو إدارة الحلقة أو تخصيص الذاكرة. عند n=5 وk=3 يقرأ المباشر 3*3=9 عناصر، والنافذة 3+2*2=7. هذا لا يثبت أن الزمن الفعلي أقل على كل جهاز ومدخل؛ كلفة اللغة والحجم تؤثر. النموذج يشرح نمو العمل عند زيادة n وk، ولا نستعمل wall-clock benchmark."
+        },
+        {
+          "heading": "أفحص قبل أن أثق",
+          "body": "ابدأ بـ[] وk=0، ثم كل القيم سالبة، ثم k=1 وk=n، ثم أمثلة مكررة. قارن المدخل قبل الاستدعاء وبعده لتتأكد أن الدالة لم ترتبه أو تحذفه. في المشروع تستطيع كتابة اختبار بحلقتين يجرب قوائم قصيرة متعددة. التطابق على عينات يزيد الثقة لكنه لا يحل محل تفسير سبب التحديث وحدود الحلقة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "مرجع وعدّ قراءات في Python",
+          "language": "python",
+          "code": "def direct(items, k):\n    if k == 0:\n        return [0, 0]\n    best, reads = None, 0\n    for start in range(len(items) - k + 1):\n        total = 0\n        for i in range(start, start + k):\n            total += items[i]\n            reads += 1\n        if best is None or total > best:\n            best = total\n    return [best, reads]\n\ndef sliding(items, k):\n    if k == 0:\n        return [0, 0]\n    current = 0\n    for i in range(k):\n        current += items[i]\n    best, reads = current, k\n    for right in range(k, len(items)):\n        current += items[right] - items[right - k]\n        reads += 2\n        best = max(best, current)\n    return [best, reads]\n\nprint(*direct([1, 2, 3, 4, 5], 3))\nprint(*sliding([1, 2, 3, 4, 5], 3))\nprint(direct([-5, -2, -4], 2)[0] == sliding([-5, -2, -4], 2)[0])\n",
+          "explanation": "* يفك عناصر القائمة إلى وسيطات print؛ True تؤكد تطابق النتيجة في الحالة السالبة فقط."
+        },
+        {
+          "title": "المقارنة نفسها في JavaScript",
+          "language": "javascript",
+          "code": "function direct(items, k) {\n  if (k === 0) return [0, 0];\n  let best = null, reads = 0;\n  for (let start = 0; start <= items.length - k; start++) {\n    let total = 0;\n    for (let i = start; i < start + k; i++) {\n      total += items[i];\n      reads++;\n    }\n    if (best === null || total > best) best = total;\n  }\n  return [best, reads];\n}\nfunction sliding(items, k) {\n  if (k === 0) return [0, 0];\n  let current = 0;\n  for (let i = 0; i < k; i++) current += items[i];\n  let best = current, reads = k;\n  for (let right = k; right < items.length; right++) {\n    current += items[right] - items[right - k];\n    reads += 2;\n    best = Math.max(best, current);\n  }\n  return [best, reads];\n}\nconsole.log(...direct([1, 2, 3, 4, 5], 3));\nconsole.log(...sliding([1, 2, 3, 4, 5], 3));\nconsole.log(direct([-5, -2, -4], 2)[0] === sliding([-5, -2, -4], 2)[0]);\n",
+          "explanation": "... يفك عناصر المصفوفة إلى وسيطات console.log. العداد يقيس قراءات نموذجنا فقط."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "solve-05-e1",
+          "type": "text",
+          "prompt": "وفق نموذج قراءة العناصر، كم قراءة للحل المباشر عند n=5 وk=3؟",
+          "options": [],
+          "acceptedAnswers": [
+            "9"
+          ],
+          "explanation": "توجد ثلاث نوافذ؛ كل واحدة تجمع ثلاثة عناصر.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-05-e2",
+          "type": "text",
+          "prompt": "وكم قراءة لحل النافذة المحدثة عند n=5 وk=3؟",
+          "options": [],
+          "acceptedAnswers": [
+            "7"
+          ],
+          "explanation": "ثلاث قراءات أولية ثم نافذتان بكل منهما قراءتان: 3+4.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-05-e3",
+          "type": "choice",
+          "prompt": "أي مسؤولية تنتمي إلى دالة max_window الحسابية؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "قراءة stdin بنفسها"
+            },
+            {
+              "id": "b",
+              "text": "إعادة أفضل مجموع من items وk"
+            },
+            {
+              "id": "c",
+              "text": "تغيير القائمة الأصلية لإخفاء الخطأ"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الدالة الحسابية تعيد قيمة من مدخلاتها؛ القراءة والطباعة عند الحدود.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "افصل الحساب عن I/O، وقارن صحة النتيجة أولًا، ثم ناقش العمل بنموذج عدّ محدد."
+    },
+    {
+      "id": "solve-06",
+      "title": "أبني مكتبة تحديات للنصوص والقوائم",
+      "summary": "أجمع العدّ والمؤشرين والنافذة في CLI صغير بعقد واختبارات ونسختين مستقلتين.",
+      "why": "المشروع يثبت قدرتك على اختيار الخوارزمية وشرح شروطها وربطها بواجهة واضحة دون اعتماد خارجي.",
+      "objectives": [
+        "أنفّذ دوالًا مستقلة لعدّ الكلمات وزوج المجموع وأكبر نافذة.",
+        "أشغّل fixtures حقيقية في Python وNode وأفهم فشل starter المقصود.",
+        "أوثّق عقد الإدخال وحدود النص وترتيب النتائج وأسباب اختيار الخوارزميات."
+      ],
+      "minutes": "55–70",
+      "skillIds": [
+        "solve.project"
+      ],
+      "sections": [
+        {
+          "heading": "نزّل واختر لغة أولًا",
+          "body": "نزّل /projects/problem-solving-starter-v1.zip وفكّه في مجلد تدريب جديد. اختر Python أو JavaScript أولًا، ثم قارن الثانية عند الاستعداد؛ لا تحتاج تشغيل اللغتين معًا. Python 3.10+ وNode 22+ يكفيان. كل المكتبات قياسية ولا توجد حزم npm. README داخل الحزمة يشرح أوامر Windows. كل الكلمات والأرقام بيانات تدريب خيالية، ولا يقرأ البرنامج ملفات المستخدم سوى fixtures الاختبار المعروفة."
+        },
+        {
+          "heading": "عقد المكتبة",
+          "body": "تقرأ main.py أوmain.cjs كائن JSON واحدًا من stdin وتطبع كائنًا فيه result أوerror. task=count يقبل text من أحرف a إلى z صغيرة ومسافات ASCII فقط بطول حتى 200، ويفصل الكلمات بالمسافات مع تجاهل الأجزاء الفارغة؛ لا نطبّق معالجة عربية أو Unicode ضمن هذا العقد. النتيجة أزواج [الكلمة، عددها] بترتيب أول ظهور. task=pair يقبل items مرتبة وtarget ويعيد فهرسي أول تطابق من الطرفين أو[]. task=window يقبل items وk ويعيد أفضل مجموع، وk=0 يعيد 0."
+        },
+        {
+          "heading": "عقد البيانات المركبة والرفض",
+          "body": "طول items حتى 30 وأعدادها الصحيحة من -20 إلى 20؛ target عدد صحيح بين -40 و40؛ k عدد صحيح من 0 إلى طولها. task=report يجمع text وitems وk ويعيد {counts:...,maxWindow:...}؛ لا يحتاج target ولا يشترط ترتيب items لأنه لا يبحث عن زوج. ترفض المكتبة الأنواع الخاطئة والحدود المخالفة بمخرج {error:\"invalid input\"}. الرفض يشمل bool كعدد في Python؛ JSON true قيمة منطقية. في عقد JSON نقصد قيمة عددية بلا جزء كسري؛ لذلك 2.0 مقبولة مثل 2 في اللغتين، أما 2.5 فمرفوضة. يوضح README تحقق Python وتحويل k إلى فهرس صحيح. لا تغير الدوال القوائم. الحقول الزائدة لا تؤثر في النتيجة."
+        },
+        {
+          "heading": "من TODO إلى دليل",
+          "body": "يوجد موضع TODO واحد في solve لكل لغة. استبدله بتوجيه task ودوال القواعد، ويمكنك إضافة دوال نقية في rules. ابدأ بعقد count واختباره ثم pair ثم window ثم report والتحقق. اختبار starter المعلن يفشل لأن solve غير مكتملة؛ هذا نقطة البداية وليس نجاحًا متوقعًا. بعد التنفيذ شغّل جميع fixtures. reference حل للمراجعة بعد المحاولة؛ اختبارات المرجع تقارن CLI ودالة solve مع النتائج المخزنة وتتحقق أن المدخل لم يتغير."
+        },
+        {
+          "heading": "أشرح الاختيار وأراجع الحدود",
+          "body": "أرفق تفسيرًا: خريطة للعدّ، مؤشرات بشرط الترتيب، نافذة بطول ثابت، ووظيفة توجيه لا تكرر القواعد. فسّر لماذا [2] لا تحقق pair بهدف4 ولماذا السالب كله لا يبرر صفرًا في window. أضف حالة فاشلة اكتشفتها. نجاح fixtures لا يثبت الفهم وحده؛ معايير شرح العقد ومثال مضاد ومقارنة عدد العمليات تحتاج مراجعة بشرية. المثالان التاليان نموذجان مستقلان لجزء count وليسا استيرادًا مخفيًا من المشروع."
+        }
+      ],
+      "examples": [
+        {
+          "title": "جزء النصوص من المكتبة في Python",
+          "language": "python",
+          "code": "import json\n\ndef word_counts(text):\n    counts = {}\n    for word in text.split(\" \"):\n        if word:\n            counts[word] = counts.get(word, 0) + 1\n    return [[word, count] for word, count in counts.items()]\n\nprint(json.dumps({\"result\": word_counts(\"red blue red\")}, separators=(\",\", \":\")))\nprint(json.dumps({\"result\": word_counts(\"   \")}, separators=(\",\", \":\")))\n",
+          "explanation": "نقسم على المسافة المحددة في العقد ونتجاهل الكلمات الفارغة، ولا نفرز الأزواج."
+        },
+        {
+          "title": "جزء النصوص من المكتبة في JavaScript",
+          "language": "javascript",
+          "code": "function wordCounts(text) {\n  const counts = new Map();\n  for (const word of text.split(\" \")) {\n    if (word !== \"\") counts.set(word, (counts.get(word) ?? 0) + 1);\n  }\n  return Array.from(counts);\n}\nconsole.log(JSON.stringify({result: wordCounts(\"red blue red\")}));\nconsole.log(JSON.stringify({result: wordCounts(\"   \")}));\n",
+          "explanation": "الكلمة الحمراء والزرقاء أسماء تدريب؛ المخرج يحافظ على ترتيب أول ظهور."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "solve-06-e1",
+          "type": "text",
+          "prompt": "أي task تختار للحصول على counts وmaxWindow معًا؟",
+          "options": [],
+          "acceptedAnswers": [
+            "report"
+          ],
+          "explanation": "report يركب نتيجتين من الدوال نفسها ولا يحتاج target.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-06-e2",
+          "type": "text",
+          "prompt": "ما نتيجة count للنص المؤلف من ثلاث مسافات فقط؟",
+          "options": [],
+          "acceptedAnswers": [
+            "[]"
+          ],
+          "explanation": "تُهمل الأجزاء الفارغة فلا تبقى كلمة لعدّها.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "solve-06-e3",
+          "type": "choice",
+          "prompt": "أي أمر يشغّل اختبارات مشروع Node ذي المكتبات القياسية من مجلده؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "node test.cjs"
+            },
+            {
+              "id": "b",
+              "text": "npm install missing-library"
+            },
+            {
+              "id": "c",
+              "text": "python test.cjs"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "test.cjs ملف اختبار محلي يستخدم node:assert؛ لا توجد حزمة تحتاج npm.",
+          "hints": [
+            "تتبّع حالة صغيرة بالقلم قبل اختيار الإجابة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "مكتبة صغيرة بعقد صريح ودوال مستقلة واختبارات حدودية تصل بين المسألة والبرنامج القابل للمراجعة."
+    }
+  ],
+  "skills": [
+    {
+      "id": "solve.contracts",
+      "title": "أحوّل نص المسألة إلى عقد قابل للفحص",
+      "description": "أحدّد المدخل والمخرج والحدود قبل كتابة حل، وأكسر التخمين بمثال مضاد.",
+      "required": {
+        "skill": "alg.recursion"
+      },
+      "recommended": []
+    },
+    {
+      "id": "solve.counting",
+      "title": "أعدّ التكرارات بخريطة عدّ",
+      "description": "أحوّل تكرار المسح إلى مرور واحد يسجل عدد ظهور كل قيمة.",
+      "required": {
+        "skill": "solve.contracts"
+      },
+      "recommended": []
+    },
+    {
+      "id": "solve.pointers",
+      "title": "أبحث بمؤشرين من طرفي قائمة مرتبة",
+      "description": "أستفيد من الترتيب لاستبعاد احتمالات مع شرح كل حركة.",
+      "required": {
+        "skill": "solve.counting"
+      },
+      "recommended": []
+    },
+    {
+      "id": "solve.windows",
+      "title": "أحرّك نافذة ثابتة بلا خطأ في الحدود",
+      "description": "أحسب أكبر مجموع لمقطع متجاور طوله k بإزالة الخارج وإضافة الداخل.",
+      "required": {
+        "skill": "solve.pointers"
+      },
+      "recommended": []
+    },
+    {
+      "id": "solve.decomposition",
+      "title": "أفصل الدوال وأقارن عدد العمليات",
+      "description": "أفصل القراءة والحساب والعرض وأستخدم حلًا بسيطًا مرجعًا بدل الاعتماد على سرعة الجهاز.",
+      "required": {
+        "skill": "solve.windows"
+      },
+      "recommended": []
+    },
+    {
+      "id": "solve.project",
+      "title": "أبني مكتبة تحديات للنصوص والقوائم",
+      "description": "أجمع العدّ والمؤشرين والنافذة في CLI صغير بعقد واختبارات ونسختين مستقلتين.",
+      "required": {
+        "skill": "solve.decomposition"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "solve-01",
+      "title": "أحوّل نص المسألة إلى عقد قابل للفحص",
+      "why": "الحل الصحيح يطابق كل الحالات المسموحة في العقد، لا المثال الجميل وحده.",
+      "skillIds": [
+        "solve.contracts"
+      ]
+    },
+    {
+      "id": "solve-02",
+      "title": "أعدّ التكرارات بخريطة عدّ",
+      "why": "الخريطة تحفظ معلومة قابلة لإعادة الاستخدام بدل إعادة عدّ العناصر لكل سؤال.",
+      "skillIds": [
+        "solve.counting"
+      ]
+    },
+    {
+      "id": "solve-03",
+      "title": "أبحث بمؤشرين من طرفي قائمة مرتبة",
+      "why": "حركة المؤشر تصبح صحيحة عندما يبررها شرط واضح؛ نقل المؤشرات عشوائيًا قد يفوّت الحل.",
+      "skillIds": [
+        "solve.pointers"
+      ]
+    },
+    {
+      "id": "solve-04",
+      "title": "أحرّك نافذة ثابتة بلا خطأ في الحدود",
+      "why": "تحديث المجموع يوفر إعادة جمع كل نافذة، لكن البداية والنهاية وحالة الصفر تحدد صحة النتيجة.",
+      "skillIds": [
+        "solve.windows"
+      ]
+    },
+    {
+      "id": "solve-05",
+      "title": "أفصل الدوال وأقارن عدد العمليات",
+      "why": "الدالة ذات المدخل والمخرج الواضحين أسهل في الفحص والمقارنة وإعادة الاستخدام من برنامج تختلط فيه الطباعة بالحساب.",
+      "skillIds": [
+        "solve.decomposition"
+      ]
+    },
+    {
+      "id": "solve-06",
+      "title": "أبني مكتبة تحديات للنصوص والقوائم",
+      "why": "المشروع يثبت قدرتك على اختيار الخوارزمية وشرح شروطها وربطها بواجهة واضحة دون اعتماد خارجي.",
+      "skillIds": [
+        "solve.project"
+      ]
+    }
+  ],
+  "goal": {
+    "id": "problem-solving",
+    "title": "تحديات حل المشكلات",
+    "description": "حوّل عقد المسألة إلى حل قابل للفحص، ثم استخدم العدّ والمؤشرين والنافذة في مكتبة تحديات ثنائية اللغة.",
+    "status": "sample",
+    "skillIds": [
+      "solve.contracts",
+      "solve.counting",
+      "solve.pointers",
+      "solve.windows",
+      "solve.decomposition",
+      "solve.project"
+    ]
+  },
+  "track": {
+    "id": "problem-solving",
+    "title": "تحديات حل المشكلات",
+    "lessonIds": [
+      "solve-01",
+      "solve-02",
+      "solve-03",
+      "solve-04",
+      "solve-05",
+      "solve-06"
+    ]
+  },
+  "project": {
+    "id": "solve-challenge-library",
+    "title": "مكتبة تحديات النصوص والقوائم",
+    "lessonId": "solve-06",
+    "summary": "CLI بمكتبات قياسية في Python وJavaScript لعدّ الكلمات وزوج المجموع وأفضل نافذة وتقرير مركب.",
+    "download": "/projects/problem-solving-starter-v1.zip",
+    "criteria": [
+      "نفّذ count وpair وwindow وreport داخل المكتبة مع فصل الحساب عن stdin وstdout، دون OOP أو اعتمادات خارجية.",
+      "احتفظ بترتيب أول ظهور الكلمات وبشرط ترتيب pair؛ لا تغير items الأصلية واسمح بالصفر والتكرار والسالب ضمن الحدود.",
+      "أعد [] لزوج غير موجود و0 للنافذة الخالية؛ هيّئ أفضل نافذة سالبة من نافذة فعلية.",
+      "تحقق من أنواع وحدود المدخل وأعد {error:\"invalid input\"} للرفض، ومنه bool بدل العدد أو قائمة pair غير مرتبة.",
+      "شغّل python -m unittest -v وnode test.cjs من مجلد اللغة، واحتفظ بنتائج فعلية لا ادعاء نجاح.",
+      "اشرح عقد كل دالة ومثالًا مضادًا وحدود الحلقات ومقارنة عدد قراءات العناصر دون benchmark زمني؛ هذه معايير تراجع بشريًا."
+    ]
+  },
+  "glossary": [
+    {
+      "term": "عقد المسألة",
+      "technical": "Problem contract",
+      "definition": "وصف المدخل المسموح والمخرج ومعنى النجاح وحدود البيانات قبل اختيار الحل."
+    },
+    {
+      "term": "مثال مضاد",
+      "technical": "Counterexample",
+      "definition": "مدخل مسموح يكشف خطأ فرضية أو خوارزمية مقترحة."
+    },
+    {
+      "term": "خريطة العدّ",
+      "technical": "Frequency map",
+      "definition": "ربط كل قيمة بعدد مرات ظهورها، مع تحديث العدّ أثناء المرور."
+    },
+    {
+      "term": "مؤشران",
+      "technical": "Two pointers",
+      "definition": "فهرسان يتحركان وفق برهان يستبعد احتمالات؛ شرط الترتيب ضروري لمسألة زوج المجموع هنا."
+    },
+    {
+      "term": "نافذة منزلقة",
+      "technical": "Sliding window",
+      "definition": "مقطع متجاور تُحدَّث معلوماته عند تحريك حدوده؛ نستخدم طولًا ثابتًا هنا."
+    },
+    {
+      "term": "حل مرجعي مباشر",
+      "technical": "Brute-force oracle",
+      "definition": "حل بسيط بطيء نسبيًا نقارن به نتائج حالات صغيرة، دون اعتباره برهانًا عامًا."
+    },
+    {
+      "term": "عدّ العمليات",
+      "technical": "Operation count",
+      "definition": "قياس عمل الخوارزمية بوحدة معلنة مثل قراءات العناصر، بعيدًا عن زمن جهاز معين."
+    },
+    {
+      "term": "بيانات اختبار ثابتة",
+      "technical": "Fixtures",
+      "definition": "مدخلات ونتائج متوقعة محفوظة لفحص السلوك نفسه بعد التعديل."
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "solve-02",
+      "id": "solve-02-python-lab",
+      "language": "python",
+      "title": "عدّ الأعداد دون فقد الترتيب",
+      "prompt": "اقرأ قائمة JSON صالحة من 0 إلى 30 عددًا صحيحًا بين -9 و9. أعد أزواج [القيمة، عدد ظهورها] بترتيب أول ظهور، واطبع JSON مضغوطًا في سطر واحد. الفارغ يعطي []، والصفر والسالب والتكرار قيم صالحة. أكمل frequencies فقط ولا تفرز المدخل. مكتبات الإدخال القياسية موضحة في الدرس؛ لا تستخدم وحدة محلية أو حزمة خارجية. يمكن أن يمتد JSON على عدة أسطر. نقصد بالعدد الصحيح قيمة بلا جزء كسري؛ 2.0 مقبولة مثل 2، وbool والكسور خارج العقد. دالة whole_number أوwholeNumber الجاهزة توحد الأعداد ولا تحتاج تعديلًا.",
+      "starterCode": "import json\nimport sys\n\ndef whole_number(value):\n    if type(value) not in (int, float) or value % 1 != 0:\n        raise ValueError(\"expected integer\")\n    return int(value)\n\n\ndef frequencies(items):\n    # TODO: أعد أزواج القيمة والعدد بترتيب أول ظهور\n    return []\n\nitems = [whole_number(value) for value in json.load(sys.stdin)]\nprint(json.dumps(frequencies(items), separators=(\",\", \":\")))\n",
+      "sampleInput": "[2,0,2]\n",
+      "sampleOutput": "[[2,2],[0,1]]\n",
+      "skillId": "solve.counting",
+      "hiddenTests": [
+        {
+          "input": "[]\n",
+          "expectedOutput": "[]\n"
+        },
+        {
+          "input": "[0,0,0]\n",
+          "expectedOutput": "[[0,3]]\n"
+        },
+        {
+          "input": "[\n  2.0, 0, 2, -1, -1.0\n]\n",
+          "expectedOutput": "[[2,2],[0,1],[-1,2]]\n"
+        }
+      ],
+      "solution": "import json\nimport sys\n\ndef whole_number(value):\n    if type(value) not in (int, float) or value % 1 != 0:\n        raise ValueError(\"expected integer\")\n    return int(value)\n\n\ndef frequencies(items):\n    counts = {}\n    for value in items:\n        counts[value] = counts.get(value, 0) + 1\n    return [[value, count] for value, count in counts.items()]\n\nitems = [whole_number(value) for value in json.load(sys.stdin)]\nprint(json.dumps(frequencies(items), separators=(\",\", \":\")))\n"
+    },
+    {
+      "lessonId": "solve-02",
+      "id": "solve-02-javascript-lab",
+      "language": "javascript",
+      "title": "عدّ الأعداد دون فقد الترتيب",
+      "prompt": "اقرأ قائمة JSON صالحة من 0 إلى 30 عددًا صحيحًا بين -9 و9. أعد أزواج [القيمة، عدد ظهورها] بترتيب أول ظهور، واطبع JSON مضغوطًا في سطر واحد. الفارغ يعطي []، والصفر والسالب والتكرار قيم صالحة. أكمل frequencies فقط ولا تفرز المدخل. مكتبات الإدخال القياسية موضحة في الدرس؛ لا تستخدم وحدة محلية أو حزمة خارجية. يمكن أن يمتد JSON على عدة أسطر. نقصد بالعدد الصحيح قيمة بلا جزء كسري؛ 2.0 مقبولة مثل 2، وbool والكسور خارج العقد. دالة whole_number أوwholeNumber الجاهزة توحد الأعداد ولا تحتاج تعديلًا.",
+      "starterCode": "function wholeNumber(value) {\n  if (!Number.isInteger(value)) throw new Error(\"expected integer\");\n  return value;\n}\nconst items = JSON.parse(require(\"node:fs\").readFileSync(0, \"utf8\")).map(wholeNumber);\nfunction frequencies(items) {\n  // TODO: أعد أزواج القيمة والعدد بترتيب أول ظهور\n  return [];\n}\nconsole.log(JSON.stringify(frequencies(items)));\n",
+      "sampleInput": "[2,0,2]\n",
+      "sampleOutput": "[[2,2],[0,1]]\n",
+      "skillId": "solve.counting",
+      "hiddenTests": [
+        {
+          "input": "[]\n",
+          "expectedOutput": "[]\n"
+        },
+        {
+          "input": "[0,0,0]\n",
+          "expectedOutput": "[[0,3]]\n"
+        },
+        {
+          "input": "[\n  2.0, 0, 2, -1, -1.0\n]\n",
+          "expectedOutput": "[[2,2],[0,1],[-1,2]]\n"
+        }
+      ],
+      "solution": "function wholeNumber(value) {\n  if (!Number.isInteger(value)) throw new Error(\"expected integer\");\n  return value;\n}\nconst items = JSON.parse(require(\"node:fs\").readFileSync(0, \"utf8\")).map(wholeNumber);\nfunction frequencies(items) {\n  const counts = new Map();\n  for (const value of items) counts.set(value, (counts.get(value) ?? 0) + 1);\n  return Array.from(counts);\n}\nconsole.log(JSON.stringify(frequencies(items)));\n"
+    },
+    {
+      "lessonId": "solve-04",
+      "id": "solve-04-python-lab",
+      "language": "python",
+      "title": "أفضل نافذة مع حواف صريحة",
+      "prompt": "اقرأ كائن JSON صالحًا فيه items قائمة من 0 إلى 30 عددًا صحيحًا بين -20 و20 وk عدد صحيح بين 0 وطولها. اطبع أكبر مجموع لمقطع متجاور طوله k. عند k=0 اطبع 0 حتى لو كانت القائمة فارغة. القيم السالبة والتكرار والصفر صالحة. أكمل الدالة دون تغيير القائمة؛ استعمل تحديث النافذة. لا توجد مدخلات خارج هذه الحدود في الاختبارات. شكل القراءة موضح في solve-02. يمكن أن يمتد JSON على عدة أسطر. نقصد بالعدد الصحيح قيمة بلا جزء كسري؛ 2.0 مقبولة مثل 2، وbool والكسور خارج العقد. دالة whole_number أوwholeNumber الجاهزة توحد الأعداد ولا تحتاج تعديلًا.",
+      "starterCode": "import json\nimport sys\n\ndef whole_number(value):\n    if type(value) not in (int, float) or value % 1 != 0:\n        raise ValueError(\"expected integer\")\n    return int(value)\n\n\ndef max_window(items, k):\n    # TODO: احسب أفضل مجموع نافذة متجاورة بطول k\n    return 0\n\ndata = json.load(sys.stdin)\nitems = [whole_number(value) for value in data[\"items\"]]\nk = whole_number(data[\"k\"])\nprint(max_window(items, k))\n",
+      "sampleInput": "{\"items\":[1,2,8],\"k\":2}\n",
+      "sampleOutput": "10\n",
+      "skillId": "solve.windows",
+      "hiddenTests": [
+        {
+          "input": "{\"items\":[],\"k\":0}\n",
+          "expectedOutput": "0\n"
+        },
+        {
+          "input": "{\"items\":[-5,-2,-4],\"k\":2}\n",
+          "expectedOutput": "-6\n"
+        },
+        {
+          "input": "{\n  \"items\": [0, 2.0, 2, 0],\n  \"k\": 4.0\n}\n",
+          "expectedOutput": "4\n"
+        }
+      ],
+      "solution": "import json\nimport sys\n\ndef whole_number(value):\n    if type(value) not in (int, float) or value % 1 != 0:\n        raise ValueError(\"expected integer\")\n    return int(value)\n\n\ndef max_window(items, k):\n    if k == 0:\n        return 0\n    current = 0\n    for i in range(k):\n        current += items[i]\n    best = current\n    for right in range(k, len(items)):\n        current += items[right] - items[right - k]\n        best = max(best, current)\n    return best\n\ndata = json.load(sys.stdin)\nitems = [whole_number(value) for value in data[\"items\"]]\nk = whole_number(data[\"k\"])\nprint(max_window(items, k))\n"
+    },
+    {
+      "lessonId": "solve-04",
+      "id": "solve-04-javascript-lab",
+      "language": "javascript",
+      "title": "أفضل نافذة مع حواف صريحة",
+      "prompt": "اقرأ كائن JSON صالحًا فيه items قائمة من 0 إلى 30 عددًا صحيحًا بين -20 و20 وk عدد صحيح بين 0 وطولها. اطبع أكبر مجموع لمقطع متجاور طوله k. عند k=0 اطبع 0 حتى لو كانت القائمة فارغة. القيم السالبة والتكرار والصفر صالحة. أكمل الدالة دون تغيير القائمة؛ استعمل تحديث النافذة. لا توجد مدخلات خارج هذه الحدود في الاختبارات. شكل القراءة موضح في solve-02. يمكن أن يمتد JSON على عدة أسطر. نقصد بالعدد الصحيح قيمة بلا جزء كسري؛ 2.0 مقبولة مثل 2، وbool والكسور خارج العقد. دالة whole_number أوwholeNumber الجاهزة توحد الأعداد ولا تحتاج تعديلًا.",
+      "starterCode": "function wholeNumber(value) {\n  if (!Number.isInteger(value)) throw new Error(\"expected integer\");\n  return value;\n}\nconst data = JSON.parse(require(\"node:fs\").readFileSync(0, \"utf8\"));\nconst items = data.items.map(wholeNumber);\nconst k = wholeNumber(data.k);\nfunction maxWindow(items, k) {\n  // TODO: احسب أفضل مجموع نافذة متجاورة بطول k\n  return 0;\n}\nconsole.log(maxWindow(items, k));\n",
+      "sampleInput": "{\"items\":[1,2,8],\"k\":2}\n",
+      "sampleOutput": "10\n",
+      "skillId": "solve.windows",
+      "hiddenTests": [
+        {
+          "input": "{\"items\":[],\"k\":0}\n",
+          "expectedOutput": "0\n"
+        },
+        {
+          "input": "{\"items\":[-5,-2,-4],\"k\":2}\n",
+          "expectedOutput": "-6\n"
+        },
+        {
+          "input": "{\n  \"items\": [0, 2.0, 2, 0],\n  \"k\": 4.0\n}\n",
+          "expectedOutput": "4\n"
+        }
+      ],
+      "solution": "function wholeNumber(value) {\n  if (!Number.isInteger(value)) throw new Error(\"expected integer\");\n  return value;\n}\nconst data = JSON.parse(require(\"node:fs\").readFileSync(0, \"utf8\"));\nconst items = data.items.map(wholeNumber);\nconst k = wholeNumber(data.k);\nfunction maxWindow(items, k) {\n  if (k === 0) return 0;\n  let current = 0;\n  for (let i = 0; i < k; i++) current += items[i];\n  let best = current;\n  for (let right = k; right < items.length; right++) {\n    current += items[right] - items[right - k];\n    best = Math.max(best, current);\n  }\n  return best;\n}\nconsole.log(maxWindow(items, k));\n"
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "solve-01",
+      "index": 0,
+      "input": "",
+      "output": "2\n-1\n1\n"
+    },
+    {
+      "lessonId": "solve-01",
+      "index": 1,
+      "input": "",
+      "output": "2\n-1\n1\n"
+    },
+    {
+      "lessonId": "solve-02",
+      "index": 0,
+      "input": "",
+      "output": "[[2,3],[0,2]]\n[]\n"
+    },
+    {
+      "lessonId": "solve-02",
+      "index": 1,
+      "input": "",
+      "output": "[[2,3],[0,2]]\n[]\n"
+    },
+    {
+      "lessonId": "solve-03",
+      "index": 0,
+      "input": "",
+      "output": "[0,3]\n[]\n"
+    },
+    {
+      "lessonId": "solve-03",
+      "index": 1,
+      "input": "",
+      "output": "[0,3]\n[]\n"
+    },
+    {
+      "lessonId": "solve-04",
+      "index": 0,
+      "input": "",
+      "output": "10\n-6\n0\n"
+    },
+    {
+      "lessonId": "solve-04",
+      "index": 1,
+      "input": "",
+      "output": "10\n-6\n0\n"
+    },
+    {
+      "lessonId": "solve-05",
+      "index": 0,
+      "input": "",
+      "output": "12 9\n12 7\nTrue\n"
+    },
+    {
+      "lessonId": "solve-05",
+      "index": 1,
+      "input": "",
+      "output": "12 9\n12 7\ntrue\n"
+    },
+    {
+      "lessonId": "solve-06",
+      "index": 0,
+      "input": "",
+      "output": "{\"result\":[[\"red\",2],[\"blue\",1]]}\n{\"result\":[]}\n"
+    },
+    {
+      "lessonId": "solve-06",
+      "index": 1,
+      "input": "",
+      "output": "{\"result\":[[\"red\",2],[\"blue\",1]]}\n{\"result\":[]}\n"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ namespace Masar.Api;
 
 internal sealed class CodeLabRunner : IDisposable
 {
+    internal const int ExecutionDeadlineSeconds = 60;
     private const int MaximumResponseBytes = 112 * 1024;
     private const int MaximumOutputBytes = 16 * 1024;
     private readonly Uri? endpoint;
@@ -46,7 +47,8 @@ internal sealed class CodeLabRunner : IDisposable
     {
         if (endpoint is null) return ExecutionResult.InfrastructureError;
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        deadline.CancelAfter(TimeSpan.FromSeconds(25));
+        // Includes bounded trusted startup, learner execution, state checks and cleanup.
+        deadline.CancelAfter(TimeSpan.FromSeconds(ExecutionDeadlineSeconds));
         var bounded = deadline.Token;
         try
         {

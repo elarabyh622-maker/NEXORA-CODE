@@ -1,0 +1,530 @@
+{
+  "lessons": [
+    {
+      "id": "pyproj-01",
+      "title": "جهّز بيئة مستقلة لمشروع Python",
+      "summary": "انتقل من ملف py-12 إلى مجلد مشروع ومفسّر محدد.",
+      "why": "عندما يكون لكل مشروع مفسّره وحزمه تقل أخطاء تشغيل ملف ببيئة مشروع آخر.",
+      "objectives": [
+        "أنشئ بيئة افتراضية واختر مفسّرها مباشرة.",
+        "ميّز المكتبة القياسية عن الحزم الخارجية ووثّق احتياجات المشروع."
+      ],
+      "minutes": "35",
+      "skillIds": [
+        "pyproj.environment"
+      ],
+      "sections": [
+        {
+          "heading": "من أين نبدأ؟",
+          "body": "أنهيت في py-12 معاينة أسماء الملفات بلا نقلها. سنحافظ على هذا السلوك ونبني أداة محلية صغيرة باسم preview-project. افتح PowerShell داخل مجلد جديد بهذا الاسم في مكان تدريبك، خارج مجلد المنصة. تحتاج Python 3.10 أو أحدث مثبتًا مسبقًا. أمر python --version يعرض الإصدار؛ إذا لم يُعرف الأمر أصلح تثبيت Python قبل المتابعة."
+        },
+        {
+          "heading": "البيئة ليست مجلد الشيفرة",
+          "body": "ينشئ python -m venv .venv مجلدًا للمفسّر وحزم هذا المشروع. تبقى ملفاتك مثل main.py بجانبه خارج .venv. شغّل المفسّر بمساره المباشر .\\.venv\\Scripts\\python.exe؛ لا تحتاج تفعيل البيئة أو تغيير ExecutionPolicy. لا تنسخ .venv بين الأجهزة: أعد إنشاءها. إذا استعملت Git فأضف .venv/ و__pycache__/ إلى .gitignore."
+        },
+        {
+          "heading": "لماذا python -m pip؟",
+          "body": "يشغّل -m وحدة عبر المفسّر المحدد. لذلك يربط .\\.venv\\Scripts\\python.exe -m pip الحزم ببيئة مشروعك، بينما قد يشير pip وحده إلى تثبيت آخر. أوامر --version وlist أدناه للفحص فقط ولا تثبّت شيئًا. venv وjson وunittest من المكتبة القياسية؛ مشروعنا لا يحتاج حزمًا خارجية ولا FastAPI."
+        },
+        {
+          "heading": "عندما يحتاج مشروع لاحق حزمة",
+          "body": "يجمع ملف requirements.txt أسماء الحزم الخارجية وإصداراتها التي اختبرها المشروع، وتثبّتها لاحقًا بأمر المفسّر -m pip install -r requirements.txt. لا تنفّذ أمر التثبيت الآن ولا تكتب json أوunittest في الملف. لمشروعنا اكتب في README.md أنه يحتاج Python 3.10+ ويستخدم المكتبة القياسية فقط. تشغيل المثال المستقل أدناه يوضح الفرق بين اسم الوحدة والبيانات التي تعالجها دون كتابة ملفات."
+        }
+      ],
+      "examples": [
+        {
+          "title": "خطوات PowerShell داخل مجلد preview-project",
+          "code": "python --version\npython -m venv .venv\n.\\.venv\\Scripts\\python.exe --version\n.\\.venv\\Scripts\\python.exe -m pip --version\n.\\.venv\\Scripts\\python.exe -m pip list\n",
+          "explanation": "تحقق أن مسار pip المعروض يقع تحت .venv. هذه خطوات محلية وليست مختبرًا في المتصفح، ونتائج الإصدارات تختلف حسب جهازك.",
+          "language": "text"
+        },
+        {
+          "title": "استخدم json من المكتبة القياسية",
+          "code": "import json\n\nrecord = json.loads('{\"name\": \"notes.txt\"}')\nprint(record[\"name\"])\nprint(type(record).__name__)\n",
+          "explanation": "يحوّل json النص إلى قاموس؛ لا يلزم pip لهذه الوحدة. يطبع المثال اسم الملف ثم dict ولا يقرأ أي ملف فعلي.",
+          "language": "python"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "pyproj-01-e1",
+          "type": "text",
+          "prompt": "أنت داخل preview-project في PowerShell. اكتب أمر عرض إصدار pip الخاص بالبيئة .venv باستخدام مفسّرها المباشر.",
+          "options": [],
+          "acceptedAnswers": [
+            ".\\.venv\\Scripts\\python.exe -m pip --version"
+          ],
+          "explanation": "يضمن مسار المفسّر الصريح أن pip تابع لبيئة المشروع المقصودة.",
+          "hints": [
+            "استخدم -m pip ثم --version."
+          ],
+          "independent": true
+        },
+        {
+          "id": "pyproj-01-e2",
+          "type": "text",
+          "prompt": "ملف main.py يستورد json وunittest فقط. كم حزمة خارجية يلزم تثبيتها؟ اكتب العدد.",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "كلتا الوحدتين من المكتبة القياسية التي تأتي مع Python.",
+          "hints": [
+            "لا تعني كلمة import دائمًا تثبيت حزمة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "pyproj-01-e3",
+          "type": "text",
+          "prompt": "بعد نسخ الشيفرة إلى جهاز آخر، اكتب أمر إنشاء .venv من جديد داخل مجلد المشروع.",
+          "options": [],
+          "acceptedAnswers": [
+            "python -m venv .venv"
+          ],
+          "explanation": "البيئة تحتوي مسارات تخص جهازها؛ إنشاء بيئة جديدة أوضح من نسخها.",
+          "hints": [
+            "استدع وحدة venv وحدد اسم المجلد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "حدّد مفسّر المشروع صراحة وافصل شيفرتك عن مجلد البيئة."
+    },
+    {
+      "id": "pyproj-02",
+      "title": "افصل القاعدة عن التشغيل واختبرها",
+      "summary": "وزّع معاينة الأسماء على وحدة ودالة تشغيل واختبارات.",
+      "why": "عزل القاعدة يتيح اختبارها دون طلب إدخال أو تشغيل البرنامج كله.",
+      "objectives": [
+        "استورد دالة من ملف مجاور دون تنفيذ واجهة الإدخال.",
+        "اختبر حد الامتداد الصحيح وحالة الامتداد غير المعروف."
+      ],
+      "minutes": "35",
+      "skillIds": [
+        "pyproj.modules"
+      ],
+      "sections": [
+        {
+          "heading": "الوحدة ملف Python",
+          "body": "أنشئ الملفات الثلاثة أدناه بجانب .venv داخل preview-project. الملف rules.py وحدة، ويستورد main.py الدالة باستخدام from rules import category. لا تسمّ ملفك json.py أوunittest.py حتى لا يحجب وحدة المكتبة القياسية. لا تجمع محتويات الملفات الثلاثة في ملف واحد."
+        },
+        {
+          "heading": "الاستيراد والتشغيل",
+          "body": "ينفّذ Python أوامر المستوى الأعلى عند استيراد الوحدة. لذلك لا نضع input() في rules.py. داخل main.py نجمع واجهة الإدخال في main، ثم نستدعيها فقط تحت if __name__ == \"__main__\". تكون قيمة __name__ عند التشغيل المباشر __main__، وعند الاستيراد اسم الوحدة."
+        },
+        {
+          "heading": "اختبارات محددة العقد",
+          "body": "نظّف الاسم بـ strip وlower قبل category؛ الدالة نفسها تتوقع اسمًا نظيفًا. اختبر archive.txt.csv بوصفه data وa.txt.bak بوصفه other: الحكم لنهاية الاسم الكاملة. تنفّذ unittest داخل مشروعك الاختبارات الثابتة، وهذا مختلف عن تقييم حل متعلم غير موثوق. assertEqual تقارن الناتج الفعلي بالمتوقع وتعرض الفشل عند اختلافهما."
+        },
+        {
+          "heading": "جرّب ثم غيّر",
+          "body": "شغّل الاختبارات من مجلد preview-project، ثم شغّل main.py وأدخل A.TXT مع مسافات. تتوقع text:a.txt. لا يجري البرنامج أي فتح أو نقل لملف بهذا الاسم. المثال المستقل الأخير يكرر القاعدة للاختبار داخل المتصفح؛ نسخة المشروع ذات الملفات المنفصلة تشغّل محليًا فقط."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ملف rules.py",
+          "code": "def category(name: str) -> str:\n    if name.endswith(\".txt\"):\n        return \"text\"\n    if name.endswith(\".csv\"):\n        return \"data\"\n    return \"other\"\n",
+          "explanation": "تستقبل الدالة اسمًا نظيفًا وتعيد نص التصنيف. هذا ملف وحدة يستورده main.py.",
+          "language": "text"
+        },
+        {
+          "title": "ملف main.py",
+          "code": "from rules import category\n\ndef main():\n    name = input().strip().lower()\n    print(f\"{category(name)}:{name}\")\n\nif __name__ == \"__main__\":\n    main()\n",
+          "explanation": "يحافظ حاجز التشغيل على قابلية استيراد main دون انتظار إدخال. التنظيف مسؤولية واجهة الإدخال.",
+          "language": "text"
+        },
+        {
+          "title": "ملف test_rules.py",
+          "code": "import unittest\nfrom rules import category\n\nclass CategoryTests(unittest.TestCase):\n    def test_categories(self):\n        self.assertEqual(category(\"a.txt\"), \"text\")\n        self.assertEqual(category(\"archive.txt.csv\"), \"data\")\n        self.assertEqual(category(\"a.txt.bak\"), \"other\")\n        self.assertEqual(category(\"note\"), \"other\")\n",
+          "explanation": "تجمع class الاختبارات، وتبدأ أسماء الاختبارات بـ test_. self هو كائن الاختبار الحالي الذي يوفّر assertEqual. هذه وراثة بسيطة من unittest.TestCase؛ لا تحتاج تصميم أصناف متقدمًا لتشغيلها.",
+          "language": "text"
+        },
+        {
+          "title": "تشغيل الملفات من مجلد المشروع",
+          "code": ".\\.venv\\Scripts\\python.exe -m unittest test_rules -v\n.\\.venv\\Scripts\\python.exe main.py\n",
+          "explanation": "يبحث unittest عن اختبارات test_rules.py. نجاح الاختبارات يظهر OK؛ بعدها اكتب الاسم عند انتظار main.py للإدخال.",
+          "language": "text"
+        },
+        {
+          "title": "تحقق مستقل من القاعدة",
+          "code": "def category(name: str) -> str:\n    if name.endswith(\".txt\"):\n        return \"text\"\n    if name.endswith(\".csv\"):\n        return \"data\"\n    return \"other\"\n\nfor name in [\"a.txt\", \"archive.txt.csv\", \"a.txt.bak\", \"note\"]:\n    print(category(name))\n",
+          "explanation": "هذا المثال مكتمل في ملف واحد للمقارنة السريعة. يطبع التصنيفات الأربعة دون استيراد ملفات المشروع.",
+          "language": "python"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "pyproj-02-e1",
+          "type": "text",
+          "prompt": "اكتب سطر استيراد category من rules.py دون امتداد الملف.",
+          "options": [],
+          "acceptedAnswers": [
+            "from rules import category"
+          ],
+          "explanation": "اسم الوحدة في الاستيراد rules؛ يستخدم Python امتداد .py للوصول إلى الملف.",
+          "hints": [
+            "استخدم from ثم import."
+          ],
+          "independent": true
+        },
+        {
+          "id": "pyproj-02-e2",
+          "type": "text",
+          "prompt": "في قواعد هذا الدرس، ما تصنيف archive.txt.csv؟",
+          "options": [],
+          "acceptedAnswers": [
+            "data"
+          ],
+          "explanation": "ينتهي الاسم بـ .csv حتى لو احتوى .txt داخله.",
+          "hints": [
+            "افحص النهاية فقط."
+          ],
+          "independent": true
+        },
+        {
+          "id": "pyproj-02-e3",
+          "type": "text",
+          "prompt": "ما قيمة __name__ التي تسمح لشرط الحاجز بتشغيل main عند تشغيل الملف مباشرة؟ اكتب القيمة بلا علامات اقتباس.",
+          "options": [],
+          "acceptedAnswers": [
+            "__main__"
+          ],
+          "explanation": "يضع Python هذه القيمة عند تشغيل الملف نقطة دخول، فيظل الاستيراد بلا طلب إدخال.",
+          "hints": [
+            "توجد شرطتان سفليتان في كل طرف."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "دع وحدة القواعد تعيد قيمًا، وضع الإدخال والتشغيل في نقطة دخول منفصلة."
+    },
+    {
+      "id": "pyproj-03",
+      "title": "اكتب عقود الأنواع وكائن تقرير صغير",
+      "summary": "وثّق مدخلات الدوال وحقول التقرير مع فحص صريح للبيانات.",
+      "why": "تشرح annotations شكل البيانات للقارئ والأدوات، بينما يتطلب قبول البيانات فحصًا أثناء التشغيل.",
+      "objectives": [
+        "اكتب str وint وlist[str] وتلميح نوع القيمة المعادة.",
+        "أنشئ كائنًا بسيطًا وافرق بين وصف النوع والتحقق منه.",
+        "أكمل مشروع معاينة صغيرًا بملفات واختبارات."
+      ],
+      "minutes": "35",
+      "skillIds": [
+        "pyproj.types"
+      ],
+      "sections": [
+        {
+          "heading": "اقرأ التوقيع أولًا",
+          "body": "في def category(name: str) -> str يشير name: str إلى النوع المتوقع للمدخل وتشير -> str إلى نوع الناتج. ويمكن كتابة count: int وnames: list[str] لقيمة عددية وقائمة نصوص. تلميحات الأنواع لا تحوّل المدخل ولا تمنع القيمة المخالفة تلقائيًا. نستخدم Python 3.10+ في هذه الوحدة، لذلك الصيغة list[str] متاحة."
+        },
+        {
+          "heading": "صنف صغير يكفي هنا",
+          "body": "تعرّف class اسمًا لقالب كائنات. PreviewReport يضم اسمًا وتصنيفًا. تستدعي PreviewReport(name, category) الدالة الخاصة __init__ لتجهيز الكائن الجديد؛ self يشير إلى ذلك الكائن، وself.name حقل يخصه. اسم __init__ له شرطتان سفليتان في الطرفين. لا تكتب self عند الاستدعاء. لا تحتاج وراثة أو تجريدًا لتقريرنا."
+        },
+        {
+          "heading": "ماذا تعني الأقواس بعد اسم الصنف؟",
+          "body": "في class CategoryTests(unittest.TestCase) من الدرس السابق، تحدد الأقواس الصنف الأساس الذي نحصل منه على سلوك الاختبار. ستقرأ لاحقًا صيغة class Item(BaseModel) التي تستعمل صنفًا أساسًا من مكتبة Pydantic. BaseModel وحقول مثل name: str ليست من مكتبة Python القياسية؛ سلوك التحقق يأتي من المكتبة، وليس من النقطتين وحدهما. لا نثبّت Pydantic أوFastAPI هنا."
+        },
+        {
+          "heading": "التحقق عند حدود البيانات",
+          "body": "نفترض أسماء نصية غير فارغة في مشروع المعاينة. في مثال count أدناه تمر سلسلة رغم int لأن Python لا يفرض annotation؛ مثال parse_count يفحص type(value) is int وvalue >= 0 فعليًا ويرفض bool أيضًا. هذا عقد تعليمي محدد لا محوّل تلقائي. إذا دخل نص من input فإن int يحاول التحويل وقد يرفع ValueError؛ لا تخلط التحويل بالتلميح."
+        },
+        {
+          "heading": "أكمل مشروعًا واحدًا",
+          "body": "احتفظ بملفي rules.py وtest_rules.py من الدرس السابق، وأضف models.py أدناه، ثم استبدل main.py بالنسخة الأخيرة. اقرأ أسماء مفصولة بفاصلة إنجليزية، ونظّفها وتجاهل الفارغ. نتعمد الاحتفاظ بالتكرار في هذا المشروع؛ كل اسم غير فارغ تقرير مستقل. شغّل اختبارات القاعدة ثم main.py بأوامر الدرس السابق. الإدخال A.TXT, b.csv ينتج text:a.txt ثم data:b.csv ثم total=2. لا تنفّذ الأداة أي عملية ملفات."
+        }
+      ],
+      "examples": [
+        {
+          "title": "التلميح لا يفرض النوع",
+          "code": "count: int = \"3\"\nprint(type(count).__name__)\n\ndef parse_count(value: object) -> int:\n    if type(value) is not int or value < 0:\n        raise ValueError(\"invalid count\")\n    return value\n\nfor value in [3, \"3\", True, -1]:\n    try:\n        print(parse_count(value))\n    except ValueError:\n        print(\"invalid\")\n",
+          "explanation": "يطبع str لأن القيمة الفعلية نص. الفحص الصريح يقبل العدد الصحيح غير السالب ويرفض النص والقيمة المنطقية والسالب؛ لم تنفذ annotation هذا الفحص.",
+          "language": "python"
+        },
+        {
+          "title": "قالب التقرير واستخدامه في مثال مستقل",
+          "code": "class PreviewReport:\n    name: str\n    category: str\n\n    def __init__(self, name: str, category: str) -> None:\n        self.name = name\n        self.category = category\n\nitem = PreviewReport(\"a.txt\", \"text\")\nprint(item.name)\nprint(item.category)\n",
+          "explanation": "تُنشئ الأقواس كائنًا واحدًا وتملأ __init__ حقوله. annotations توثّق حقلي النص ولا تتحقق منهما تلقائيًا.",
+          "language": "python"
+        },
+        {
+          "title": "ملف models.py",
+          "code": "class PreviewReport:\n    name: str\n    category: str\n\n    def __init__(self, name: str, category: str) -> None:\n        self.name = name\n        self.category = category\n",
+          "explanation": "انسخ هذا الملف كاملًا إلى مجلد المشروع. لا يحتوي أي استيراد خارجي.",
+          "language": "text"
+        },
+        {
+          "title": "النسخة النهائية من main.py",
+          "code": "from rules import category\nfrom models import PreviewReport\n\ndef build_reports(raw: str) -> list[PreviewReport]:\n    reports: list[PreviewReport] = []\n    for part in raw.split(\",\"):\n        name = part.strip().lower()\n        if name:\n            reports.append(PreviewReport(name, category(name)))\n    return reports\n\ndef main() -> None:\n    reports = build_reports(input())\n    for item in reports:\n        print(f\"{item.category}:{item.name}\")\n    print(f\"total={len(reports)}\")\n\nif __name__ == \"__main__\":\n    main()\n",
+          "explanation": "تعيد build_reports قائمة كائنات. تفصل main الطباعة عن بناء التقارير. تحافظ الأداة على ترتيب الإدخال وعلى الأسماء المكررة وتعد كل تقرير مرة.",
+          "language": "text"
+        },
+        {
+          "title": "اختبار تكامل إضافي: ملف test_preview.py",
+          "code": "import unittest\nfrom main import build_reports\n\nclass PreviewTests(unittest.TestCase):\n    def test_cleaning_and_order(self):\n        reports = build_reports(\" A.TXT, ,b.csv,A.TXT \")\n        self.assertEqual([(r.category, r.name) for r in reports],\n                         [(\"text\", \"a.txt\"), (\"data\", \"b.csv\"), (\"text\", \"a.txt\")])\n\n    def test_empty(self):\n        self.assertEqual(build_reports(\" , \"), [])\n",
+          "explanation": "يستورد الاختبار main دون استدعاء input بفضل حاجز التشغيل. اختبر الفراغ والتكرار والترتيب معًا. شغّل الملفين بالأمر التالي.",
+          "language": "text"
+        },
+        {
+          "title": "تشغيل جميع اختبارات المشروع",
+          "code": ".\\.venv\\Scripts\\python.exe -m unittest test_rules test_preview -v\n",
+          "explanation": "ينفّذ اختبارات القاعدة والتكامل المحلية. النجاح وحده لا يقيّم شرحك للعقد؛ راجع معايير المشروع أيضًا.",
+          "language": "text"
+        }
+      ],
+      "exercises": [
+        {
+          "id": "pyproj-03-e1",
+          "type": "text",
+          "prompt": "في names: list[str]، ما نوع كل عنصر متوقع؟ اكتب اسمه في Python.",
+          "options": [],
+          "acceptedAnswers": [
+            "str"
+          ],
+          "explanation": "تصف الأقواس نوع العناصر داخل القائمة. هذا توقع للأدوات والقارئ، لا فحص تلقائي.",
+          "hints": [
+            "كل اسم نص."
+          ],
+          "independent": true
+        },
+        {
+          "id": "pyproj-03-e2",
+          "type": "text",
+          "prompt": "ما الذي يطبعه type(count).__name__ بعد count: int = \"3\"؟",
+          "options": [],
+          "acceptedAnswers": [
+            "str"
+          ],
+          "explanation": "يبقى النص نصًا لأن annotation لا تحول القيمة إلى عدد.",
+          "hints": [
+            "انظر إلى القيمة المسندة بين علامتي الاقتباس."
+          ],
+          "independent": true
+        },
+        {
+          "id": "pyproj-03-e3",
+          "type": "text",
+          "prompt": "أنشأنا item = PreviewReport(\"a.txt\", \"text\"). اكتب التعبير الذي يقرأ تصنيف هذا الكائن.",
+          "options": [],
+          "acceptedAnswers": [
+            "item.category"
+          ],
+          "explanation": "النقطة تقرأ الحقل الذي وضعته __init__ في self.category لهذا الكائن.",
+          "hints": [
+            "اسم الحقل category."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "تصف annotations العقد، وينفّذ الكود الصريح التحقق؛ اجمع القواعد والتقارير في أداة صغيرة قابلة للاختبار."
+    }
+  ],
+  "skills": [
+    {
+      "id": "pyproj.environment",
+      "title": "جهّز بيئة مستقلة لمشروع Python",
+      "description": "انتقل من ملف py-12 إلى مجلد مشروع ومفسّر محدد.",
+      "required": {
+        "skill": "py.automation"
+      },
+      "recommended": []
+    },
+    {
+      "id": "pyproj.modules",
+      "title": "افصل القاعدة عن التشغيل واختبرها",
+      "description": "وزّع معاينة الأسماء على وحدة ودالة تشغيل واختبارات.",
+      "required": {
+        "skill": "pyproj.environment"
+      },
+      "recommended": []
+    },
+    {
+      "id": "pyproj.types",
+      "title": "اكتب عقود الأنواع وكائن تقرير صغير",
+      "description": "وثّق مدخلات الدوال وحقول التقرير مع فحص صريح للبيانات.",
+      "required": {
+        "skill": "pyproj.modules"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "pyproj-01",
+      "title": "جهّز بيئة مستقلة لمشروع Python",
+      "why": "عندما يكون لكل مشروع مفسّره وحزمه تقل أخطاء تشغيل ملف ببيئة مشروع آخر.",
+      "skillIds": [
+        "pyproj.environment"
+      ]
+    },
+    {
+      "id": "pyproj-02",
+      "title": "افصل القاعدة عن التشغيل واختبرها",
+      "why": "عزل القاعدة يتيح اختبارها دون طلب إدخال أو تشغيل البرنامج كله.",
+      "skillIds": [
+        "pyproj.modules"
+      ]
+    },
+    {
+      "id": "pyproj-03",
+      "title": "اكتب عقود الأنواع وكائن تقرير صغير",
+      "why": "تشرح annotations شكل البيانات للقارئ والأدوات، بينما يتطلب قبول البيانات فحصًا أثناء التشغيل.",
+      "skillIds": [
+        "pyproj.types"
+      ]
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "pyproj-02",
+      "id": "pyproj-02-lab",
+      "language": "python",
+      "title": "صنّف الأسماء عبر دالة مستقلة",
+      "prompt": "اقرأ سطر أسماء مفصولة بفاصلة إنجليزية. أكمل category لتعيد text للنهاية .txt وdata للنهاية .csv وother لغيرهما. نظّف كل جزء بـ strip ثم lower وتجاهل الفارغ واطبع category:name. احتفظ بالترتيب وبالأسماء المكررة. هذا مختبر دالة في ملف واحد؛ لا تنشئ ملفات ولا تستورد وحدة محلية.",
+      "starterCode": "def category(name):\n    # أعد التصنيف المناسب\n    return \"other\"\n\nraw = input()\n# نظف الأسماء واطبع التقارير\n",
+      "sampleInput": " A.TXT, b.csv \n",
+      "sampleOutput": "text:a.txt\ndata:b.csv\n",
+      "skillId": "pyproj.modules",
+      "hiddenTests": [
+        {
+          "input": " , , \n",
+          "expectedOutput": ""
+        },
+        {
+          "input": "X.CSV, x.csv, a.txt.bak\n",
+          "expectedOutput": "data:x.csv\ndata:x.csv\nother:a.txt.bak\n"
+        },
+        {
+          "input": "archive.txt.csv, .txt, note\n",
+          "expectedOutput": "data:archive.txt.csv\ntext:.txt\nother:note\n"
+        }
+      ],
+      "solution": "def category(name: str) -> str:\n    if name.endswith(\".txt\"):\n        return \"text\"\n    if name.endswith(\".csv\"):\n        return \"data\"\n    return \"other\"\n\nraw = input()\nfor part in raw.split(\",\"):\n    name = part.strip().lower()\n    if name:\n        print(f\"{category(name)}:{name}\")\n"
+    },
+    {
+      "lessonId": "pyproj-03",
+      "id": "pyproj-03-lab",
+      "language": "python",
+      "title": "افحص العدد بدل الاعتماد على annotation",
+      "prompt": "الإدخال سطر JSON صالح يمثل قائمة قيم. أكمل parse_count بقبول الأعداد الصحيحة غير السالبة فقط وإعادتها كما هي. ارفض bool والنص والكسور والسالب وبقية القيم برفع ValueError. لا تحوّل النصوص لأعداد. الحلقة الجاهزة تطبع العدد المقبول أو invalid لكل عنصر. استخدم type(value) is int لاستبعاد bool.",
+      "starterCode": "import json\n\ndef parse_count(value: object) -> int:\n    # افحص النوع والقيمة وارفع ValueError عند الرفض\n    return value\n\nvalues = json.loads(input())\nfor value in values:\n    try:\n        print(parse_count(value))\n    except ValueError:\n        print(\"invalid\")\n",
+      "sampleInput": "[0, \"2\", 3]\n",
+      "sampleOutput": "0\ninvalid\n3\n",
+      "skillId": "pyproj.types",
+      "hiddenTests": [
+        {
+          "input": "[true, false, -1, 2.5]\n",
+          "expectedOutput": "invalid\ninvalid\ninvalid\ninvalid\n"
+        },
+        {
+          "input": "[12, 0, null, \"\", 2.0]\n",
+          "expectedOutput": "12\n0\ninvalid\ninvalid\ninvalid\n"
+        },
+        {
+          "input": "[]\n",
+          "expectedOutput": ""
+        }
+      ],
+      "solution": "import json\n\ndef parse_count(value: object) -> int:\n    if type(value) is not int or value < 0:\n        raise ValueError(\"invalid count\")\n    return value\n\nvalues = json.loads(input())\nfor value in values:\n    try:\n        print(parse_count(value))\n    except ValueError:\n        print(\"invalid\")\n"
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "pyproj-01",
+      "index": 1,
+      "input": "",
+      "output": "notes.txt\ndict\n"
+    },
+    {
+      "lessonId": "pyproj-02",
+      "index": 4,
+      "input": "",
+      "output": "text\ndata\nother\nother\n"
+    },
+    {
+      "lessonId": "pyproj-03",
+      "index": 0,
+      "input": "",
+      "output": "str\n3\ninvalid\ninvalid\ninvalid\n"
+    },
+    {
+      "lessonId": "pyproj-03",
+      "index": 1,
+      "input": "",
+      "output": "a.txt\ntext\n"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "بيئة افتراضية",
+      "technical": "venv",
+      "definition": "مجلد يحوي مفسّر مشروع ومساحة حزمه المنفصلة عن المشاريع الأخرى."
+    },
+    {
+      "term": "مدير الحزم",
+      "technical": "pip",
+      "definition": "أداة تثبّت الحزم الخارجية عبر المفسّر الذي يشغّلها."
+    },
+    {
+      "term": "وحدة",
+      "technical": "Module",
+      "definition": "ملف Python يمكن استيراد الدوال والأسماء منه."
+    },
+    {
+      "term": "تلميح نوع",
+      "technical": "Type annotation",
+      "definition": "وصف للنوع المتوقع تستفيد منه الأدوات والقارئ ولا يفرضه Python تلقائيًا."
+    },
+    {
+      "term": "صنف وكائن",
+      "technical": "Class / Instance",
+      "definition": "الصنف يصف قالبًا؛ والكائن نسخة منه لها حقولها الخاصة."
+    },
+    {
+      "term": "تهيئة الكائن",
+      "technical": "__init__",
+      "definition": "دالة خاصة تجهّز حالة كائن جديد وتستقبل self بوصفه الكائن الحالي."
+    },
+    {
+      "term": "حاجز نقطة الدخول",
+      "technical": "__name__ guard",
+      "definition": "شرط يسمح باستدعاء واجهة التشغيل عند تنفيذ الملف مباشرة ويمنع استدعاءها لمجرد استيراده."
+    }
+  ],
+  "track": {
+    "id": "python-projects",
+    "title": "Python للمشاريع",
+    "lessonIds": [
+      "pyproj-01",
+      "pyproj-02",
+      "pyproj-03"
+    ]
+  },
+  "goal": {
+    "id": "python-projects",
+    "title": "Python للمشاريع",
+    "description": "جهّز بيئة مشروع وافصل وحداته واختبر قواعده واكتب عقود الأنواع قبل الانتقال إلى أطر الويب.",
+    "status": "sample",
+    "skillIds": [
+      "pyproj.environment",
+      "pyproj.modules",
+      "pyproj.types"
+    ]
+  },
+  "project": {
+    "id": "pyproj-preview-tool",
+    "title": "أداة معاينة أسماء منظمة",
+    "lessonId": "pyproj-03",
+    "summary": "أداة محلية صغيرة تستقبل أسماء وتبني تقارير عبر وحدات Python واختبارات دون التعامل مع ملفات المستخدم.",
+    "criteria": [
+      "أنشئ .venv وشغّل المشروع بمفسّرها الصريح دون تغيير سياسة PowerShell.",
+      "ضع القواعد في rules.py والتقرير في models.py وواجهة التشغيل في main.py مع حاجز نقطة الدخول.",
+      "نظّف الطرفين وصغّر الحروف وتجاهل الأجزاء الفارغة واحتفظ بالتكرار والترتيب.",
+      "اطبع category:name لكل تقرير ثم total=N لعدد التقارير، دون قراءة ملفات أو نقلها.",
+      "شغّل test_rules وtest_preview وتحقق من الاسم ذي الامتداد المركب والسطر الفارغ والتكرار.",
+      "وثّق Python 3.10+ والمكتبة القياسية فقط في README.md، واشرح لماذا لا تمنع annotations وحدها البيانات الخاطئة؛ يتطلب الشرح مراجعة بشرية."
+    ]
+  }
+}

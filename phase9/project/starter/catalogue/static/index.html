@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>كتالوج المنتجات</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>كتالوج المنتجات</h1>
+      <button id="session-button" type="button">تسجيل الدخول</button>
+    </header>
+    <form id="login" class="panel" hidden>
+      <h2>الدخول إلى الكتالوج</h2>
+      <label>اسم المستخدم<input name="username" autocomplete="username" maxlength="64" required></label>
+      <label>كلمة المرور<input name="password" type="password" autocomplete="current-password" maxlength="128" required></label>
+      <button>دخول</button>
+    </form>
+    <form id="search">
+      <label>البحث باسم المنتج<input name="q" type="search" maxlength="100" placeholder="مثال: دفتر"></label>
+      <label>التصنيف<input name="category" maxlength="60" placeholder="كل التصنيفات"></label>
+      <button>بحث</button>
+    </form>
+    <p role="status" id="status"></p>
+    <section id="inventory">
+      <div class="section-head"><h2>المخزون</h2><button type="button" id="new-product" hidden>إضافة منتج</button></div>
+      <form id="editor" class="panel" hidden>
+        <h3 id="editor-title">إضافة منتج</h3>
+        <label>اسم المنتج<input name="name" maxlength="100" required></label>
+        <label>التصنيف<input name="category" maxlength="60" required></label>
+        <label>السعر بالقروش<input name="price_minor" type="number" min="0" max="100000000" step="1" required></label>
+        <label>عدد القطع<input name="stock" type="number" min="0" max="1000000" step="1" required></label>
+        <div class="actions"><button>حفظ</button><button id="cancel" type="button" class="secondary">إلغاء</button></div>
+      </form>
+      <ul id="products"></ul>
+    </section>
+  </main>
+</body>
+</html>

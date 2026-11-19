@@ -162,9 +162,17 @@ app.Use(async (ctx, next) =>
             ApiError known => known,
             BadHttpRequestException bad => new ApiError(bad.StatusCode, "invalid_request", "الطلب غير صالح أو يتجاوز الحد المسموح."),
             AntiforgeryValidationException => new ApiError(400, "csrf_invalid", "رمز حماية الطلب غير صالح؛ حدّث الصفحة ثم حاول مجددًا."),
+            NpgsqlException failure when failure.IsTransient ||
+                failure is PostgresException { SqlState: "53200" or "53300" or "57P03" } =>
+                new ApiError(503, "service_unavailable", HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsHead(ctx.Request.Method)
+                    ? "الخدمة غير متاحة مؤقتًا. أعد المحاولة بعد قليل."
+                    : "تعذر الاتصال بالخدمة. لم نؤكد نتيجة الطلب؛ حدّث الصفحة للتحقق قبل إعادة إرساله."),
             _ => new ApiError(500, "server_error", "تعذر إتمام العملية الآن.")
         };
         if (error.Status == 500) app.Logger.LogError("Request failed ({ExceptionType}).", ex.GetType().Name);
+        if (error.Code == "service_unavailable")
+            app.Logger.LogWarning("Database service temporarily unavailable ({ExceptionType}, {SqlState}).",
+                ex.GetType().Name, (ex as PostgresException)?.SqlState ?? "connection");
         ctx.Response.Clear();
         ctx.Response.StatusCode = error.Status;
         ctx.Response.Headers.CacheControl = "no-store";

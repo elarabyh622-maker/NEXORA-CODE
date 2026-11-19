@@ -1,8 +1,10 @@
 """Fixed Docker/runsc profile for the NEXORA CODE console runner."""
 
+import http.client
 import json
 import os
 import re
+import socket
 import struct
 import subprocess
 import sys
@@ -15,12 +17,18 @@ MAX_CODE = 32 * 1024
 MAX_STDIN = 8 * 1024
 MAX_OUTPUT = 16 * 1024
 RUN_SECONDS = 4
-DOCKER_SECONDS = 3
+DOCKER_SECONDS = 10
+CLEANUP_CONTROL_SECONDS = 3
+CREATE_SECONDS = 10
+STARTUP_SECONDS = 10
 DOCKER_CLEANUP_SECONDS = 16
+DOCKER_SOCKET = "/var/run/docker.sock"
+MAX_HOST_INFO = 1024 * 1024
 DOCKER_PATH = "/usr/local/bin:/usr/bin:/bin"
 OWNER = "org.nexora.code.phase3.runner=1"
 NAME = re.compile(r"nexora-code-[0-9a-f]{32}")
 IMAGE = re.compile(r"[a-z0-9][a-z0-9._:/-]{0,254}@sha256:[0-9a-f]{64}")
+READY_MARKER = b"NEXORA-RUNNER-READY-v1\n"
 
 # The only arguments passed to the images are these trusted bootstraps. Code and
 # stdin arrive in a byte-length frame through the attached process's stdin.
@@ -39,8 +47,9 @@ with open('/tmp/input', 'xb') as file:
 fd = os.open('/tmp/input', os.O_RDONLY)
 os.dup2(fd, 0)
 os.close(fd)
+os.write(2, %r)
 os.execv(sys.executable, [sys.executable, '-I', '-B', '-u', '-X', 'utf8', '/tmp/main.py'])
-"""
+""" % READY_MARKER
 
 NODE_BOOT = """\
 const fs = require('node:fs');
@@ -63,13 +72,14 @@ process.umask(0o077);
 fs.writeFileSync('/tmp/main.cjs', read(sourceSize), {flag: 'wx'});
 fs.writeFileSync('/tmp/input', read(inputSize), {flag: 'wx'});
 const input = fs.openSync('/tmp/input', 'r');
+fs.writeSync(2, %s);
 const result = spawnSync(process.execPath, ['--max-old-space-size=64', '/tmp/main.cjs'], {
     stdio: [input, 'inherit', 'inherit'],
 });
 fs.closeSync(input);
 if (result.error) throw result.error;
 process.exitCode = result.status ?? 1;
-"""
+""" % json.dumps(READY_MARKER.decode("ascii"))
 
 PROGRAMS = {
     "python": ("/usr/local/bin/python", "-I", "-B", "-X", "utf8", "-c", PYTHON_BOOT),
@@ -118,8 +128,30 @@ def create_args(name, image, language):
 
 class Docker:
     def __init__(self, executable, config_dir):
-        self.prefix = [executable, "--host=unix:///var/run/docker.sock", "--config", config_dir]
+        self.prefix = [executable, f"--host=unix://{DOCKER_SOCKET}", "--config", config_dir]
         self.env = {"PATH": DOCKER_PATH, "LANG": "C.UTF-8"}
+
+    def host_info(self, *, timeout):
+        # Only daemon metadata is needed here. docker info also discovers CLI plugins.
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+                sock.settimeout(timeout)
+                sock.connect(DOCKER_SOCKET)
+                sock.sendall(b"GET /v1.44/info HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+                with http.client.HTTPResponse(sock) as response:
+                    response.begin()
+                    if response.status != 200:
+                        raise InfrastructureError(f"Docker host info returned HTTP {response.status}")
+                    if response.length is not None and response.length > MAX_HOST_INFO:
+                        raise InfrastructureError("Docker host info exceeds size limit")
+                    data = response.read(MAX_HOST_INFO + 1)
+                    if len(data) > MAX_HOST_INFO:
+                        raise InfrastructureError("Docker host info exceeds size limit")
+                    if response.length:
+                        raise InfrastructureError("Docker host info response was incomplete")
+            return json.loads(data)
+        except (OSError, http.client.HTTPException, ValueError, RecursionError) as exc:
+            raise InfrastructureError("Could not read Docker host info") from exc
 
     def control(self, *args, timeout=DOCKER_SECONDS):
         # Used exclusively for trusted, bounded daemon metadata and control responses.
@@ -167,17 +199,17 @@ class Docker:
             raise InfrastructureError("Invalid runner container name")
         deadline = time.monotonic() + DOCKER_CLEANUP_SECONDS
         # Match both our label and the generated name before force-removing.
-        if name not in self.owned_names(name):
+        if name not in self.owned_names(name, timeout=CLEANUP_CONTROL_SECONDS):
             return
         # Docker can wait for a task exit event and retry SIGKILL during rm.
         # Keep time for a separate check even if the removal command times out.
         removal_error = None
         try:
             self.control("container", "rm", "--force", "--volumes", name,
-                         timeout=deadline - time.monotonic() - DOCKER_SECONDS)
+                         timeout=deadline - time.monotonic() - CLEANUP_CONTROL_SECONDS)
         except InfrastructureError as error:
             removal_error = error
-        remaining = min(DOCKER_SECONDS, deadline - time.monotonic())
+        remaining = min(CLEANUP_CONTROL_SECONDS, deadline - time.monotonic())
         if remaining <= 0:
             raise InfrastructureError("Container cleanup deadline expired") from removal_error
         if name in self.owned_names(name, timeout=remaining):
@@ -244,24 +276,58 @@ def write_frame(pipe, frame, failed):
         pipe.close()
 
 
-def collect(process, frame, seconds=RUN_SECONDS, limit=MAX_OUTPUT):
+def collect(process, frame, seconds=RUN_SECONDS, limit=MAX_OUTPUT, *, startup_seconds=None):
     """Drain both CLI pipes concurrently and stop capture at the combined limit."""
     output = Output(limit)
     assert process.stdin is not None and process.stdout is not None and process.stderr is not None
+    started = time.monotonic()
+    startup_finished = threading.Event()
+    ready_at = None
+
+    def read_stderr():
+        nonlocal ready_at
+        if startup_seconds is not None:
+            # Only the trusted bootstrap runs before this prefix. Consume exactly
+            # its bytes once; all subsequent stderr is ordinary learner output.
+            offset = 0
+            try:
+                while offset < len(READY_MARKER):
+                    part = process.stderr.read(len(READY_MARKER) - offset)
+                    if not part or not READY_MARKER.startswith(part, offset):
+                        return
+                    offset += len(part)
+                ready_at = time.monotonic()
+            except OSError:
+                return
+            finally:
+                startup_finished.set()
+        output.read("stderr", process.stderr)
+
     readers = [
         threading.Thread(target=output.read, args=("stdout", process.stdout), daemon=True),
-        threading.Thread(target=output.read, args=("stderr", process.stderr), daemon=True),
+        threading.Thread(target=read_stderr, daemon=True),
     ]
     writer = threading.Thread(target=write_frame, args=(process.stdin, frame, output.failed), daemon=True)
-    deadline = time.monotonic() + seconds
+    deadline = started + seconds
     status = "completed"
     try:
         for worker in [*readers, writer]:
             worker.start()
-        while process.poll() is None:
+        if startup_seconds is not None:
+            startup_deadline = started + startup_seconds
+            startup_finished.wait(max(0, startup_deadline - time.monotonic()))
+            if ready_at is None or ready_at > startup_deadline:
+                raise InfrastructureError("Runner bootstrap did not confirm readiness")
+            deadline = ready_at + seconds
+        while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 status = "timed_out"
+                break
+            if process.poll() is not None:
+                # A scheduling stall while polling must not accept a late-observed exit.
+                if time.monotonic() > deadline:
+                    status = "timed_out"
                 break
             if output.overflow.wait(min(remaining, 0.02)):
                 break
@@ -293,11 +359,11 @@ class Sandbox:
         name = f"nexora-code-{uuid.uuid4().hex}"
         result = Result("infrastructure_error")
         try:
-            created = self.docker.control(*create_args(name, self.images[job.language], job.language))
+            created = self.docker.control(*create_args(name, self.images[job.language], job.language), timeout=CREATE_SECONDS)
             if created.returncode != 0:
                 raise InfrastructureError("Container creation failed")
             process = self.docker.start(name)
-            result = collect(process, job.frame(), seconds=run_seconds)
+            result = collect(process, job.frame(), seconds=run_seconds, startup_seconds=STARTUP_SECONDS)
             if result.status in ("completed", "code_error"):
                 state = self.docker.metadata("container", "inspect", "--format", "{{json .State}}", name)
                 if (not isinstance(state, dict) or state.get("Status") != "exited"

@@ -1,13 +1,13 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
-    [ValidateSet('phase4-ar-v1','phase7-ar-v1','phase8-ar-v1')][string]$ExpectedRelease,
+    [ValidateSet('phase4-ar-v1','phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1')][string]$ExpectedRelease,
     [string]$BaseUrl,
     [switch]$Test
 )
 
 . (Join-Path (Split-Path -Parent $PSScriptRoot) 'phase2\scripts\Local-Environment.ps1')
 $database = if ($Test) { 'masar_phase6_tests' } else { 'masar_phase6_commercial' }
-if (-not $ExpectedRelease) { $ExpectedRelease = if ($Test) { 'phase7-ar-v1' } else { 'phase8-ar-v1' } }
+if (-not $ExpectedRelease) { $ExpectedRelease = if ($Test) { 'phase7-ar-v1' } else { 'phase11-ar-v1' } }
 if (-not $BaseUrl) {
     $BaseUrl = if ($Test) { 'http://127.0.0.1:5196' } else { 'https://desktop-phkhegp.tail3372f6.ts.net:10000/nexora-commercial' }
 }
@@ -21,6 +21,9 @@ if ($health.status -ne 'ok' -or $health.database -ne 'available' -or
 $requiredGoals = switch ($ExpectedRelease) {
     'phase7-ar-v1' { 'data-analysis' }
     'phase8-ar-v1' { 'data-analysis', 'sql', 'web-data', 'git-workshop' }
+    'phase9-ar-v1' { 'data-analysis', 'sql', 'web-data', 'git-workshop', 'python-projects', 'sql-write', 'backend', 'fullstack' }
+    'phase10-ar-v1' { 'data-analysis', 'sql', 'web-data', 'git-workshop', 'python-projects', 'sql-write', 'backend', 'fullstack', 'javascript-projects', 'react', 'react-fullstack', 'typescript-react' }
+    'phase11-ar-v1' { 'data-analysis', 'sql', 'web-data', 'git-workshop', 'python-projects', 'sql-write', 'backend', 'fullstack', 'javascript-projects', 'react', 'react-fullstack', 'typescript-react', 'algorithms', 'oop', 'problem-solving' }
 }
 foreach ($id in $requiredGoals) {
     if ($catalog.goals.id -notcontains $id) { throw "The active commercial catalog is missing the reviewed track $id." }

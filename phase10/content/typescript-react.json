@@ -1,0 +1,606 @@
+{
+  "lessons": [
+    {
+      "id": "tsreact-01",
+      "title": "أُعرّف خصائص مكونات React وأحداثها",
+      "summary": "انقل بطاقة المنتج وحقل البحث إلى TSX وحدد ما يستقبله كل مكوّن وما ترسله دوال الأحداث.",
+      "minutes": "30–40",
+      "skillIds": [
+        "tsreact.props"
+      ],
+      "why": "يكشف فحص الأنواع إعطاء بطاقة المنتج سعرًا نصيًا أو تمرير حدث زر إلى معالج حقل البحث قبل فتح المتصفح.",
+      "objectives": [
+        "أصف خصائص مكوّن بوصف نوعي يشمل القيم والدوال",
+        "أستخدم الاستنتاج للمتغيرات وأحدد نوع وسيط الحدث حين أفصل المعالج",
+        "أقرأ تشخيص TypeScript وأصلح القيمة التي خالفت عقد المكوّن"
+      ],
+      "sections": [
+        {
+          "heading": "أبدأ بقيمة أعرف شكلها",
+          "body": "من مشروع React السابق، اختر مكوّنًا صغيرًا يحتوي JSX وضعه في ملف .tsx. صف خصائصه باستخدام type. النوع number مناسب للسعر المخزن في أصغر وحدة نقدية، وstring مناسب لاسم المنتج. الدالة formatPrice تستقبل number وتعيد string بعد تنسيق السعر للعرض. يستنتج TypeScript نوع متغير مثل const price = 125 من قيمته، بينما وصف وسيط الدالة يجعل العقد واضحًا لمن يستدعيها."
+        },
+        {
+          "heading": "أربط حقل البحث بالدالة التي تغيّر الحالة",
+          "body": "يمرر الأب قيمة البحث والدالة onQueryChange إلى حقل البحث. يعبّر النوع (nextQuery: string) => void عن وسيط نصي ودالة لا ينتظر منها المكوّن قيمة. في المعالج المنفصل استخدم ChangeEvent<HTMLInputElement> ثم اقرأ event.currentTarget.value. يعرف TypeScript أن currentTarget هو الحقل المرتبط بالمعالج. عند كتابة دالة قصيرة داخل onChange يستنتج TypeScript نوع وسيط الحدث من موضعها."
+        },
+        {
+          "heading": "أتتبع الخطأ حتى موضع الاستدعاء",
+          "body": "نفّذ فحص الأنواع داخل مجلد مشروع TypeScript باستخدام npm.cmd run typecheck. جرّب أخطاء المثالين في ملفين منفصلين داخل المشروع ثم احذف نسختي التجربة. ابدأ بالسطر الذي يذكره التشخيص واقرأ النوع المتوقع والنوع الممرر. استخدم 125 داخل أقواس JSX حين تكون القيمة رقمًا. إذا كان الحقل من نوع input، اضبط نوع مستهدف معالج التغيير ليتوافق معه. يزيل البناء أوصاف الأنواع عند إخراج JavaScript، لذلك ستتعامل مع تحقق البيانات الخارجية في الدرس الثالث."
+        }
+      ],
+      "examples": [
+        {
+          "title": "بطاقة منتج وحقل بحث بعقدين واضحين",
+          "language": "text",
+          "code": "import type { ChangeEvent } from 'react';\n\ntype CardProps = { name: string; priceMinor: number };\ntype SearchProps = {\n  query: string;\n  onQueryChange: (nextQuery: string) => void;\n};\n\nfunction formatPrice(priceMinor: number): string {\n  return (priceMinor / 100).toFixed(2);\n}\n\nexport function ProductCard({ name, priceMinor }: CardProps) {\n  return <p>{name} — {formatPrice(priceMinor)} جنيه</p>;\n}\n\nexport function SearchInput({ query, onQueryChange }: SearchProps) {\n  function handleChange(event: ChangeEvent<HTMLInputElement>) {\n    onQueryChange(event.currentTarget.value);\n  }\n  return <label>البحث <input value={query} onChange={handleChange} /></label>;\n}\n",
+          "explanation": "هذا ملف TSX. الدالة onQueryChange تحمل النص وحده إلى الأب، بينما يبقى حدث React داخل مكوّن الحقل. قيمة 125 وحدة صغرى تظهر بعد التنسيق على هيئة 1.25 جنيه."
+        },
+        {
+          "title": "أتعمد تمرير السعر كنص",
+          "language": "text",
+          "code": "function ProductCard({ priceMinor }: { priceMinor: number }) {\n  return <p>{priceMinor}</p>;\n}\n\nexport const card = <ProductCard priceMinor=\"125\" />;\n",
+          "explanation": "السطر الأخير يسبب TS2322 لأن السمة المحاطة بعلامتي اقتباس نص. غيّرها إلى priceMinor={125} ثم أعد الفحص."
+        },
+        {
+          "title": "أتعمد تحديد عنصر خاطئ لمعالج التغيير",
+          "language": "text",
+          "code": "import type { ChangeEvent } from 'react';\n\nfunction handleChange(event: ChangeEvent<HTMLSelectElement>) {\n  console.log(event.currentTarget.value);\n}\n\nexport const control = <input onChange={handleChange} />;\n",
+          "explanation": "شغّل الفحص لترى TS2322 عند ربط معالج select بعنصر input. عرّف وسيط المعالج بصفته ChangeEvent<HTMLInputElement>."
+        },
+        {
+          "title": "أفحص أثر خلط السعر النصي والرقمي في JavaScript",
+          "language": "javascript",
+          "code": "function addDelivery(priceMinor) {\n  return priceMinor + 50;\n}\n\nconsole.log(addDelivery(125));\nconsole.log(addDelivery('125'));\n",
+          "explanation": "العملية + تجمع الأرقام وتلصق النصوص. غيّر الدالة في ملف TypeScript لتستقبل priceMinor: number ثم لاحظ أن الفحص يشير إلى الاستدعاء الثاني."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "tsreact-01-q1",
+          "type": "choice",
+          "prompt": "تتوقع بطاقة المنتج priceMinor من نوع number. أي استدعاء يمرر رقمًا صحيح النوع؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "<ProductCard priceMinor=\"125\" />"
+            },
+            {
+              "id": "b",
+              "text": "<ProductCard priceMinor={125} />"
+            },
+            {
+              "id": "c",
+              "text": "<ProductCard priceMinor={String(125)} />"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "hints": [
+            "انظر إلى نوع التعبير الذي وضعته داخل الأقواس في JSX."
+          ],
+          "explanation": "التعبير 125 من نوع number. السمة المقتبسة واستدعاء String يعطيا قيمة نصية.",
+          "independent": true
+        },
+        {
+          "id": "tsreact-01-q2",
+          "type": "choice",
+          "prompt": "أي نوع مناسب لخاصية تستقبل دالة يمرر إليها المكوّن نص البحث ويستكمل عمله؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "(query: string) => void"
+            },
+            {
+              "id": "b",
+              "text": "() => string"
+            },
+            {
+              "id": "c",
+              "text": "string"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "hints": [
+            "حدد اتجاه انتقال النص أولًا، ثم حدّد إن كان المستدعي يحتاج قيمة تعود إليه."
+          ],
+          "explanation": "العقد يصف دالة تستقبل النص كوسيط. void يوضح أن المكوّن لا يعتمد على قيمة معادة.",
+          "independent": true
+        },
+        {
+          "id": "tsreact-01-q3",
+          "type": "choice",
+          "prompt": "في معالج منفصل من نوع ChangeEvent<HTMLInputElement>، أي تعبير يقرأ نص الحقل المرتبط به المعالج؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "event.value"
+            },
+            {
+              "id": "b",
+              "text": "event.currentTarget.textContent"
+            },
+            {
+              "id": "c",
+              "text": "event.currentTarget.value"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "hints": [
+            "يمثل currentTarget العنصر الذي ربطت به المعالج."
+          ],
+          "explanation": "يملك HTMLInputElement خاصية value التي تمثل القيمة الحالية للحقل.",
+          "independent": true
+        }
+      ],
+      "takeaway": "ضع نوعًا لحدود المكوّن. حدّد الأنواع التي تمر عبر الخصائص والدوال والأحداث ثم شغّل الفحص عند تغيير الاستدعاءات."
+    },
+    {
+      "id": "tsreact-02",
+      "title": "أُمثّل حالات طلب البيانات باتحاد أنواع",
+      "summary": "استخدم useState مع اتحاد مميّز، واعرض الحالة بعد تضييق النوع حسب قيمة status.",
+      "minutes": "30–45",
+      "skillIds": [
+        "tsreact.state"
+      ],
+      "why": "تجميع حالة التحميل والنتيجة والخطأ في اتحاد واحد يحدّد البيانات المتاحة لكل شاشة ويمنع تراكيب غير ممكنة في مسار الطلب.",
+      "objectives": [
+        "أخصص شكلًا لكل حالة من حالات طلب الكتالوج",
+        "أحدد نوع useState وأضيّق الاتحاد قبل قراءة حقوله",
+        "أميّز بين نجاح الطلب بقائمة فارغة وفشل الطلب"
+      ],
+      "sections": [
+        {
+          "heading": "أعطي كل مرحلة شكلًا مستقلًا",
+          "body": "مثّل الطلب النشط بقيمة status تساوي loading، والنجاح بقيمة success مع products، والفشل بقيمة error مع message. الرمز | يجمع الأشكال الثلاثة في نوع واحد. status هو الحقل المميّز لأن قيمته النصية المحددة تخبر TypeScript أي شكل تحمل القيمة الآن. عند البداية استخدم useState<CatalogueState>({ status: 'loading' }) ليقبل محدّث الحالة أشكال الاتحاد جميعًا."
+        },
+        {
+          "heading": "أقرأ البيانات بعد تضييق النوع",
+          "body": "افحص status باستخدام switch أو if. داخل فرع success يسمح TypeScript بقراءة products، وداخل فرع error يسمح بقراءة message. ينتهي فرع التحميل بعرض رسالة انتظار. إذا نجح الطلب بمصفوفة فارغة، افحص طولها داخل فرع success واعرض رسالة فراغ. القائمة الفارغة نتيجة صحيحة حتى عندما لم يطابق البحث أي منتج."
+        },
+        {
+          "heading": "أجرّب انتقالات الحالة",
+          "body": "يستقبل المكوّن في المثال دالة loadProducts من الأب ويبدأ الطلب عند الضغط على زر. ينتقل إلى loading أثناء الانتظار ويعطل الزر، ثم يخزن success مع القائمة أو error مع رسالة مفهومة. يبدأ هذا المثال بقائمة فارغة كي يكون زر التحميل متاحًا فورًا. في كتالوج يبدأ التحميل عند فتحه، ابدأ بحالة loading. استخدم نفس شكل الاتحاد عند الانتقال بين الحالات في مشروعك."
+        }
+      ],
+      "examples": [
+        {
+          "title": "أعرض حالة الطلب بحسب الحقل المميّز",
+          "language": "text",
+          "code": "import { useState } from 'react';\n\ntype ProductSummary = { id: number; name: string };\ntype CatalogueState =\n  | { status: 'loading' }\n  | { status: 'success'; products: ProductSummary[] }\n  | { status: 'error'; message: string };\n\nfunction CatalogueResult({ state }: { state: CatalogueState }) {\n  switch (state.status) {\n    case 'loading':\n      return <p role=\"status\">جارٍ التحميل…</p>;\n    case 'error':\n      return <p role=\"alert\">{state.message}</p>;\n    case 'success':\n      return state.products.length === 0\n        ? <p>لا توجد منتجات.</p>\n        : <ul>{state.products.map(product => <li key={product.id}>{product.name}</li>)}</ul>;\n  }\n}\n\ntype CatalogueProps = { loadProducts: () => Promise<ProductSummary[]> };\n\nexport function Catalogue({ loadProducts }: CatalogueProps) {\n  const [state, setState] = useState<CatalogueState>({ status: 'success', products: [] });\n\n  async function reload() {\n    setState({ status: 'loading' });\n    try {\n      const products = await loadProducts();\n      setState({ status: 'success', products });\n    } catch {\n      setState({ status: 'error', message: 'تعذر تحميل المنتجات.' });\n    }\n  }\n\n  return <>\n    <button type=\"button\" onClick={reload} disabled={state.status === 'loading'}>تحميل المنتجات</button>\n    <CatalogueResult state={state} />\n  </>;\n}\n",
+          "explanation": "يستخدم المثال ProductSummary للحقول التي تقرؤها القائمة فقط. فرع success يعرض النتائج أو رسالة الفراغ، ويتحقق TypeScript من كل فرع بعد فحص status."
+        },
+        {
+          "title": "أتعمد قراءة products في كل الحالات",
+          "language": "text",
+          "code": "type CatalogueState =\n  | { status: 'loading' }\n  | { status: 'success'; products: { id: number; name: string }[] }\n  | { status: 'error'; message: string };\n\nexport function visibleCount(state: CatalogueState) {\n  return state.products.length;\n}\n",
+          "explanation": "يعطي الفحص TS2339 لأن products موجودة في شكل success فقط. أصلح المثال بإرجاع طول القائمة بعد فحص state.status === 'success'، ثم حدّد القيمة المراد إعادتها في الحالات الأخرى."
+        },
+        {
+          "title": "ألاحظ أثر الإشارات المستقلة على ما يظهر للمستخدم",
+          "language": "javascript",
+          "code": "const request = { isLoading: true, error: 'تعذر التحميل' };\nconst messages = [];\nif (request.isLoading) messages.push('loading');\nif (request.error) messages.push('error');\nconsole.log(messages.join(', '));\n",
+          "explanation": "الإشارتان المستقلتان تعرضان التحميل والخطأ معًا. في واجهة هذا الدرس لكل طلب جارٍ حالة واحدة، ويمكن لاختيار status واحد أن يعبّر عنها مباشرة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "tsreact-02-q1",
+          "type": "choice",
+          "prompt": "عاد الطلب بنجاح مع مصفوفة فارغة. أي قيمة تمثل نتيجة الطلب؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "{ status: 'error', message: 'القائمة فارغة' }"
+            },
+            {
+              "id": "b",
+              "text": "{ status: 'loading' }"
+            },
+            {
+              "id": "c",
+              "text": "{ status: 'success', products: [] }"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "hints": [
+            "الطول يصف نتيجة الطلب، بينما status يصف المرحلة التي وصل إليها."
+          ],
+          "explanation": "الطلب مكتمل وناجح. يعرض فرع success رسالة الفراغ بعد قراءة طول القائمة.",
+          "independent": true
+        },
+        {
+          "id": "tsreact-02-q2",
+          "type": "choice",
+          "prompt": "يحتوي شكل error وحده على message. كيف تتيح قراءة state.message بأمان؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "أقرأها داخل if (state.status === 'error')"
+            },
+            {
+              "id": "b",
+              "text": "أقرأها داخل if (state.status === 'success')"
+            },
+            {
+              "id": "c",
+              "text": "أقرأها قبل فحص status"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "hints": [
+            "تتبع قيمة الحقل المميّز التي يملكها الشكل الحامل للرسالة."
+          ],
+          "explanation": "شرط status يضيّق الاتحاد إلى شكل error داخل الفرع.",
+          "independent": true
+        },
+        {
+          "id": "tsreact-02-q3",
+          "type": "choice",
+          "prompt": "تبدأ الحالة بقيمة loading وستتحول إلى success أو error. أي تهيئة تصف الحالات المسموحة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "useState<string>('loading')"
+            },
+            {
+              "id": "b",
+              "text": "useState<CatalogueState>({ status: 'loading' })"
+            },
+            {
+              "id": "c",
+              "text": "useState<{ status: 'loading' }>({ status: 'loading' })"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "hints": [
+            "حدد نوع الحالة طوال عمر المكوّن، ثم مرر القيمة الأولية."
+          ],
+          "explanation": "النوع CatalogueState يحدد الأشكال الثلاثة التي يمكن أن يتلقاها محدّث الحالة.",
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم حقلًا مميّزًا لحالة الطلب واقرأ بيانات كل فرع بعد فحصه. تعامل مع الفراغ بوصفه إحدى نتائج النجاح."
+    },
+    {
+      "id": "tsreact-03",
+      "title": "أتحقق من بيانات API وأسلّم كتالوجًا بـ TypeScript",
+      "summary": "اقرأ JSON كقيمة unknown، وافحص شكل كل منتج قبل تمريره إلى مكونات الكتالوج.",
+      "minutes": "45–65",
+      "skillIds": [
+        "tsreact.contracts"
+      ],
+      "why": "يمكن لخدمة الكتالوج أن ترجع JSON صالحًا يحتوي سعرًا نصيًا أو حقولًا ناقصة. الفحص وقت التشغيل يحوّل اختلاف العقد إلى حالة خطأ واضحة في الواجهة.",
+      "objectives": [
+        "أفحص نجاح HTTP وأقرأ JSON كقيمة unknown",
+        "أكتب دالة تحقق تفحص المصفوفة وكل حقول عناصرها",
+        "أربط نتيجة التحقق بحالات الواجهة وأختبر الكتالوج محليًا"
+      ],
+      "sections": [
+        {
+          "heading": "أفصل نجاح HTTP عن صحة البيانات",
+          "body": "يعيد GET /api/products مصفوفة من المنتجات. افحص response.ok أولًا كي تتعامل مع حالات HTTP الفاشلة. اقرأ response.json() داخل متغير unknown. قد تفشل القراءة إذا كان الجسم غير صالح كـ JSON، وقد تنجح قراءة JSON يحمل شكلًا غير متوقع. أوصاف TypeScript تُمحى عند إخراج JavaScript، ودالة التحقق هي التي تفحص القيم القادمة فعليًا عند تشغيل الواجهة."
+        },
+        {
+          "heading": "أتحقق من كل عنصر قبل عرض القائمة",
+          "body": "افحص أن القيمة مصفوفة باستخدام Array.isArray. يتحقق isProduct لكل عنصر من أن typeof يعطي object وأن القيمة تختلف عن null. بعد ذلك يتحقق العامل in من وجود الحقل وتحدد شروطه نوعه. افحص id وprice_minor وstock كأعداد صحيحة آمنة ضمن المجال الذي تحتاجه الواجهة، وافحص name وcategory كنصوص غير خالية بعد إزالة المسافات. تكتب isProduct توقيعًا بصيغة value is Product وتعيد قيمة منطقية. هذا التوقيع يجعل TypeScript يضيّق النوع بعد نجاح الدالة، لذلك طابق تنفيذها مع جميع حقول Product."
+        },
+        {
+          "heading": "أُكمل مشروع الكتالوج وأشغّل الاختبارات",
+          "body": "نزّل ملفات البداية واستخدم npm.cmd ci حسب README. أكمل validInt في src/model.ts ليرفض الكسور، ثم تتبّع تحقق parseProduct وparseProducts ومرر المنتجات المتحقق منها إلى المكوّن ذي الخصائص المحددة داخل فرع النجاح في src/App.tsx. تتبّع التحميل والنجاح والخطأ في src/useProducts.ts. شغّل npm.cmd run typecheck وnpm.cmd test وnpm.cmd run build، ثم npm.cmd run dev للتحقق من العرض والبحث والفراغ وإعادة المحاولة في المتصفح بالضغط على زر بحث بعد زوال الخطأ، حتى إذا بقي نص البحث نفسه. تشغّل ملفات البداية البيانات المحاكية محليًا، ويوضح README إعداد VITE_DATA_SOURCE=api عند استخدام خدمة الكتالوج من المرحلة السابقة. سجّل نتائج الفحوص مع خطوات التشغيل."
+        }
+      ],
+      "examples": [
+        {
+          "title": "أفحص عقد استجابة الكتالوج عند التشغيل",
+          "language": "text",
+          "code": "type Product = {\n  id: number;\n  name: string;\n  category: string;\n  price_minor: number;\n  stock: number;\n};\n\nfunction isIntegerAtLeast(value: unknown, minimum: number): value is number {\n  return typeof value === 'number' && Number.isSafeInteger(value) && value >= minimum;\n}\n\nfunction isNonEmptyText(value: unknown): value is string {\n  return typeof value === 'string' && value.trim().length > 0;\n}\n\nfunction isProduct(value: unknown): value is Product {\n  return typeof value === 'object' && value !== null\n    && 'id' in value && isIntegerAtLeast(value.id, 1)\n    && 'name' in value && isNonEmptyText(value.name)\n    && 'category' in value && isNonEmptyText(value.category)\n    && 'price_minor' in value && isIntegerAtLeast(value.price_minor, 0)\n    && 'stock' in value && isIntegerAtLeast(value.stock, 0);\n}\n\nfunction decodeProducts(payload: unknown): Product[] {\n  if (!Array.isArray(payload) || !payload.every(isProduct)) {\n    throw new Error('استجابة الكتالوج تخالف عقد البيانات');\n  }\n  return payload;\n}\n\nasync function readProducts(response: Response): Promise<Product[]> {\n  if (!response.ok) throw new Error(`HTTP ${response.status}`);\n  const payload: unknown = await response.json();\n  return decodeProducts(payload);\n}\n\nasync function demonstrate() {\n  const product = { id: 1, name: 'قلم', category: 'مكتبية', price_minor: 125, stock: 0 };\n  console.log((await readProducts(Response.json([product])))[0].name);\n  console.log((await readProducts(Response.json([]))).length);\n\n  for (const response of [\n    Response.json([product], { status: 503 }),\n    new Response('not json'),\n    Response.json({ products: [] }),\n    Response.json([product, { ...product, price_minor: '125' }]),\n    Response.json([{ ...product, stock: -1 }]),\n    Response.json([{ ...product, category: ' ' }]),\n    Response.json([null]),\n    Response.json([{ id: 2, name: 'دفتر' }]),\n  ]) {\n    try {\n      await readProducts(response);\n      console.log('accepted');\n    } catch {\n      console.log('rejected');\n    }\n  }\n}\n\nvoid demonstrate();\n",
+          "explanation": "Response.json يصنع استجابات للتجربة محليًا. يفحص المثال منتجًا صالحًا وقائمة فارغة ثم يستبعد ثماني حالات منها HTTP 503 وJSON غير صالح وعنصر ثانٍ بسعر نصي. في المشروع مرر إلى readProducts الاستجابة التي يعيدها fetch('/api/products')."
+        },
+        {
+          "title": "أتعمد استخدام بيانات unknown مباشرة",
+          "language": "text",
+          "code": "export async function countProducts(response: Response): Promise<number> {\n  const payload: unknown = await response.json();\n  return payload.length;\n}\n",
+          "explanation": "يشير التشخيص TS18046 إلى أن payload من نوع unknown. استخدم قارئ العقد في المثال السابق ثم احسب طول مصفوفة المنتجات المتحقق منها."
+        },
+        {
+          "title": "أفرّق بين JSON صالح وعقد منتج صالح",
+          "language": "javascript",
+          "code": "const payload = JSON.parse('[{\"id\": 1, \"price_minor\": \"125\"}]');\nconsole.log(Array.isArray(payload));\nconsole.log(typeof payload[0].price_minor);\n",
+          "explanation": "نجح التحليل وأعطى مصفوفة، ومع ذلك بقي السعر نصًا. تشغّل دالة التحقق فحص الحقول بعد تحليل الجسم."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "tsreact-03-q1",
+          "type": "choice",
+          "prompt": "ما الذي يحققه const payload: unknown = await response.json()؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يتحقق تلقائيًا من وجود كل حقول المنتج"
+            },
+            {
+              "id": "b",
+              "text": "يجعل المترجم يطلب تضييق النوع قبل الوصول إلى الحقول"
+            },
+            {
+              "id": "c",
+              "text": "يغيّر السعر النصي إلى رقم"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "hints": [
+            "التسمية النوعية تتعلق بما يسمح به المترجم عند استخدام payload."
+          ],
+          "explanation": "يتطلب unknown فحصًا أو تضييقًا قبل الاستخدام. يلزم تنفيذ فحوص وقت التشغيل للتأكد من شكل البيانات.",
+          "independent": true
+        },
+        {
+          "id": "tsreact-03-q2",
+          "type": "choice",
+          "prompt": "أعاد الخادم HTTP 200 ومصفوفة فيها منتج صالح وآخر price_minor فيه يساوي النص '125'. ما الحالة وفق قارئ العقد؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "success مع المنتجين"
+            },
+            {
+              "id": "b",
+              "text": "success مع المنتج الأول فقط"
+            },
+            {
+              "id": "c",
+              "text": "error لأن أحد عناصر المصفوفة يخالف العقد"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "hints": [
+            "تتبّع every(isProduct) عندما تكون نتيجة الفحص مختلفة بين عنصرين."
+          ],
+          "explanation": "يتطلب every نجاح فحص العناصر جميعًا. قارئ العقد يرمي خطأ عند وجود عنصر مخالف، فيعرض الكتالوج رسالة فشل.",
+          "independent": true
+        },
+        {
+          "id": "tsreact-03-q3",
+          "type": "choice",
+          "prompt": "أي مجموعة اختبارات تميّز بين مراحل قراءة الاستجابة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "HTTP 503 وJSON تالف وJSON صحيح بعقد مخالف ومصفوفة منتجات صحيحة"
+            },
+            {
+              "id": "b",
+              "text": "HTTP 200 مع أربع مصفوفات صحيحة"
+            },
+            {
+              "id": "c",
+              "text": "أربعة أخطاء HTTP من دون أجسام استجابة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "hints": [
+            "افحص حدود HTTP وتحليل JSON والتحقق من حقول المنتج بأمثلة مختلفة."
+          ],
+          "explanation": "تختبر المجموعة نجاح المسار الرئيسي وفشل كل مرحلة مستقلة من قراءة بيانات الشبكة.",
+          "independent": true
+        }
+      ],
+      "takeaway": "ابدأ من استجابة غير معلومة النوع. تحقق من HTTP ثم من JSON وشكل عناصره، ومرر المنتجات إلى واجهة React بعد نجاح الفحوص."
+    }
+  ],
+  "skills": [
+    {
+      "id": "tsreact.props",
+      "title": "أنواع خصائص React والأحداث",
+      "description": "أعرّف أنواع الخصائص والدوال ومعالجات الأحداث في TSX وأصلح أخطاء الفحص.",
+      "required": {
+        "skill": "react.project"
+      },
+      "recommended": []
+    },
+    {
+      "id": "tsreact.state",
+      "title": "أنواع حالات واجهة React",
+      "description": "أمثّل مراحل طلب البيانات باتحاد مميّز وأقرأ بيانات كل مرحلة بعد تضييق النوع.",
+      "required": {
+        "skill": "tsreact.props"
+      },
+      "recommended": []
+    },
+    {
+      "id": "tsreact.contracts",
+      "title": "التحقق من عقد بيانات الكتالوج",
+      "description": "أفحص JSON وقت التشغيل، وأستخدم نتيجة التحقق في واجهة كتالوج مكتوبة بـ TypeScript.",
+      "required": {
+        "skill": "tsreact.state"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "tsreact-01",
+      "title": "أُعرّف خصائص مكونات React وأحداثها",
+      "why": "أضبط عقد المكوّن وأكشف عدم تطابق الخصائص والأحداث قبل فتح المتصفح.",
+      "skillIds": [
+        "tsreact.props"
+      ]
+    },
+    {
+      "id": "tsreact-02",
+      "title": "أُمثّل حالات طلب البيانات باتحاد أنواع",
+      "why": "أحدد البيانات المتاحة في التحميل والنجاح والخطأ، وأعرض كل حالة بوضوح.",
+      "skillIds": [
+        "tsreact.state"
+      ]
+    },
+    {
+      "id": "tsreact-03",
+      "title": "أتحقق من بيانات API وأسلّم كتالوجًا بـ TypeScript",
+      "why": "أكشف اختلاف عقد بيانات الشبكة قبل وصولها إلى مكونات الكتالوج.",
+      "skillIds": [
+        "tsreact.contracts"
+      ]
+    }
+  ],
+  "labs": [],
+  "exampleChecks": [
+    {
+      "lessonId": "tsreact-01",
+      "index": 3,
+      "input": "",
+      "output": "175\n12550\n"
+    },
+    {
+      "lessonId": "tsreact-02",
+      "index": 2,
+      "input": "",
+      "output": "loading, error\n"
+    },
+    {
+      "lessonId": "tsreact-03",
+      "index": 2,
+      "input": "",
+      "output": "true\nstring\n"
+    }
+  ],
+  "typeChecks": [
+    {
+      "id": "tsreact-props-valid",
+      "lessonId": "tsreact-01",
+      "index": 0,
+      "filename": "example.tsx",
+      "expectedErrors": []
+    },
+    {
+      "id": "tsreact-props-price",
+      "lessonId": "tsreact-01",
+      "index": 1,
+      "filename": "example.tsx",
+      "expectedErrors": [
+        2322
+      ]
+    },
+    {
+      "id": "tsreact-props-event",
+      "lessonId": "tsreact-01",
+      "index": 2,
+      "filename": "example.tsx",
+      "expectedErrors": [
+        2322
+      ]
+    },
+    {
+      "id": "tsreact-state-valid",
+      "lessonId": "tsreact-02",
+      "index": 0,
+      "filename": "example.tsx",
+      "expectedErrors": []
+    },
+    {
+      "id": "tsreact-state-narrowing",
+      "lessonId": "tsreact-02",
+      "index": 1,
+      "filename": "example.ts",
+      "expectedErrors": [
+        2339
+      ]
+    },
+    {
+      "id": "tsreact-contract-valid",
+      "lessonId": "tsreact-03",
+      "index": 0,
+      "filename": "example.ts",
+      "expectedErrors": [],
+      "output": "قلم\n0\nrejected\nrejected\nrejected\nrejected\nrejected\nrejected\nrejected\nrejected\n"
+    },
+    {
+      "id": "tsreact-contract-unknown",
+      "lessonId": "tsreact-03",
+      "index": 1,
+      "filename": "example.ts",
+      "expectedErrors": [
+        18046
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "استنتاج النوع",
+      "technical": "Type inference",
+      "definition": "تحديد TypeScript لنوع القيمة من التعبير أو السياق الذي تُستخدم فيه."
+    },
+    {
+      "term": "اتحاد مميّز",
+      "technical": "Discriminated union",
+      "definition": "اتحاد أنواع تتشارك أشكاله حقلًا تختلف قيمته المحددة بين الأشكال، مثل status للتحميل والنجاح والخطأ."
+    },
+    {
+      "term": "تضييق النوع",
+      "technical": "Type narrowing",
+      "definition": "تقليل مجموعة الأنواع المحتملة لقيمة بعد شرط يكشف معلومات عنها."
+    },
+    {
+      "term": "قيمة غير معلومة النوع",
+      "technical": "unknown",
+      "definition": "نوع يقبل أي قيمة ويطلب من المترجم إثبات معلومات إضافية قبل السماح بقراءة حقولها أو استدعائها."
+    },
+    {
+      "term": "دالة تحقق من النوع",
+      "technical": "Type guard",
+      "definition": "دالة تفحص قيمة وقت التشغيل. توقيع مثل value is Product يسمح لـ TypeScript بتضييق نوع القيمة عند نجاح الدالة."
+    }
+  ],
+  "track": {
+    "id": "typescript-react",
+    "title": "TypeScript مع React",
+    "lessonIds": [
+      "tsreact-01",
+      "tsreact-02",
+      "tsreact-03"
+    ]
+  },
+  "goal": {
+    "id": "typescript-react",
+    "title": "TypeScript مع React",
+    "description": "بعد مشروع React، أضف أنواع الخصائص وحالات الطلب وتحقق من بيانات الشبكة في مشروع كتالوج محلي.",
+    "status": "sample",
+    "skillIds": [
+      "tsreact.props",
+      "tsreact.state",
+      "tsreact.contracts"
+    ]
+  },
+  "project": {
+    "id": "typescript-product-catalogue",
+    "title": "كتالوج منتجات بـ React وTypeScript",
+    "lessonId": "tsreact-03",
+    "summary": "أكمل واجهة الكتالوج المحلية واختبر فحص الأنواع والتحقق من استجابة /api/products.",
+    "criteria": [
+      "خصائص بطاقة المنتج وحقل البحث ومعالجات أحداثهما محددة الأنواع.",
+      "اتحاد مميّز يعبر عن التحميل والنجاح والخطأ، ورسالة واضحة عند فراغ القائمة.",
+      "فحص response.ok وقراءة الجسم كقيمة unknown، والتحقق من كل حقول المنتجات قبل عرضها.",
+      "اختبارات تقبل قائمة صحيحة أو فارغة وترفض السعر النصي والحقل الناقص، مع تشغيل فحص الأنواع والبناء.",
+      "تجربة البحث وحالات الطلب وإعادة المحاولة في المتصفح مع تسجيل خطوات التشغيل ونتيجة كل تجربة."
+    ],
+    "download": "/projects/typescript-starter-v1.zip"
+  }
+}

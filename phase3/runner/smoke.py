@@ -29,7 +29,7 @@ def main():
             data=json.dumps({"language": language, "code": code, "stdin": stdin}).encode(),
             headers={"Content-Type": "application/json", "Authorization": f"Bearer {authorization}"},
         )
-        with opener.open(request, timeout=25) as response:
+        with opener.open(request, timeout=60) as response:
             return json.load(response)
 
     def check(label, expected, language, code, stdin="", stdout=None):

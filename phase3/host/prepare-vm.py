@@ -13,6 +13,7 @@ import socket
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 
 PHASE = Path(__file__).resolve().parent.parent
@@ -21,6 +22,7 @@ TOOLS = PRIVATE / "qemu-tools"
 VM = PRIVATE / "runner-vm"
 PROVISIONED = VM / "provisioned"
 GUEST_PORT = 2227
+VM_MEMORY_MIB = 1536
 OPERATOR_KEY = "vm-operator"
 UBUNTU_IMAGE_SHA256 = "406630c08b5e545fcc7209854b129d47e3af822db128c9f19336593b5a2d3fe0"
 HOST_KEY = re.compile(rb"NEXORA_VM_SSH_HOST_KEY (ssh-ed25519 [A-Za-z0-9+/]+={0,2})")
@@ -121,7 +123,7 @@ def owns_pending_vm(executable):
 
 
 def wait_for_guest(process=None):
-    deadline = time.monotonic() + 180
+    deadline = time.monotonic() + 600
     known_hosts = VM / "known_hosts"
     serial = VM / "serial.log"
     while time.monotonic() < deadline:
@@ -216,22 +218,33 @@ def start(maintenance=False):
         checked([binaries / "qemu-img.exe", "create", "-f", "qcow2", "-F", "qcow2",
                  "-b", str(base), vm_disk.name, "20G"], cwd=VM)
     restrict = "on" if PROVISIONED.exists() and not maintenance else "off"
+    # Execution-only boots discard Docker scratch writes on shutdown. Provisioning
+    # retains the persistent disk so reviewed runtime/service updates survive.
+    snapshot = ",snapshot=on" if restrict == "on" else ""
+    runtime_environment = os.environ.copy()
+    runtime_temp = None
+    if snapshot:
+        if shutil.disk_usage(tempfile.gettempdir()).free < 1024 ** 3:
+            raise SystemExit("At least 1 GiB of temporary disk space is required for the isolated runner overlay.")
+        runtime_temp = tempfile.mkdtemp(prefix="nexora-runner-runtime-")
+        runtime_environment.update(TMPDIR=runtime_temp, TMP=runtime_temp, TEMP=runtime_temp)
     with (VM / "qemu.log").open("ab") as output:
         process = subprocess.Popen([
             binaries / "qemu-system-x86_64.exe",
             "-name", "NEXORA-CODE-Runner", "-machine", "q35", "-accel", "whpx",
             "-L", os.path.relpath(firmware.parent, VM),
-            "-smp", "2", "-m", "2560",
+            "-smp", "2", "-m", str(VM_MEMORY_MIB),
             "-drive", f"if=pflash,unit=0,format=raw,readonly=on,file={os.path.relpath(firmware, VM)}",
             "-drive", f"if=pflash,unit=1,format=raw,file={variables.name}",
             "-display", "none", "-monitor", "none",
             "-chardev", "file,id=nexora_serial,path=serial.log,append=on", "-serial", "chardev:nexora_serial",
-            "-drive", f"file={vm_disk.name},format=qcow2,if=virtio",
+            "-drive", f"file={vm_disk.name},format=qcow2,if=virtio{snapshot}",
             "-drive", "file=seed.iso,format=raw,readonly=on,if=virtio",
             "-nic", f"user,model=virtio-net-pci,restrict={restrict},hostfwd=tcp:127.0.0.1:{GUEST_PORT}-:22",
         ], cwd=VM, stdin=subprocess.DEVNULL, stdout=output, stderr=output,
+            env=runtime_environment,
             creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP)
-    (VM / "process.json").write_text(json.dumps({"vmPid": process.pid, "sshPort": GUEST_PORT}),
+    (VM / "process.json").write_text(json.dumps({"vmPid": process.pid, "sshPort": GUEST_PORT, "runtimeTemp": runtime_temp}),
                                      encoding="ascii")
     print(f"VM started with PID {process.pid}", flush=True)
     wait_for_guest(process)

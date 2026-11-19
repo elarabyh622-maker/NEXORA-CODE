@@ -113,11 +113,13 @@ internal sealed class CodeLabQueue(Db db, CommercialOptions commercial)
                   AND (SELECT count(*) FROM public.code_lab_runs WHERE status='running') < @slots
                 ORDER BY created_at,id LIMIT 1 FOR UPDATE SKIP LOCKED
             )
-            UPDATE public.code_lab_runs AS runs SET status='running', expires_at=now() + interval '120 seconds'
+            UPDATE public.code_lab_runs AS runs SET status='running',
+                expires_at=now() + make_interval(secs => 15 + @executionSeconds * GREATEST(1,jsonb_array_length(runs.test_cases)))
             FROM next_job WHERE runs.id=next_job.id
             RETURNING runs.id,language,code,stdin,test_cases::text
             """, row => new CodeLabJob(row.GetGuid(0), row.GetString(1), row.GetString(2), row.GetString(3),
-            JsonSerializer.Deserialize<CodeLabTest[]>(row.GetString(4))!), ct, ("slots", WorkerSlots));
+            JsonSerializer.Deserialize<CodeLabTest[]>(row.GetString(4))!), ct, ("slots", WorkerSlots),
+            ("executionSeconds", CodeLabRunner.ExecutionDeadlineSeconds));
         await tx.CommitAsync(ct);
         return jobs.FirstOrDefault();
     }

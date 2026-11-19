@@ -118,9 +118,9 @@ public static class Maintenance
             ["python"] = [.. LessonRange("core", 12), .. LessonRange("py", 12)],
             ["web"] = [.. LessonRange("core", 12), .. LessonRange("web", 12)]
         };
-        if (release is "phase7-ar-v1" or "phase8-ar-v1")
+        if (release is "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1")
             paths.Add("data-analysis", [.. paths["python"], .. LessonRange("data", 8)]);
-        if (release == "phase8-ar-v1")
+        if (release is "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1")
         {
             paths.Add("sql", LessonRange("sql", 6));
             paths.Add("web-data", [.. paths["web"], .. LessonRange("web-data", 5)]);
@@ -133,6 +133,42 @@ public static class Maintenance
         }
         else if (release is not ("phase4-ar-v1" or "phase7-ar-v1"))
             throw new MigrationFailure("unsupported_reviewed_curriculum");
+
+        if (release is "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1")
+        {
+            paths.Add("python-projects", [.. paths["python"], .. LessonRange("pyproj", 3)]);
+            paths.Add("sql-write", [.. paths["sql"], .. LessonRange("sql-write", 4)]);
+            paths.Add("backend", [.. paths["python-projects"], .. LessonRange("backend", 3),
+                .. paths["sql-write"], .. LessonRange("backend", 7).Skip(3)]);
+            paths.Add("fullstack", [.. paths["backend"], .. LessonRange("web", 12),
+                .. LessonRange("web-data", 5), .. LessonRange("fullstack", 2)]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "backend", ["pyproj.types", "sqlwrite.transactions"]),
+                LessonRange("backend", 7));
+            VerifyPlan(CurriculumEngine.Plan(bundle, "fullstack", ["backend.tests", "web-data.catalogue"]),
+                LessonRange("fullstack", 2));
+        }
+
+        if (release is "phase10-ar-v1" or "phase11-ar-v1")
+        {
+            paths.Add("javascript-projects", [.. paths["web-data"], .. LessonRange("jsproj", 4)]);
+            paths.Add("react", [.. paths["javascript-projects"], .. LessonRange("react", 7)]);
+            paths.Add("typescript-react", [.. paths["react"], .. LessonRange("tsreact", 3)]);
+            paths.Add("react-fullstack", [.. paths["react"],
+                .. paths["backend"].Where(lesson => !paths["react"].Contains(lesson, StringComparer.Ordinal))]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "react", ["jsproj.immutable"]), LessonRange("react", 7));
+            VerifyPlan(CurriculumEngine.Plan(bundle, "typescript-react", ["react.project"]), LessonRange("tsreact", 3));
+            VerifyPlan(CurriculumEngine.Plan(bundle, "react-fullstack", ["react.project", "backend.tests"]), []);
+        }
+
+        if (release == "phase11-ar-v1")
+        {
+            paths.Add("algorithms", [.. paths["explore"], .. LessonRange("alg", 8)]);
+            paths.Add("oop", [.. paths["python-projects"], .. LessonRange("oop", 6)]);
+            paths.Add("problem-solving", [.. paths["algorithms"], .. LessonRange("solve", 6)]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "algorithms", ["core.debugging"]), LessonRange("alg", 8));
+            VerifyPlan(CurriculumEngine.Plan(bundle, "oop", ["pyproj.types"]), LessonRange("oop", 6));
+            VerifyPlan(CurriculumEngine.Plan(bundle, "problem-solving", ["alg.recursion"]), LessonRange("solve", 6));
+        }
 
         var exercises = Content.Lessons(bundle).SelectMany(Content.Exercises).ToArray();
         foreach (var exercise in exercises)
@@ -167,7 +203,7 @@ public static class Maintenance
         var releaseId = Input.String(bundle["sample"]?["releaseId"]);
         if (reviewedHash is not null)
         {
-            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1" or "phase8-ar-v1") || hash != reviewedHash.ToLowerInvariant())
+            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1") || hash != reviewedHash.ToLowerInvariant())
                 throw new MigrationFailure("reviewed_curriculum_digest_mismatch");
             VerifyCurriculum(bundle);
         }
@@ -213,6 +249,9 @@ public static class Maintenance
         if (active == releaseId && status == "published") return;
         var requiredPredecessor = releaseId switch
         {
+            "phase11-ar-v1" => "phase10-ar-v1",
+            "phase10-ar-v1" => "phase9-ar-v1",
+            "phase9-ar-v1" => "phase8-ar-v1",
             "phase8-ar-v1" => "phase7-ar-v1",
             "phase7-ar-v1" => "phase4-ar-v1",
             _ => "phase1-ar-v1"

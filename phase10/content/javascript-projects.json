@@ -1,0 +1,747 @@
+{
+  "lessons": [
+    {
+      "id": "jsproj-01",
+      "title": "أجهّز مشروع JavaScript محليًا",
+      "summary": "أنقل كتالوجي إلى مجلد مستقل تديره Node وnpm وVite.",
+      "why": "تنظيم نقطة الدخول والحزم يجعل التشغيل والبناء قابلين للتكرار.",
+      "objectives": [
+        "أفصل بيئة Node عن صفحة المتصفح ومدير الحزم.",
+        "أشغّل مشروع Vite محليًا وأعيد تثبيته من ملف القفل."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "jsproj.tooling"
+      ],
+      "sections": [
+        {
+          "heading": "مكان جديد للتدريب",
+          "body": "ابدأ بعد web-data.catalogue. افتح PowerShell في مجلد تدريب خارج مستودع المنصة. افحص node --version وnpm.cmd --version. تحتاج Node من الفرع 22 بإصدار 22.12 أو أحدث أو فرع LTS أحدث يدعمه Vite. لا تغيّر ExecutionPolicy؛ npm.cmd يستدعي مدير الحزم على Windows مباشرة. إذا لم يوجد node أصلح تثبيته أولًا. Node يشغّل JavaScript خارج المتصفح؛ npm يدير الحزم وأوامر package.json؛ Vite يقدّم ملفات الواجهة ويبنيها."
+        },
+        {
+          "heading": "ملفات المشروع",
+          "body": "نفّذ أوامر إنشاء catalogue-project أدناه مرة واحدة عندما لا يكون الاسم موجودًا. أنشئ package.json وindex.html وmain.js بالنصوص المعروضة عبر محررك. الملف package.json هو وصف المشروع وأوامره؛ private يمنع نشر هذه الحزمة عرضيًا، وtype: module يجعل ملفات .js هنا وحدات ESM. ضع node_modules/ وdist/ في .gitignore، واحتفظ بملف package-lock.json مع المصدر."
+        },
+        {
+          "heading": "التثبيت والقفل",
+          "body": "ثبّت أول مرة بـ npm.cmd install بعد حفظ الملفات. الإصدار المباشر Vite 8.3.7 مثبت عمدًا في المثال. ينشئ npm ملف package-lock.json بإصدارات الاعتمادات المتعدية الفعلية؛ احتفظ به. على نسخة أخرى من نفس المصدر وملف القفل استعمل npm.cmd ci لإعادة تثبيت الإصدارات المقفلة. الأمر ci يتطلب تطابق الملفين ويعيد إنشاء node_modules، لذلك استخدمه داخل هذا المشروع فقط."
+        },
+        {
+          "heading": "تشغيل وبناء",
+          "body": "npm.cmd run dev يشغّل خادم التطوير محليًا؛ افتح العنوان المطبوع، ثم أوقفه بـ Ctrl+C. نفّذ npm.cmd run build لإنتاج dist ثم npm.cmd run preview لمعاينة البناء محليًا. نجاح البناء وحده لا يثبت صحة تفاعل الواجهة. لا تفتح index.html عبر file:// لأن الوحدات تتوقع خادمًا. راجع توثيق الأداة عند تغيير إصدارها: https://vite.dev/guide/ . هذا المسار لا يعيد شرح fetch أو HTTP."
+        }
+      ],
+      "examples": [
+        {
+          "title": "أوامر PowerShell قبل إنشاء الملفات",
+          "language": "text",
+          "code": "node --version\nnpm.cmd --version\nNew-Item -ItemType Directory -Name catalogue-project\nSet-Location catalogue-project\n",
+          "explanation": "اختر مجلدًا جديدًا؛ احفظ الملفات التالية داخله قبل التثبيت."
+        },
+        {
+          "title": "ملف package.json",
+          "language": "text",
+          "code": "{\n  \"name\": \"catalogue-project\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --host 127.0.0.1\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview --host 127.0.0.1\"\n  },\n  \"devDependencies\": { \"vite\": \"8.3.7\" }\n}\n",
+          "explanation": "الأوامر تحت scripts تُستدعى عبر npm run. لا تثبّت Vite عالميًا."
+        },
+        {
+          "title": "ملف index.html",
+          "language": "text",
+          "code": "<!doctype html>\n<html lang=\"ar\" dir=\"rtl\">\n<meta charset=\"utf-8\">\n<title>كتالوج التدريب</title>\n<body>\n  <h1>كتالوج التدريب</h1>\n  <p id=\"summary\"></p>\n  <script type=\"module\" src=\"/main.js\"></script>\n</body>\n</html>\n",
+          "explanation": "نقطة دخول المتصفح سكربت وحدة، وليست ملف Node."
+        },
+        {
+          "title": "ملف main.js الأول",
+          "language": "text",
+          "code": "document.querySelector(\"#summary\").textContent = \"المشروع يعمل محليًا\";\n",
+          "explanation": "هذا الملف يحتاج DOM داخل المتصفح؛ ضعه في المشروع المحلي فقط."
+        },
+        {
+          "title": "بعد حفظ الملفات",
+          "language": "text",
+          "code": "npm.cmd install\nnpm.cmd run dev\n",
+          "explanation": "بعد إيقاف الخادم نفّذ npm.cmd run build ثم npm.cmd run preview. وعلى نسخة جديدة بملف قفل محفوظ استعمل npm.cmd ci بدل install."
+        },
+        {
+          "title": "برنامج Node مستقل",
+          "language": "javascript",
+          "code": "const project = { name: \"catalogue-project\", private: true };\nconsole.log(project.name);\nconsole.log(project.private);\n",
+          "explanation": "يمكن لـ Node تشغيل حسابات بلا DOM؛ الناتج اسم المشروع ثم true."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "jsproj-01-e1",
+          "type": "choice",
+          "prompt": "أي أمر يعيد تثبيت الاعتمادات من package-lock.json المتطابق في نسخة المشروع؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "npm.cmd install vite@latest"
+            },
+            {
+              "id": "b",
+              "text": "npm.cmd ci"
+            },
+            {
+              "id": "c",
+              "text": "node index.html"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "ci يعتمد ملف القفل المحفوظ.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-01-e2",
+          "type": "text",
+          "prompt": "اكتب أمر إنتاج مجلد dist بحسب scripts المعروض.",
+          "options": [],
+          "acceptedAnswers": [
+            "npm.cmd run build"
+          ],
+          "explanation": "build يستدعي vite build المسجل في الملف.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-01-e3",
+          "type": "text",
+          "prompt": "أي ملف تحتفظ به مع package.json لتثبيت الإصدارات نفسها لاحقًا؟",
+          "options": [],
+          "acceptedAnswers": [
+            "package-lock.json"
+          ],
+          "explanation": "يقفل الملف شجرة الاعتمادات.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ملفات المصدر ووصف الحزم والقفل معًا تصف المشروع؛ شغّل الواجهة بخادم محلي."
+    },
+    {
+      "id": "jsproj-02",
+      "title": "أفصل البيانات والدوال بوحدات ESM",
+      "summary": "أصدّر أسماء من ملف وأستوردها صراحة في نقطة الدخول.",
+      "why": "فصل المسؤوليات يسمح بإعادة استعمال القاعدة دون نسخها.",
+      "objectives": [
+        "أكتب export وimport مسمى ومسارًا نسبيًا.",
+        "أشغّل مثال وحدات محليًا وأميز الوحدات عن مختبر stdin."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "jsproj.modules"
+      ],
+      "sections": [
+        {
+          "heading": "حدود الوحدة",
+          "body": "أضف products.js داخل catalogue-project. export قبل const أوfunction يتيح الاسم لملف آخر، وimport { initialItems, totalPrice } يطلب هذين الاسمين بالضبط. المسار ./products.js يبدأ من الملف المستورِد ويشمل الامتداد. لا تستخدم require هنا؛ مشروعنا ESM بسبب type: module."
+        },
+        {
+          "heading": "أسماء ومسارات",
+          "body": "استيراد مسمى يحتاج الاسم المصدّر نفسه؛ يمكن إعادة تسميته بـ import { totalPrice as sumPrices } مع بقاء اسم التصدير. التصدير الافتراضي يستعمل export default واستيرادًا بلا أقواس، لكنه ليس مطلوبًا في مشروعنا. الأقواس هنا صيغة استيراد، وليست destructuring لكائن وقت التشغيل. لا تعتمد على متغير عام بين الملفات."
+        },
+        {
+          "heading": "نقطة تشغيل بلا متصفح",
+          "body": "أنشئ check.js بالنص أدناه وشغّل node check.js من مجلد المشروع. تتوقع سطرين 2 ثم 25. لا يحتوي products.js أي طباعة أوDOM؛ check.js مسؤول عن العرض. تنفيذ الاستيراد ينفذ أوامر المستوى الأعلى مرة لكل وحدة في العملية، لذلك اجعل ملف القواعد بلا آثار جانبية غير لازمة."
+        },
+        {
+          "heading": "أعيد وصل الواجهة",
+          "body": "استبدل main.js بالنسخة المعروضة التي تستورد القاعدة وتكتب النص داخل #summary. شغّل خادم Vite لترى عدد المنتجات والإجمالي. احتفظ بـcheck.js لفحص القاعدة خارج المتصفح. الأمثلة الموسومة text ملفات مترابطة محلية؛ المثال المستقل الموسوم JavaScript يكرر القاعدة ليعمل وحده في المختبر."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ملف products.js",
+          "language": "text",
+          "code": "export const initialItems = [\n  { id: 1, name: \"دفتر\", price: 20 },\n  { id: 2, name: \"قلم\", price: 5 }\n];\n\nexport function totalPrice(items) {\n  let total = 0;\n  for (const item of items) total += item.price;\n  return total;\n}\n",
+          "explanation": "مصدر بيانات تجريبية ودالة حسابية مسماة؛ لا يحتاج مكتبة خارجية."
+        },
+        {
+          "title": "ملف check.js",
+          "language": "text",
+          "code": "import { initialItems, totalPrice } from \"./products.js\";\n\nconsole.log(initialItems.length);\nconsole.log(totalPrice(initialItems));\n",
+          "explanation": "يشغّل node check.js ملف الدخول ويحل import عبر نظام الوحدات."
+        },
+        {
+          "title": "ملف main.js بعد الفصل",
+          "language": "text",
+          "code": "import { initialItems, totalPrice } from \"./products.js\";\n\ndocument.querySelector(\"#summary\").textContent =\n  `عدد المنتجات: ${initialItems.length}، الإجمالي: ${totalPrice(initialItems)}`;\n",
+          "explanation": "القاعدة نفسها يستعملها Node والمتصفح؛ DOM يبقى في نقطة دخول المتصفح."
+        },
+        {
+          "title": "نسخة مستقلة للحساب",
+          "language": "javascript",
+          "code": "function totalPrice(items) {\n  let total = 0;\n  for (const item of items) total += item.price;\n  return total;\n}\nconsole.log(totalPrice([{ price: 20 }, { price: 5 }]));\nconsole.log(totalPrice([]));\n",
+          "explanation": "تتوقع 25 ثم 0. هذه نسخة تدريب في ملف واحد بلا استيرادات محلية."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "jsproj-02-e1",
+          "type": "text",
+          "prompt": "اكتب سطر استيراد totalPrice المسمى فقط من products.js المجاور.",
+          "options": [],
+          "acceptedAnswers": [
+            "import { totalPrice } from \"./products.js\";",
+            "import { totalPrice } from \"./products.js\""
+          ],
+          "explanation": "الأقواس تضم الاسم المصدّر والمسار نسبي.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-02-e2",
+          "type": "text",
+          "prompt": "بعد تشغيل node check.js، ما الإجمالي في السطر الثاني؟",
+          "options": [],
+          "acceptedAnswers": [
+            "25"
+          ],
+          "explanation": "20 + 5 يساوي 25.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-02-e3",
+          "type": "choice",
+          "prompt": "أين نضع document.querySelector في تقسيم المشروع؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "داخل دالة totalPrice"
+            },
+            {
+              "id": "b",
+              "text": "داخل package-lock.json"
+            },
+            {
+              "id": "c",
+              "text": "في main.js الخاص بالمتصفح"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "ملف العرض يعرف DOM، ووحدة الحساب مستقلة عنه.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "صدّر القاعدة باسم واضح واستوردها من مسار صريح؛ اترك العرض في نقطة الدخول المناسبة."
+    },
+    {
+      "id": "jsproj-03",
+      "title": "أقرأ الكائنات وأنسخها بوضوح",
+      "summary": "أستخدم destructuring وspread مع القيم الافتراضية وترتيب الحقول.",
+      "why": "نسخة كائن واضحة تسهل بناء بيانات جديدة قبل تمريرها للواجهة.",
+      "objectives": [
+        "أقرأ حقول الكائن وأعيد تسميتها وأحدد قيمة افتراضية.",
+        "أميز النسخ السطحي عن استقلال الكائنات المتداخلة."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "jsproj.objects"
+      ],
+      "sections": [
+        {
+          "heading": "تفكيك حقول الكائن",
+          "body": "const { name, stock = 0 } = item يعرّف متغيرين من حقول item. يمكن كتابة name: title لتسمية المتغير title. القيمة الافتراضية تستخدم عندما يغيب الحقل أوتكون قيمته undefined؛ القيمة 0 تبقى 0 والقيمة null تبقى null. هذا لا يتحقق من أنواع البيانات ولا يحول النصوص."
+        },
+        {
+          "heading": "نشر الحقول",
+          "body": "{ ...item, price: 30 } ينشئ كائنًا جديدًا وينسخ الحقول ثم يستبدل price. عند تكرار مفتاح تفوز القيمة الأخيرة؛ { price: 30, ...item } قد يعيد السعر القديم. const يمنع إعادة إسناد المتغير لكنه لا يجعل حقول الكائن غير قابلة للتعديل."
+        },
+        {
+          "heading": "حدود النسخ السطحي",
+          "body": "spread ينسخ مستوى واحدًا فقط. إذا كان item.meta كائنًا فإن copy.meta يشير إلى الكائن نفسه ما لم تنسخه أيضًا. لتغيير meta.featured بلا تعديل الأصل اكتب { ...item, meta: { ...item.meta, featured: true } }. لا تعتمد على spread وحده لنسخ شجرة متداخلة مستقلة."
+        },
+        {
+          "heading": "عقد صغير للمختبر",
+          "body": "ستقرأ JSON صالحًا فيه item وفيه name نص وprice عدد غير سالب وstock عدد صحيح أوغائب، ومعه patch يحوي price جديدًا. أعد كائنًا مستقلًا يضم name وprice وstock فقط؛ stock الافتراضي 0. لا توجد حقول متداخلة في هذا العقد، ولا تحتاج شبكة أوصفحة متصفح."
+        }
+      ],
+      "examples": [
+        {
+          "title": "تفكيك واسم بديل ونسخة",
+          "language": "javascript",
+          "code": "const item = { id: 1, name: \"دفتر\", price: 20 };\nconst { name: title, stock = 0 } = item;\nconst copy = { ...item, price: 30 };\nconsole.log(title);\nconsole.log(stock);\nconsole.log(item.price);\nconsole.log(copy.price);\n",
+          "explanation": "تقرأ title من name، ويصبح stock صفرًا لأنه غائب؛ سعر الأصل يظل 20."
+        },
+        {
+          "title": "نسخ المستوى المتغير",
+          "language": "javascript",
+          "code": "const item = { name: \"دفتر\", meta: { featured: false } };\nconst next = { ...item, meta: { ...item.meta, featured: true } };\nconsole.log(item.meta.featured);\nconsole.log(next.meta.featured);\nconsole.log(item.meta === next.meta);\n",
+          "explanation": "تتوقع false ثم true ثم false لأننا أنشأنا كائن meta جديدًا."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "jsproj-03-e1",
+          "type": "text",
+          "prompt": "ما قيمة stock بعد const { stock = 9 } = { stock: 0 }؟",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "الصفر قيمة موجودة؛ الافتراضي للغائب أوundefined.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-03-e2",
+          "type": "text",
+          "prompt": "لدينا item.price يساوي 20. ما price في { ...item, price: 30 }؟",
+          "options": [],
+          "acceptedAnswers": [
+            "30"
+          ],
+          "explanation": "الخاصية الأخيرة تستبدل السابقة.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-03-e3",
+          "type": "choice",
+          "prompt": "أي تعبير يغير featured بلا تعديل meta في الأصل؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "{ ...item }.meta.featured = true"
+            },
+            {
+              "id": "b",
+              "text": "{ ...item, meta: { ...item.meta, featured: true } }"
+            },
+            {
+              "id": "c",
+              "text": "item.meta.featured = true"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يجب نسخ المستوى المتداخل الذي تغيره.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اقرأ الحقول بتفكيك واضح، وانسخ كل مستوى تغيّره مع وضع التعديل بعد spread."
+    },
+    {
+      "id": "jsproj-04",
+      "title": "أحدّث الكتالوج دون تعديل النسخة السابقة",
+      "summary": "أضيف وأعدّل وأحذف بمصفوفات جديدة، ثم أختبر بقاء الأصل.",
+      "why": "تعتمد واجهات React لاحقًا على حالات يمكن مقارنة نسخها بوضوح.",
+      "objectives": [
+        "أجمع spread وmap وfilter لتحديث قائمة المنتجات.",
+        "أثبت أن الإضافة والتعديل والحذف لا تغيّر النسخة السابقة.",
+        "أنجز وحدة كتالوج محلية قابلة لإعادة الاستخدام."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "jsproj.immutable"
+      ],
+      "sections": [
+        {
+          "heading": "الإضافة تعيد مصفوفة",
+          "body": "لإضافة منتج أنشئ [...items, { ...item }]. لا تستخدم push على items لأن ذلك يغير الأصل. عقدنا معرّفات صحيحة فريدة وحقول مسطحة؛ يستدعي المرسل addItem بمنتج ذي معرّف غير مستخدم. نسخ المنتج يحمي حقوله المسطحة من تعديل كائن الإدخال لاحقًا. هذه ليست سياسة توليد معرّفات أوتخزين دائم."
+        },
+        {
+          "heading": "التعديل بالمعرّف",
+          "body": "map يعيد مصفوفة بطول ثابت. عند مطابقة id أعد { ...item, price }، وعند عدم المطابقة أعد item نفسه. العناصر غير المتغيرة يمكن أن تبقى بنفس المرجع؛ لا حاجة لنسخ كل شيء. إذا لم يوجد المعرّف فالقيم تبقى كما هي وتعود مصفوفة جديدة. price عدد غير سالب حسب العقد."
+        },
+        {
+          "heading": "الحذف والترتيب",
+          "body": "filter مع item.id !== id يحتفظ بباقي المنتجات بترتيبها. حذف معرّف غير موجود يبقي القيم كما هي. لا نستخدم splice على الأصل. لا تغني هذه القواعد عن التحقق عند حدود بيانات خارجية؛ نفترض المدخلات المطابقة للعقد هنا."
+        },
+        {
+          "heading": "أكمل مشروع الكتالوج",
+          "body": "احتفظ بمنتجات products.js وملفات Vite من الدروس السابقة. أضف catalogue.js وverify.js أدناه، وشغّل node verify.js: تتوقع 2 ثم 20 ثم 2 ثم 40 ثم 1,3. اربط الدوال في main.js كما في المثال وشغّل build ثم عاين الواجهة محليًا. اشرح أن منتجات الأصل ما زالت دفترًا بسعر 20 وقلمًا بسعر 5؛ المطلوب تحديث قيم في الذاكرة، لا حفظ دائم أوطلبات شبكة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ملف catalogue.js",
+          "language": "text",
+          "code": "export function addItem(items, item) {\n  return [...items, { ...item }];\n}\n\nexport function editPrice(items, id, price) {\n  return items.map(item => item.id === id ? { ...item, price } : item);\n}\n\nexport function removeItem(items, id) {\n  return items.filter(item => item.id !== id);\n}\n",
+          "explanation": "الدوال تعيد نسخًا وتحافظ على الأصل وعقد المعرّفات الفريدة."
+        },
+        {
+          "title": "ملف verify.js",
+          "language": "text",
+          "code": "import { initialItems, totalPrice } from \"./products.js\";\nimport { addItem, editPrice, removeItem } from \"./catalogue.js\";\n\nconst added = addItem(initialItems, { id: 3, name: \"كوب\", price: 10 });\nconst edited = editPrice(added, 1, 30);\nconst finalItems = removeItem(edited, 2);\nconsole.log(initialItems.length);\nconsole.log(initialItems[0].price);\nconsole.log(finalItems.length);\nconsole.log(totalPrice(finalItems));\nconsole.log(finalItems.map(item => item.id).join(\",\"));\n",
+          "explanation": "التحقق يفحص طول الأصل وسعره ثم محتوى النتيجة؛ شغّله عبر Node من مجلد المشروع."
+        },
+        {
+          "title": "ملف main.js للمشروع النهائي",
+          "language": "text",
+          "code": "import { initialItems, totalPrice } from \"./products.js\";\nimport { addItem, editPrice, removeItem } from \"./catalogue.js\";\n\nconst added = addItem(initialItems, { id: 3, name: \"كوب\", price: 10 });\nconst edited = editPrice(added, 1, 30);\nconst items = removeItem(edited, 2);\ndocument.querySelector(\"#summary\").textContent =\n  `الأسماء: ${items.map(item => item.name).join(\"، \")}؛ الإجمالي: ${totalPrice(items)}`;\n",
+          "explanation": "تعرض الصفحة دفترًا وكوبًا بإجمالي 40. تستخدم الواجهة نفس القواعد التي فحصها verify.js."
+        },
+        {
+          "title": "تحديثات مستقلة قابلة للتتبع",
+          "language": "javascript",
+          "code": "const original = [{ id: 1, price: 20 }, { id: 2, price: 5 }];\nconst added = [...original, { id: 3, price: 10 }];\nconst edited = added.map(item => item.id === 1 ? { ...item, price: 30 } : item);\nconst result = edited.filter(item => item.id !== 2);\nconsole.log(JSON.stringify(original));\nconsole.log(JSON.stringify(result));\nconsole.log(original === result);\n",
+          "explanation": "الأصل باقٍ بسعره القديم؛ النتيجة تضم 1 و3 في مصفوفة مختلفة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "jsproj-04-e1",
+          "type": "choice",
+          "prompt": "أي طريقة تعيد قائمة دون المنتج صاحب id=2 ولا تعدل الأصل؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "items.splice(1, 1)"
+            },
+            {
+              "id": "b",
+              "text": "items.push({ id: 2 })"
+            },
+            {
+              "id": "c",
+              "text": "items.filter(item => item.id !== 2)"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "filter يبني مصفوفة من العناصر التي تحقق الشرط.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-04-e2",
+          "type": "text",
+          "prompt": "لدى الأصل منتجان. أضفنا منتجًا عبر [...items, newItem]. ما طول الأصل؟",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "spread يبني مصفوفة جديدة ولا يزيد طول القديمة.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "jsproj-04-e3",
+          "type": "text",
+          "prompt": "عند تعديل المنتج المطابق بـmap، أي قيمة تعيدها للعناصر غير المطابقة؟",
+          "options": [],
+          "acceptedAnswers": [
+            "item"
+          ],
+          "explanation": "نحتفظ بمرجع العنصر غير المتغير؛ لا نعدله.",
+          "hints": [
+            "راجع العقد والمثال ثم تتبع القيم خطوة بخطوة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أنشئ مصفوفة جديدة وانسخ العنصر المعدّل؛ اختبر النتيجة وبقاء الأصل معًا."
+    }
+  ],
+  "skills": [
+    {
+      "id": "jsproj.tooling",
+      "title": "أجهّز مشروع JavaScript محليًا",
+      "description": "أنقل كتالوجي إلى مجلد مستقل تديره Node وnpm وVite.",
+      "required": {
+        "skill": "web-data.catalogue"
+      },
+      "recommended": []
+    },
+    {
+      "id": "jsproj.modules",
+      "title": "أفصل البيانات والدوال بوحدات ESM",
+      "description": "أصدّر أسماء من ملف وأستوردها صراحة في نقطة الدخول.",
+      "required": {
+        "skill": "jsproj.tooling"
+      },
+      "recommended": []
+    },
+    {
+      "id": "jsproj.objects",
+      "title": "أقرأ الكائنات وأنسخها بوضوح",
+      "description": "أستخدم destructuring وspread مع القيم الافتراضية وترتيب الحقول.",
+      "required": {
+        "skill": "jsproj.modules"
+      },
+      "recommended": []
+    },
+    {
+      "id": "jsproj.immutable",
+      "title": "أحدّث الكتالوج دون تعديل النسخة السابقة",
+      "description": "أضيف وأعدّل وأحذف بمصفوفات جديدة، ثم أختبر بقاء الأصل.",
+      "required": {
+        "skill": "jsproj.objects"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "jsproj-01",
+      "title": "أجهّز مشروع JavaScript محليًا",
+      "why": "تنظيم نقطة الدخول والحزم يجعل التشغيل والبناء قابلين للتكرار.",
+      "skillIds": [
+        "jsproj.tooling"
+      ]
+    },
+    {
+      "id": "jsproj-02",
+      "title": "أفصل البيانات والدوال بوحدات ESM",
+      "why": "فصل المسؤوليات يسمح بإعادة استعمال القاعدة دون نسخها.",
+      "skillIds": [
+        "jsproj.modules"
+      ]
+    },
+    {
+      "id": "jsproj-03",
+      "title": "أقرأ الكائنات وأنسخها بوضوح",
+      "why": "نسخة كائن واضحة تسهل بناء بيانات جديدة قبل تمريرها للواجهة.",
+      "skillIds": [
+        "jsproj.objects"
+      ]
+    },
+    {
+      "id": "jsproj-04",
+      "title": "أحدّث الكتالوج دون تعديل النسخة السابقة",
+      "why": "تعتمد واجهات React لاحقًا على حالات يمكن مقارنة نسخها بوضوح.",
+      "skillIds": [
+        "jsproj.immutable"
+      ]
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "jsproj-03",
+      "id": "jsproj-03-lab",
+      "language": "javascript",
+      "title": "أنشئ نسخة منتج بسعر جديد",
+      "prompt": "اقرأ JSON من stdin يحوي item بحقلي name النصي وprice العددي، وstock عدد صحيح اختياري، وpatch فيه price فقط. استعمل التفكيك لقيمة stock الافتراضية 0، ثم أنشئ updated بحقوله بالترتيب name وprice وstock، مع السعر الجديد من patch. اطبع JSON.stringify(updated) ثم السعر القديم item.price في سطر مستقل. لا تعدّل item. المدخل مطابق للعقد والأسعار غير سالبة. لا توجد حقول إضافية.",
+      "starterCode": "const { item, patch } = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\n// فكك الحقول وأنشئ نسخة ثم اطبع السطرين\n",
+      "sampleInput": "{\"item\":{\"name\":\"قلم\",\"price\":5,\"stock\":2},\"patch\":{\"price\":7}}\n",
+      "sampleOutput": "{\"name\":\"قلم\",\"price\":7,\"stock\":2}\n5\n",
+      "skillId": "jsproj.objects",
+      "hiddenTests": [
+        {
+          "input": "{\"item\":{\"name\":\"دفتر\",\"price\":20},\"patch\":{\"price\":0}}\n",
+          "expectedOutput": "{\"name\":\"دفتر\",\"price\":0,\"stock\":0}\n20\n"
+        },
+        {
+          "input": "{\"item\":{\"name\":\"كوب\",\"price\":0,\"stock\":0},\"patch\":{\"price\":12}}\n",
+          "expectedOutput": "{\"name\":\"كوب\",\"price\":12,\"stock\":0}\n0\n"
+        }
+      ],
+      "solution": "const { item, patch } = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst { name, price, stock = 0 } = item;\nconst updated = { name, price, stock, ...patch };\nconsole.log(JSON.stringify(updated));\nconsole.log(item.price);\n"
+    },
+    {
+      "lessonId": "jsproj-04",
+      "id": "jsproj-04-lab",
+      "language": "javascript",
+      "title": "طبّق إضافة وتعديلًا وحذفًا",
+      "prompt": "اقرأ JSON من stdin فيه items مصفوفة كائنات مسطحة ذات id وprice، وadd منتج جديد بمعرّف غير موجود، وedit فيه id وprice، وremoveId معرّف للحذف. المعرّفات أعداد صحيحة فريدة والأسعار أعداد غير سالبة. طبّق الإضافة ثم التعديل ثم الحذف بهذا الترتيب باستخدام spread وmap وfilter، دون تغيير items أوحقول عناصرها. المعرّف غير الموجود لا يغير القيم. اطبع JSON.stringify للنتيجة ثم للأصل في سطرين. احتفظ بترتيب العناصر وحقلي id ثم price.",
+      "starterCode": "const { items, add, edit, removeId } = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\n// أضف ثم عدل ثم احذف دون تعديل الأصل\n",
+      "sampleInput": "{\"items\":[{\"id\":1,\"price\":20},{\"id\":2,\"price\":5}],\"add\":{\"id\":3,\"price\":10},\"edit\":{\"id\":1,\"price\":30},\"removeId\":2}\n",
+      "sampleOutput": "[{\"id\":1,\"price\":30},{\"id\":3,\"price\":10}]\n[{\"id\":1,\"price\":20},{\"id\":2,\"price\":5}]\n",
+      "skillId": "jsproj.immutable",
+      "hiddenTests": [
+        {
+          "input": "{\"items\":[],\"add\":{\"id\":7,\"price\":2},\"edit\":{\"id\":7,\"price\":0},\"removeId\":7}\n",
+          "expectedOutput": "[]\n[]\n"
+        },
+        {
+          "input": "{\"items\":[{\"id\":4,\"price\":8}],\"add\":{\"id\":9,\"price\":6},\"edit\":{\"id\":99,\"price\":3},\"removeId\":88}\n",
+          "expectedOutput": "[{\"id\":4,\"price\":8},{\"id\":9,\"price\":6}]\n[{\"id\":4,\"price\":8}]\n"
+        },
+        {
+          "input": "{\"items\":[{\"id\":8,\"price\":1},{\"id\":2,\"price\":2}],\"add\":{\"id\":5,\"price\":9},\"edit\":{\"id\":2,\"price\":4},\"removeId\":8}\n",
+          "expectedOutput": "[{\"id\":2,\"price\":4},{\"id\":5,\"price\":9}]\n[{\"id\":8,\"price\":1},{\"id\":2,\"price\":2}]\n"
+        }
+      ],
+      "solution": "const { items, add, edit, removeId } = JSON.parse(require(\"fs\").readFileSync(0, \"utf8\"));\nconst added = [...items, { ...add }];\nconst edited = added.map(item => item.id === edit.id ? { ...item, price: edit.price } : item);\nconst result = edited.filter(item => item.id !== removeId);\nconsole.log(JSON.stringify(result));\nconsole.log(JSON.stringify(items));\n"
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "jsproj-01",
+      "index": 5,
+      "input": "",
+      "output": "catalogue-project\ntrue\n"
+    },
+    {
+      "lessonId": "jsproj-02",
+      "index": 3,
+      "input": "",
+      "output": "25\n0\n"
+    },
+    {
+      "lessonId": "jsproj-03",
+      "index": 0,
+      "input": "",
+      "output": "دفتر\n0\n20\n30\n"
+    },
+    {
+      "lessonId": "jsproj-03",
+      "index": 1,
+      "input": "",
+      "output": "false\ntrue\nfalse\n"
+    },
+    {
+      "lessonId": "jsproj-04",
+      "index": 3,
+      "input": "",
+      "output": "[{\"id\":1,\"price\":20},{\"id\":2,\"price\":5}]\n[{\"id\":1,\"price\":30},{\"id\":3,\"price\":10}]\nfalse\n"
+    }
+  ],
+  "glossary": [
+    {
+      "term": "بيئة تشغيل",
+      "technical": "Node.js",
+      "definition": "بيئة تشغّل JavaScript خارج المتصفح دون توفير DOM تلقائيًا."
+    },
+    {
+      "term": "وصف الحزمة",
+      "technical": "package.json",
+      "definition": "ملف يصف المشروع واعتماداته وأوامر تشغيله."
+    },
+    {
+      "term": "ملف القفل",
+      "technical": "package-lock.json",
+      "definition": "ملف يحفظ شجرة إصدارات الاعتمادات لإعادة التثبيت المتكرر."
+    },
+    {
+      "term": "وحدة قياسية",
+      "technical": "ES Module",
+      "definition": "ملف يحدد الأسماء المتاحة خارجه عبر export ويطلب أسماء من وحدات أخرى عبر import."
+    },
+    {
+      "term": "تفكيك الحقول",
+      "technical": "Destructuring",
+      "definition": "صيغة تربط حقول كائن بمتغيرات مع إمكانية إعادة التسمية وتحديد قيم افتراضية."
+    },
+    {
+      "term": "نشر القيم",
+      "technical": "Spread",
+      "definition": "صيغة تنسخ حقول كائن أوعناصر مصفوفة إلى بنية جديدة نسخًا سطحيًا."
+    },
+    {
+      "term": "تحديث دون تعديل الأصل",
+      "technical": "Immutable update",
+      "definition": "بناء نسخة جديدة للقيم المتغيرة مع الاحتفاظ بالنسخة السابقة دون تعديل."
+    },
+    {
+      "term": "خادم تطوير",
+      "technical": "Vite",
+      "definition": "أداة تقدم ملفات الواجهة محليًا وتنتج بناءً في مجلد dist."
+    }
+  ],
+  "track": {
+    "id": "javascript-projects",
+    "title": "JavaScript للمشاريع",
+    "lessonIds": [
+      "jsproj-01",
+      "jsproj-02",
+      "jsproj-03",
+      "jsproj-04"
+    ]
+  },
+  "goal": {
+    "id": "javascript-projects",
+    "title": "JavaScript للمشاريع",
+    "description": "أنظم كتالوج JavaScript محليًا بوحدات ESM ونسخ كائنات وتحديثات تحافظ على الأصل استعدادًا لـReact.",
+    "status": "sample",
+    "skillIds": [
+      "jsproj.tooling",
+      "jsproj.modules",
+      "jsproj.objects",
+      "jsproj.immutable"
+    ]
+  },
+  "project": {
+    "id": "jsproj-immutable-catalogue",
+    "title": "وحدة كتالوج قابلة لإعادة الاستخدام",
+    "lessonId": "jsproj-04",
+    "summary": "كتالوج محلي بملفات ESM يفصل القواعد عن العرض ويثبت بقاء البيانات السابقة.",
+    "criteria": [
+      "احتفظ بملفات package.json وpackage-lock.json وindex.html وmain.js وproducts.js وcatalogue.js وverify.js، واستبعد node_modules وdist من Git.",
+      "شغّل التثبيت الأول بأمر npm.cmd install، وأعد تثبيت نسخة أخرى ذات ملف قفل مطابق بأمر npm.cmd ci؛ لا تغيّر سياسة PowerShell.",
+      "صدّر بيانات initialItems ودالة totalPrice وثلاث دوال addItem وeditPrice وremoveItem واستوردها بمسارات ESM صريحة.",
+      "نفّذ إضافة كوب بسعر 10 ثم تعديل سعر الدفتر إلى 30 ثم حذف القلم، واعرض دفترًا وكوبًا بإجمالي 40.",
+      "شغّل node verify.js وتحقق من السطور 2 و20 و2 و40 و1,3؛ افحص أيضًا معرّفًا غير موجود وقائمة فارغة في المختبر.",
+      "شغّل npm.cmd run build ثم npm.cmd run preview وتحقق بصريًا من النص؛ وثّق بيئة Node ونسخ npm ودور القفل في README. شرح بقاء الأصل ومراجعة العرض معياران يحتاجان مراجعة بشرية."
+    ]
+  },
+  "multiFileChecks": [
+    {
+      "id": "jsproj-esm-total",
+      "lessonId": "jsproj-02",
+      "files": [
+        {
+          "path": "products.js",
+          "lessonId": "jsproj-02",
+          "index": 0
+        },
+        {
+          "path": "check.js",
+          "lessonId": "jsproj-02",
+          "index": 1
+        }
+      ],
+      "entry": "check.js",
+      "input": "",
+      "output": "2\n25\n"
+    },
+    {
+      "id": "jsproj-esm-immutable",
+      "lessonId": "jsproj-04",
+      "files": [
+        {
+          "path": "products.js",
+          "lessonId": "jsproj-02",
+          "index": 0
+        },
+        {
+          "path": "catalogue.js",
+          "lessonId": "jsproj-04",
+          "index": 0
+        },
+        {
+          "path": "verify.js",
+          "lessonId": "jsproj-04",
+          "index": 1
+        }
+      ],
+      "entry": "verify.js",
+      "input": "",
+      "output": "2\n20\n2\n40\n1,3\n"
+    }
+  ]
+}

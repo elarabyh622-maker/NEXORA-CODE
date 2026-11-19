@@ -28,6 +28,14 @@ function Test-NexoraTunnelOwner($Listener, $State) {
 
 Push-Location -LiteralPath $vmDirectory
 try {
+    # Restore reviewed host sources into an ephemeral execution boot before enabling it.
+    & $ssh @transport $remote 'sudo -n systemctl start docker.service'
+    if ($LASTEXITCODE -ne 0) { throw 'The dedicated guest Docker service could not be started.' }
+    & python -B (Join-Path $PSScriptRoot 'sync-runner.py')
+    if ($LASTEXITCODE -ne 0) { throw 'The dedicated guest runner sources could not be synchronized.' }
+    # A slow guest boot can leave an enabled unit inactive after a dependency timeout.
+    & $ssh @transport $remote 'sudo -n systemctl start nexora-code-runner.service'
+    if ($LASTEXITCODE -ne 0) { throw 'The dedicated guest runner service could not be started.' }
     $readToken = 'sudo -n sed -n "s/^NEXORA_RUNNER_BEARER_TOKEN=//p" /etc/nexora-code-runner/runner.env'
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         $tokenLines = @(& $ssh @transport $remote $readToken)
@@ -75,7 +83,7 @@ try {
         $state | ConvertTo-Json | Set-Content -LiteralPath $stateFile -Encoding UTF8
     }
 
-    $deadline = [DateTime]::UtcNow.AddSeconds(75)
+    $deadline = [DateTime]::UtcNow.AddSeconds(180)
     $ready = $false
     while (-not $ready -and [DateTime]::UtcNow -lt $deadline) {
         try {
@@ -88,26 +96,33 @@ try {
     }
     if (-not $ready) { throw 'The runner did not finish its startup checks.' }
 
-    $payload = @{ language = 'python'; code = "print('nexora-runner-ready')"; stdin = '' } | ConvertTo-Json -Compress
-    try {
-        $request = @{
-            Uri = "$origin/v1/execute"
-            Method = 'Post'
-            ContentType = 'application/json'
-            Headers = @{ Authorization = "Bearer $token" }
-            Body = $payload
-            TimeoutSec = 25
-            MaximumRedirection = 0
+    # Confirm both supported runtimes before allowing the application to enable execution.
+    foreach ($case in @(
+        @{ Language = 'python'; Code = "print('nexora-python-ready')"; Output = 'nexora-python-ready' }
+        @{ Language = 'javascript'; Code = "console.log('nexora-javascript-ready')"; Output = 'nexora-javascript-ready' }
+    )) {
+        $payload = @{ language = $case.Language; code = $case.Code; stdin = '' } | ConvertTo-Json -Compress
+        try {
+            $request = @{
+                Uri = "$origin/v1/execute"
+                Method = 'Post'
+                ContentType = 'application/json'
+                Headers = @{ Authorization = "Bearer $token" }
+                Body = $payload
+                TimeoutSec = 60
+                MaximumRedirection = 0
+            }
+            $probe = Invoke-RestMethod @request
+        } catch {
+            throw "The $($case.Language) runner did not respond through the authenticated SSH tunnel."
         }
-        $probe = Invoke-RestMethod @request
-    } catch {
-        throw 'The runner did not respond through the authenticated SSH tunnel.'
+        if ($probe.status -ne 'completed' -or $probe.stdout.Trim() -ne $case.Output -or $probe.stderr) {
+            $knownStatus = $probe.status -in @('completed', 'code_error', 'timed_out', 'output_limit', 'infrastructure_error')
+            $reason = if ($knownStatus) { $probe.status } else { 'unknown' }
+            throw "The $($case.Language) runner did not pass its execution readiness probe (status: $reason)."
+        }
     }
-    if ($probe.status -ne 'completed' -or $probe.stdout.Trim() -ne 'nexora-runner-ready') {
-        $knownStatus = $probe.status -in @('completed', 'code_error', 'timed_out', 'output_limit', 'infrastructure_error')
-        $reason = if ($knownStatus) { $probe.status } else { 'unknown' }
-        throw "The runner did not pass its execution readiness probe (status: $reason)."
-    }
+
     $env:MASAR_CODE_LAB_ENABLED = 'true'
     $env:MASAR_CODE_LAB_RUNNER_URL = $origin
     $env:MASAR_CODE_LAB_RUNNER_TOKEN = $token

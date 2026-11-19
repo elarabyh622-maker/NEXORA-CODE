@@ -31,7 +31,22 @@ export function errorText(error: unknown): string {
   return 'تعذر الاتصال الآن. تحقق من اتصالك ثم أعد المحاولة. لم نؤكد حفظ طلبك.';
 }
 
-async function send<T>(path: string, options: RequestOptions, token?: string): Promise<T> {
+async function retryCatalog(signal?: AbortSignal) {
+  signal?.throwIfAborted();
+  await new Promise<void>((resolve, reject) => {
+    const done = () => { signal?.removeEventListener('abort', aborted); resolve(); };
+    const timer = setTimeout(done, 400);
+    const aborted = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', aborted);
+      reject(signal?.reason ?? new DOMException('Aborted', 'AbortError'));
+    };
+    signal?.addEventListener('abort', aborted, { once: true });
+    if (signal?.aborted) aborted();
+  });
+}
+
+async function send<T>(path: string, options: RequestOptions, token?: string, attempt = 0): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
   if (token) headers['X-CSRF-TOKEN'] = token;
@@ -50,6 +65,11 @@ async function send<T>(path: string, options: RequestOptions, token?: string): P
   options.signal?.throwIfAborted();
   if (!response.ok) {
     const data = await response.json().catch(() => null) as { code?: string; message?: string } | null;
+    if (path === '/catalog' && (options.method ?? 'GET') === 'GET' && response.status === 503 &&
+        attempt === 0 && (data?.code === 'service_unavailable' || data?.code === 'database_unavailable')) {
+      await retryCatalog(options.signal);
+      return send<T>(path, options, token, 1);
+    }
     if (data?.code === 'access_required' && typeof window !== 'undefined') window.dispatchEvent(new Event(ACCESS_INVALIDATED));
     const message = data?.code === 'access_required'
       ? 'الوصول إلى المحتوى غير مفعّل لهذا الحساب. تواصل مع إدارة المنصة ثم حدّث حالة الوصول.'

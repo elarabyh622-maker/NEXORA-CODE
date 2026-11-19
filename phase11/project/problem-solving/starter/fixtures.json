@@ -1,0 +1,570 @@
+[
+  {
+    "name": "count repeated words",
+    "input": {
+      "task": "count",
+      "text": "red blue red"
+    },
+    "expected": {
+      "result": [
+        [
+          "red",
+          2
+        ],
+        [
+          "blue",
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "name": "count empty",
+    "input": {
+      "task": "count",
+      "text": ""
+    },
+    "expected": {
+      "result": []
+    }
+  },
+  {
+    "name": "count spaces",
+    "input": {
+      "task": "count",
+      "text": "   "
+    },
+    "expected": {
+      "result": []
+    }
+  },
+  {
+    "name": "count first appearance",
+    "input": {
+      "task": "count",
+      "text": "  z a z a b  "
+    },
+    "expected": {
+      "result": [
+        [
+          "z",
+          2
+        ],
+        [
+          "a",
+          2
+        ],
+        [
+          "b",
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "name": "count uppercase rejected",
+    "input": {
+      "task": "count",
+      "text": "Red"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "count non ASCII rejected",
+    "input": {
+      "task": "count",
+      "text": "أحمر"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "count tab rejected",
+    "input": {
+      "task": "count",
+      "text": "a\tb"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "count limit accepted",
+    "input": {
+      "task": "count",
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "expected": {
+      "result": [
+        [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "name": "count too long",
+    "input": {
+      "task": "count",
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "pair extremes",
+    "input": {
+      "task": "pair",
+      "items": [
+        -2,
+        0,
+        0,
+        2
+      ],
+      "target": 0
+    },
+    "expected": {
+      "result": [
+        0,
+        3
+      ]
+    }
+  },
+  {
+    "name": "pair equal values distinct indexes",
+    "input": {
+      "task": "pair",
+      "items": [
+        2,
+        2
+      ],
+      "target": 4
+    },
+    "expected": {
+      "result": [
+        0,
+        1
+      ]
+    }
+  },
+  {
+    "name": "pair one element",
+    "input": {
+      "task": "pair",
+      "items": [
+        2
+      ],
+      "target": 4
+    },
+    "expected": {
+      "result": []
+    }
+  },
+  {
+    "name": "pair empty",
+    "input": {
+      "task": "pair",
+      "items": [],
+      "target": 0
+    },
+    "expected": {
+      "result": []
+    }
+  },
+  {
+    "name": "pair absent",
+    "input": {
+      "task": "pair",
+      "items": [
+        -3,
+        1,
+        2
+      ],
+      "target": 8
+    },
+    "expected": {
+      "result": []
+    }
+  },
+  {
+    "name": "pair first path match",
+    "input": {
+      "task": "pair",
+      "items": [
+        1,
+        1,
+        2,
+        3
+      ],
+      "target": 4
+    },
+    "expected": {
+      "result": [
+        0,
+        3
+      ]
+    }
+  },
+  {
+    "name": "pair zeros",
+    "input": {
+      "task": "pair",
+      "items": [
+        0,
+        0,
+        0
+      ],
+      "target": 0
+    },
+    "expected": {
+      "result": [
+        0,
+        2
+      ]
+    }
+  },
+  {
+    "name": "pair unsorted rejected",
+    "input": {
+      "task": "pair",
+      "items": [
+        2,
+        1
+      ],
+      "target": 3
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "window best at tail",
+    "input": {
+      "task": "window",
+      "items": [
+        1,
+        2,
+        8
+      ],
+      "k": 2
+    },
+    "expected": {
+      "result": 10
+    }
+  },
+  {
+    "name": "window negative",
+    "input": {
+      "task": "window",
+      "items": [
+        -5,
+        -2,
+        -4
+      ],
+      "k": 2
+    },
+    "expected": {
+      "result": -6
+    }
+  },
+  {
+    "name": "window empty",
+    "input": {
+      "task": "window",
+      "items": [],
+      "k": 0
+    },
+    "expected": {
+      "result": 0
+    }
+  },
+  {
+    "name": "window zero length nonempty",
+    "input": {
+      "task": "window",
+      "items": [
+        3,
+        -1
+      ],
+      "k": 0
+    },
+    "expected": {
+      "result": 0
+    }
+  },
+  {
+    "name": "window full duplicates",
+    "input": {
+      "task": "window",
+      "items": [
+        0,
+        2,
+        2,
+        0
+      ],
+      "k": 4
+    },
+    "expected": {
+      "result": 4
+    }
+  },
+  {
+    "name": "window singleton",
+    "input": {
+      "task": "window",
+      "items": [
+        -1,
+        0,
+        -2
+      ],
+      "k": 1
+    },
+    "expected": {
+      "result": 0
+    }
+  },
+  {
+    "name": "window k too large",
+    "input": {
+      "task": "window",
+      "items": [],
+      "k": 1
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "window k boolean rejected",
+    "input": {
+      "task": "window",
+      "items": [
+        1
+      ],
+      "k": true
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "window k negative rejected",
+    "input": {
+      "task": "window",
+      "items": [
+        1
+      ],
+      "k": -1
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "window list boolean rejected",
+    "input": {
+      "task": "window",
+      "items": [
+        true
+      ],
+      "k": 1
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "report combines unsorted list",
+    "input": {
+      "task": "report",
+      "text": "x y x",
+      "items": [
+        4,
+        -2,
+        3
+      ],
+      "k": 2
+    },
+    "expected": {
+      "result": {
+        "counts": [
+          [
+            "x",
+            2
+          ],
+          [
+            "y",
+            1
+          ]
+        ],
+        "maxWindow": 2
+      }
+    }
+  },
+  {
+    "name": "report empty",
+    "input": {
+      "task": "report",
+      "text": "",
+      "items": [],
+      "k": 0
+    },
+    "expected": {
+      "result": {
+        "counts": [],
+        "maxWindow": 0
+      }
+    }
+  },
+  {
+    "name": "unknown task rejected",
+    "input": {
+      "task": "other"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "array not object rejected",
+    "input": [],
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "missing text rejected",
+    "input": {
+      "task": "count"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "too many items rejected",
+    "input": {
+      "task": "window",
+      "items": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "k": 1
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "item outside range rejected",
+    "input": {
+      "task": "window",
+      "items": [
+        21
+      ],
+      "k": 1
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "fraction rejected",
+    "input": {
+      "task": "pair",
+      "items": [
+        1.5,
+        2
+      ],
+      "target": 3
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "target outside range rejected",
+    "input": {
+      "task": "pair",
+      "items": [],
+      "target": 41
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  },
+  {
+    "name": "extra fields ignored",
+    "input": {
+      "task": "count",
+      "text": "a",
+      "extra": "unused"
+    },
+    "expected": {
+      "result": [
+        [
+          "a",
+          1
+        ]
+      ]
+    }
+  },
+  {
+    "name": "integral JSON number accepted",
+    "input": {
+      "task": "window",
+      "items": [
+        2.0,
+        -1.0
+      ],
+      "k": 1.0
+    },
+    "expected": {
+      "result": 2
+    }
+  },
+  {
+    "name": "text newline rejected",
+    "input": {
+      "task": "count",
+      "text": "a\n"
+    },
+    "expected": {
+      "error": "invalid input"
+    }
+  }
+]

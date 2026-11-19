@@ -2,7 +2,16 @@
 /phase4/dist/curriculum.json -text
 /phase7/dist/curriculum.json -text
 /phase8/dist/curriculum.json -text
+/phase9/dist/curriculum.json -text
+/phase10/dist/curriculum.json -text
+/phase11/dist/curriculum.json -text
 /phase2/database/migrations/*.sql -text
+
+# Project archive checks compare source members byte for byte.
+/phase9/project/starter/** -text whitespace=cr-at-eol
+/phase10/project/starter-js/** -text whitespace=cr-at-eol
+/phase10/project/starter-ts/** -text whitespace=cr-at-eol
+/phase11/project/*/starter/** -text whitespace=cr-at-eol
 
 # These files are used directly inside the Linux lab host.
 *.sh text eol=lf

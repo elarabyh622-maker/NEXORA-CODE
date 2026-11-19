@@ -52,7 +52,26 @@ public static class CommercialAccess
             if (!access.FullAccess)
             {
                 var allowedProject = path.Equals(new PathString("/projects/web-starter-v1.zip")) &&
-                    (access.GoalIds.Contains("web") || access.GoalIds.Contains("web-data") || access.LessonIds.Contains("web-12"));
+                    (access.GoalIds.Contains("web") || access.GoalIds.Contains("web-data") ||
+                     access.GoalIds.Contains("fullstack") || access.GoalIds.Contains("javascript-projects") ||
+                     access.GoalIds.Contains("react") || access.GoalIds.Contains("typescript-react") ||
+                     access.GoalIds.Contains("react-fullstack") || access.LessonIds.Contains("web-12")) ||
+                    path.Equals(new PathString("/projects/backend-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("backend") || access.GoalIds.Contains("fullstack") ||
+                     access.GoalIds.Contains("react-fullstack") || access.LessonIds.Contains("backend-07") ||
+                     access.LessonIds.Contains("fullstack-02")) ||
+                    path.Equals(new PathString("/projects/react-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("react") || access.GoalIds.Contains("typescript-react") ||
+                     access.GoalIds.Contains("react-fullstack") || access.LessonIds.Contains("react-07")) ||
+                    path.Equals(new PathString("/projects/typescript-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("typescript-react") || access.LessonIds.Contains("tsreact-03")) ||
+                    path.Equals(new PathString("/projects/algorithms-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("algorithms") || access.GoalIds.Contains("problem-solving") ||
+                     access.LessonIds.Contains("alg-08")) ||
+                    path.Equals(new PathString("/projects/oop-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("oop") || access.LessonIds.Contains("oop-06")) ||
+                    path.Equals(new PathString("/projects/problem-solving-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("problem-solving") || access.LessonIds.Contains("solve-06"));
                 var scopedEndpoint = api && ctx.GetEndpoint()?.Metadata.GetMetadata<ScopedCommercialEndpoint>() is not null;
                 if (!allowedProject && (!access.HasAccess || !scopedEndpoint)) throw AccessRequired();
             }

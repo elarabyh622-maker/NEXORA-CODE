@@ -38,7 +38,11 @@ internal static class CurriculumPresentation
             Text(project["title"], 300);
             Text(project["summary"], 2000);
             foreach (var criterion in criteria) Text(criterion, 1000);
-            if (project.ContainsKey("download") && Text(project["download"], 100) != "/projects/web-starter-v1.zip")
+            if (project.ContainsKey("download") && Text(project["download"], 100) is not
+                ("/projects/web-starter-v1.zip" or "/projects/backend-starter-v1.zip" or
+                 "/projects/react-starter-v1.zip" or "/projects/typescript-starter-v1.zip" or
+                 "/projects/algorithms-starter-v1.zip" or "/projects/oop-starter-v1.zip" or
+                 "/projects/problem-solving-starter-v1.zip"))
                 throw Invalid();
         }
     }

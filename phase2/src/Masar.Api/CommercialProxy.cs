@@ -38,6 +38,23 @@ internal sealed class CommercialProxy(Uri origin, PathString pathBase)
     {
         if (PathBase.HasValue) app.UsePathBase(PathBase);
 
+        // The public origin is a navigation entry point; authenticated API and
+        // static-file requests remain restricted to the commercial mount.
+        app.Use(async (ctx, next) =>
+        {
+            if (PathBase.HasValue && !ctx.Request.PathBase.HasValue && ctx.Request.Path == "/" &&
+                (HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsHead(ctx.Request.Method)) &&
+                MatchesHost(ctx.Request.Host) && HasSingleHttpsHop(ctx.Request.Headers) &&
+                ctx.Connection.RemoteIpAddress is { } peer && IPAddress.IsLoopback(peer))
+            {
+                ctx.Response.StatusCode = StatusCodes.Status308PermanentRedirect;
+                ctx.Response.Headers.Location = PathBase.Value + "/";
+                ctx.Response.Headers.CacheControl = "no-store";
+                return;
+            }
+            await next(ctx);
+        });
+
         var options = new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,

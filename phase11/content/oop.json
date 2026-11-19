@@ -1,0 +1,1055 @@
+{
+  "lessons": [
+    {
+      "id": "oop-01",
+      "title": "اربط سلوك الكائن بحالته",
+      "summary": "استخدم self للقراءة والتعديل، وتتبّع الفرق بين كائن جديد واسم ثانٍ للكائن نفسه.",
+      "why": "عند تتبّع وصول صنف من البضائع إلى المخزن، تحتاج إلى معرفة أي سجل تغير كي تبقى أرصدة الأصناف صحيحة.",
+      "objectives": [
+        "أتتبّع الكائن الذي يمثله self في كل استدعاء.",
+        "أميّز بين دالة تقرأ الحالة ودالة تغيرها.",
+        "أميّز بين إنشاء كائن مستقل وإسناد مرجع إلى اسم آخر."
+      ],
+      "minutes": "22–28",
+      "skillIds": [
+        "oop.methods"
+      ],
+      "sections": [
+        {
+          "heading": "راجع القالب ثم انظر إلى السلوك",
+          "body": "في pyproj-03 جهّزت كائن تقرير داخل __init__. هنا نضيف طرائق تعمل على البيانات بعد الإنشاء. الطريقة دالة داخل الصنف. تكتب def record(self, boxes) داخل class، وتستدعيها من الخارج بكتابة morning.record(3). تمرر Python الكائن morning إلى self والعدد 3 إلى boxes. إذا استدعيت evening.record(3) يصل الكائن evening إلى self بدلًا منه."
+        },
+        {
+          "heading": "حقل يخص كل كائن",
+          "body": "ينفذ إنشاء ShiftTally مرتين جسم __init__ مرتين. يبدأ كل كائن بحقل total يساوي صفرًا. التعبير self.total += boxes يقرأ الرصيد الحالي للكائن ويضيف إليه ويحفظ الناتج في حقله. الطريقة count تعيد الرصيد الحالي دون تحديثه. الطريقة record تنفّذ التحديث، وتعيد None ضمنيًا عند انتهاء جسمها بلا return."
+        },
+        {
+          "heading": "إسناد الاسم يشارك المرجع",
+          "body": "في alias = morning يشير الاسمان إلى الكائن نفسه. تستطيع فحص ذلك بـ alias is morning. التعديل من أحد الاسمين يظهر عند القراءة من الآخر. لإنشاء رصيد مستقل استدعِ ShiftTally() مرة أخرى، كما فعلنا مع evening. سبب المشاركة أو الاستقلال هو عدد الكائنات التي أنشأتها، لا عدد الأسماء التي كتبتها."
+        },
+        {
+          "heading": "تتبّع تحديثين على الورق",
+          "body": "اكتب عمودًا لكل كائن، ثم ضع قيمة total الابتدائية. أمام كل استدعاء سجّل أي عمود هو self، ثم اكتب القيمة التي أعادتها count إن ظهرت في السطر. نمط القراءة هذا يساعدك عندما ينتقل التحديث لاحقًا عبر كائن يحتوي كائنات أخرى."
+        }
+      ],
+      "examples": [
+        {
+          "title": "رصيدان لورديتين",
+          "language": "python",
+          "code": "class ShiftTally:\n    def __init__(self):\n        self.total = 0\n\n    def record(self, boxes):\n        self.total += boxes\n\n    def count(self):\n        return self.total\n\nmorning = ShiftTally()\nevening = ShiftTally()\nmorning.record(3)\nevening.record(2)\nmorning.record(4)\nprint(morning.count())\nprint(evening.count())\n",
+          "explanation": "يصل التحديثان 3 و4 إلى morning، ويصل التحديث 2 إلى evening. القراءة تطبع 7 ثم 2."
+        },
+        {
+          "title": "اسمان لدفتر واحد",
+          "language": "python",
+          "code": "class Notebook:\n    def __init__(self):\n        self.notes = []\n\n    def add(self, note):\n        self.notes.append(note)\n\noriginal = Notebook()\nalias = original\nseparate = Notebook()\nalias.add(\"packed\")\nprint(alias is original)\nprint(len(original.notes))\nprint(len(separate.notes))\n",
+          "explanation": "يختبر is هوية الكائن. تضاف ملاحظة واحدة إلى الكائن الذي يشير إليه original أيضًا، بينما قائمة separate فارغة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-01-e1",
+          "type": "choice",
+          "prompt": "لدينا a = ShiftTally() وb = ShiftTally(). أي كائن يصل إلى self في b.record(5)؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "الكائن a"
+            },
+            {
+              "id": "b",
+              "text": "الكائن b"
+            },
+            {
+              "id": "c",
+              "text": "العدد 5"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الكائن الواقع قبل النقطة يُمرّر إلى self. العدد يصل إلى boxes.",
+          "hints": [
+            "تتبّع الاسم قبل النقطة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-01-e2",
+          "type": "text",
+          "prompt": "بدأ morning.total وevening.total من صفر. نفّذنا morning.record(5) ثم evening.record(2) ثم morning.record(1). ماذا يعيد morning.count()؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "6"
+          ],
+          "explanation": "يتغير رصيد morning من 0 إلى 5 ثم إلى 6. التسجيل في evening يخص كائنًا آخر.",
+          "hints": [
+            "اجمع التحديثات التي وصلت إلى morning."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-01-e3",
+          "type": "choice",
+          "prompt": "لدينا original = Notebook() ثم copy = original. ما التعبير الذي يستبدل قيمة copy بكائن دفتر مستقل؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "copy = original"
+            },
+            {
+              "id": "b",
+              "text": "copy = Notebook()"
+            },
+            {
+              "id": "c",
+              "text": "copy.add(\"ready\")"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "إنشاء Notebook جديد يجهّز قائمة جديدة في __init__. الإسناد من original يشارك الكائن الموجود.",
+          "hints": [
+            "ابحث عن استدعاء ينشئ دفترًا."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم self لتحديد الحالة التي تخص الاستدعاء الحالي، وأنشئ كائنًا جديدًا عندما يلزم سجل مستقل."
+    },
+    {
+      "id": "oop-02",
+      "title": "احمِ قواعد حالة الكائن",
+      "summary": "حافظ على كمية غير سالبة باستخدام مُنشئ يتحقق من البداية وطرائق تتحقق قبل التحديث.",
+      "why": "الرصيد السالب يفسد التقارير التالية. منع الحالة عند مدخل التحديث يحافظ على توقعات القراء وبقية العمليات.",
+      "objectives": [
+        "أصف قاعدة حالة يجب أن تصدق بعد الإنشاء وبعد كل عملية.",
+        "أفحص الكمية وحد السحب قبل تغيير الرصيد.",
+        "أعرض قيمة للقراءة فقط باستخدام property."
+      ],
+      "minutes": "28–35",
+      "skillIds": [
+        "oop.invariants"
+      ],
+      "sections": [
+        {
+          "heading": "قاعدة تبقى صحيحة",
+          "body": "قاعدة الحالة أو invariant في سجل مخزوننا هي أن الكمية عدد صحيح غير سالب. افحص قيمة البداية داخل __init__، ثم اجعل طرائق السحب والاستلام تحافظ على القاعدة. صفر صالح كرصيد ابتدائي أو نتيجة سحب مطابق للرصيد. كمية العملية يجب أن تكون موجبة، لذلك نرفض طلب سحب صفر حتى لو كان الرصيد موجبًا."
+        },
+        {
+          "heading": "تحقق قبل تعديل الحقل",
+          "body": "نفحص النوع أولًا بـ type(amount) is int كما في pyproj-03 لاستبعاد bool. في شرط if type(amount) is not int or amount <= 0 تتوقف Python عند تحقق الجزء الأول، فلا تحاول مقارنة نص بعدد. بعد فحص هذا المدخل، نرفض amount > self._quantity برفع ValueError. تنفّذ عملية الطرح بعد الفحصين، لذلك يحتفظ السطر برصيده عند الرفض."
+        },
+        {
+          "heading": "قراءة عبر property",
+          "body": "ضع @property على السطر السابق لتعريف quantity(self). تحول هذه الصيغة الطريقة إلى خاصية تُقرأ بكتابة stock.quantity من دون أقواس. من دون setter يرفض Python الإسناد إلى هذه الخاصية ويرفع AttributeError. الشرطة السفلية الأولى في _quantity اتفاق على أنها تفاصيل داخلية؛ تظل القراءة عبر quantity والتعديل عبر العمليات المعلنة جزءًا من تصميم الواجهة."
+        },
+        {
+          "heading": "جرّب الحد من الجهتين",
+          "body": "عند رصيد 3، جرّب سحب 4، ثم اقرأ الرصيد، ثم اسحب 3 واقرأه مرة أخرى. الحد الأول يكشف قبول سحب زائد أو طرحًا حدث قبل الرفض. السحب المساوي يبيّن الفرق بين المقارنة > والمقارنة >=. لاحظ أن ناتج الصفر حالة سليمة يمكن لعملية استلام صحيحة تحديثها لاحقًا."
+        }
+      ],
+      "examples": [
+        {
+          "title": "رفض السحب قبل التعديل",
+          "language": "python",
+          "code": "class Stock:\n    def __init__(self, quantity):\n        if type(quantity) is not int or quantity < 0:\n            raise ValueError(\"invalid initial quantity\")\n        self._quantity = quantity\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        if type(amount) is not int or amount <= 0:\n            raise ValueError(\"invalid amount\")\n        if amount > self._quantity:\n            raise ValueError(\"not enough stock\")\n        self._quantity -= amount\n\nstock = Stock(3)\nfor amount in (4, 0, 3):\n    try:\n        stock.withdraw(amount)\n    except ValueError:\n        print(\"rejected\")\n    print(stock.quantity)\n",
+          "explanation": "يبقى الرصيد 3 بعد كل طلب مرفوض. ينجح السحب الثالث ويصل الرصيد إلى 0."
+        },
+        {
+          "title": "قراءة الخاصية واستعمال طريقة للتحديث",
+          "language": "python",
+          "code": "class DeskCounter:\n    def __init__(self):\n        self._available = 0\n\n    @property\n    def available(self):\n        return self._available\n\n    def return_desk(self):\n        self._available += 1\n\ndesks = DeskCounter()\ntry:\n    desks.available = -1\nexcept AttributeError:\n    print(\"read-only\")\ndesks.return_desk()\nprint(desks.available)\n",
+          "explanation": "ترفض الخاصية الإسناد المباشر. الطريقة return_desk تزيد العداد عبر الحقل الداخلي، ثم تعرض الخاصية القيمة 1."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-02-e1",
+          "type": "choice",
+          "prompt": "قاعدة الرصيد أنه عدد صحيح غير سالب. أي شرط بداية يرفض -1 ويقبل 0 ويرفض True؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "type(quantity) is not int or quantity < 0"
+            },
+            {
+              "id": "b",
+              "text": "quantity <= 0"
+            },
+            {
+              "id": "c",
+              "text": "type(quantity) is not int or quantity <= 0"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يفصل الشرط بين كون النوع int بالضبط وكون القيمة سالبة. الصفر يحقق العقد.",
+          "hints": [
+            "الصفر بداية صالحة، وTrue من نوع bool."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-02-e2",
+          "type": "text",
+          "prompt": "الرصيد 5 ونحاول سحب 6. رفعت withdraw استثناء ValueError قبل أي تعديل. ما الرصيد بعد معالجة الاستثناء؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "5"
+          ],
+          "explanation": "الفحص سبق الطرح. يظل الحقل على قيمته السابقة.",
+          "hints": [
+            "توقف تنفيذ الطريقة عند raise."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-02-e3",
+          "type": "choice",
+          "prompt": "تُقرأ quantity عبر @property بلا setter. أي سطر يقرأ الكمية من stock؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "stock.quantity()"
+            },
+            {
+              "id": "b",
+              "text": "stock.quantity = 0"
+            },
+            {
+              "id": "c",
+              "text": "stock.quantity"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تُقرأ الخاصية مثل حقل. تنفيذ القراءة يستدعي الدالة التي تقف وراء الخاصية.",
+          "hints": [
+            "القراءة تحتاج اسم الخاصية بعد النقطة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "حدّد قاعدة الحالة وافحص العمليات قبل إسناد أي قيمة جديدة إلى الحقل الذي يحفظها."
+    },
+    {
+      "id": "oop-03",
+      "title": "ركّب كائنات ذات مسؤوليات واضحة",
+      "summary": "اجعل المخزون يملك أسطرًا مستقلة ويفوّض لكل سطر إدارة كميته.",
+      "why": "تقسيم العمل يتيح لك تعديل قاعدة كمية منتج واحد مع إبقاء البحث عن المنتجات وتجميع الأرصدة في مكانهما.",
+      "objectives": [
+        "أسند إدارة كمية منتج واحد إلى كائن مسؤول عنها.",
+        "أخزّن كائنات مستقلة داخل كائن يجمعها وأفوّض إليها التحديث.",
+        "أختار التركيب عندما تكون علاقة الكائنين احتواء أو استخدامًا."
+      ],
+      "minutes": "24–30",
+      "skillIds": [
+        "oop.composition"
+      ],
+      "sections": [
+        {
+          "heading": "ميّز بين مسؤولية السطر ومسؤولية المجموعة",
+          "body": "يتولى Line كمية منتج واحد. يتولى Inventory تسجيل الرموز والعثور على السطر الموافق لكل رمز. عند وصول وحدات من PEN، يبحث المخزون عن السطر ثم يستدعي receive عليه. يمكن توسيع قاعدة الاستلام داخل Line في خطوة لاحقة، وستواصل كل أسطر المخزون استخدام القاعدة نفسها."
+        },
+        {
+          "heading": "تركيب الكائنات",
+          "body": "التركيب هنا هو أن يحتوي كائن Inventory كائنات Line داخل قاموس. الأقواس في Line() تنشئ سطرًا جديدًا عند تسجيل كل رمز. في self._lines[sku].receive(amount) تُقرأ قيمة من القاموس أولًا، ثم تنفّذ الطريقة على ذلك السطر. نسمي تمرير العمل إلى السطر تفويضًا."
+        },
+        {
+          "heading": "من يملك الحالة؟",
+          "body": "ضع self._lines = {} في __init__ كي يملك كل مخزون قاموسه. يعطي السطر لكل منتج رصيدًا مستقلًا إذا أنشأته لكل رمز. جرّب إسناد كائن سطر واحد إلى رمزين، وستلاحظ أن التغيير من أحدهما يظهر عند الآخر. تجنّب أيضًا تمرير قاموس الأسطر نفسه إلى خارج المخزون إذا كنت تريد التحكم في تسجيل الرموز."
+        },
+        {
+          "heading": "متى يكفي الاحتواء؟",
+          "body": "اسأل أولًا هل تحتاج أن تملك مجموعة سطور أو تستخدم كائنًا آخر لأداء مهمة. المخزون يضم أسطرًا، والملصق يستخدم قياسي عرض وارتفاع. صياغة الواجهة حول هذه الأدوار تبقي كل كائن مسؤولًا عن قواعده. في درس السلوك المشترك سترى علاقة الوراثة عندما يمكن استخدام النوع المتخصص مكان النوع العام."
+        }
+      ],
+      "examples": [
+        {
+          "title": "تسجيل سطر والتفويض إليه",
+          "language": "python",
+          "code": "class Line:\n    def __init__(self):\n        self._quantity = 0\n\n    def receive(self, amount):\n        if type(amount) is not int or amount <= 0:\n            raise ValueError(\"invalid amount\")\n        self._quantity += amount\n\n    @property\n    def quantity(self):\n        return self._quantity\n\nclass Inventory:\n    def __init__(self):\n        self._lines = {}\n\n    def register(self, sku):\n        if sku in self._lines:\n            raise ValueError(\"duplicate SKU\")\n        self._lines[sku] = Line()\n\n    def receive(self, sku, amount):\n        self._lines[sku].receive(amount)\n\n    def quantity(self, sku):\n        return self._lines[sku].quantity\n\nstock = Inventory()\nstock.register(\"PEN\")\nstock.register(\"NOTE\")\nstock.receive(\"PEN\", 4)\nprint(stock.quantity(\"PEN\"))\nprint(stock.quantity(\"NOTE\"))\n",
+          "explanation": "يمرّر المخزون عملية الاستلام إلى سطر PEN فقط. يفترض هذا المثال أن الرموز نصوص، ويُبلغ القاموس عن الرمز الغائب بـ KeyError."
+        },
+        {
+          "title": "ملصق يستخدم قياسين",
+          "language": "python",
+          "code": "class Edge:\n    def __init__(self, centimeters):\n        self.centimeters = centimeters\n\nclass Label:\n    def __init__(self, width, height):\n        self._width = width\n        self._height = height\n\n    def area(self):\n        return self._width.centimeters * self._height.centimeters\n\nwidth = Edge(4)\nheight = Edge(3)\nlabel = Label(width, height)\nprint(label.area())\nwidth.centimeters = 5\nprint(label.area())\n",
+          "explanation": "تحتفظ Label بالمراجع التي أُعطيت لها. تعديل كائن العرض من الخارج يجعل المساحة 15 بعد أن كانت 12. إذا أردت قياسًا ثابتًا يمكنك تخزين قيم الأبعاد، كما سترى مع القيم الثابتة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-03-e1",
+          "type": "choice",
+          "prompt": "أي كائن ينبغي أن يقرر هل تكفي كمية PEN لعملية سحب بعد العثور على الرمز؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "واجهة الطباعة"
+            },
+            {
+              "id": "b",
+              "text": "السطر الذي يملك كمية PEN"
+            },
+            {
+              "id": "c",
+              "text": "كائن منتج لا يخزّن أي كمية"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "السطر يملك الرصيد ويستطيع تطبيق قواعده على كل محاولات السحب منه.",
+          "hints": [
+            "ابحث عن الكائن الذي يقرأ ويحدّث الرصيد نفسه."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-03-e2",
+          "type": "choice",
+          "prompt": "كل رمز يجب أن يحصل على رصيد مستقل. ماذا يضع register في self._lines[sku]؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "كائن self.shared_line نفسه لكل رمز"
+            },
+            {
+              "id": "b",
+              "text": "القاموس self._lines نفسه"
+            },
+            {
+              "id": "c",
+              "text": "كائن Line() جديد لكل رمز"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "الإنشاء لكل رمز يعطيه حقله الخاص. مشاركة السطر ستشارك الكمية.",
+          "hints": [
+            "راجع ما يحدث لكل استدعاء للمنشئ."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-03-e3",
+          "type": "choice",
+          "prompt": "جهاز عرض يستخدم ساعة قابلة للتبديل ليقرأ الوقت. أي تصميم يمثّل هذه العلاقة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يحتفظ جهاز العرض بكائن الساعة ويطلب منه الوقت."
+            },
+            {
+              "id": "b",
+              "text": "ترث الساعة من جهاز العرض لأنهما يستعملان الأرقام."
+            },
+            {
+              "id": "c",
+              "text": "ينسخ جهاز العرض كل شيفرة الساعة إلى طرائقه."
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "الساعة جزء يستخدمه جهاز العرض، ويمكن تبديل هذا الجزء مع استمرار واجهة الجهاز.",
+          "hints": [
+            "حدّد ما يستخدمه الجهاز لأداء وظيفته."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ضع قاعدة المنتج الواحد في سطره، واجعل المخزون يحدد أي سطر يستقبل العملية."
+    },
+    {
+      "id": "oop-04",
+      "title": "مثّل البيانات بقيم واضحة مع dataclass",
+      "summary": "اجمع حقول المنتج في قيمة تقارن بحسب محتواها، وأنشئ قائمة مستقلة لكل كائن عندما يحتاج إلى التعديل.",
+      "why": "قد تتشارك سجلات مخزون مختلفة وصف المنتج وسعره، بينما تحتاج كل عملية جرد إلى ملاحظاتها الخاصة.",
+      "objectives": [
+        "أستعمل dataclass لتوليد المُنشئ والمقارنة بين القيم.",
+        "أشرح أثر frozen=True وحدوده مع الحقول القابلة للتعديل.",
+        "أستخدم field(default_factory=list) لتجهيز قائمة جديدة لكل كائن."
+      ],
+      "minutes": "25–32",
+      "skillIds": [
+        "oop.values"
+      ],
+      "sections": [
+        {
+          "heading": "حقول تمثّل قيمة",
+          "body": "يمثّل ProductSpec رمز المنتج وسعر الوحدة بأعداد صحيحة من وحدات صغرى افتراضية. بعد from dataclasses import dataclass نضع @dataclass فوق class ونعرّف حقوله بتلميحات الأنواع. تولّد dataclass مُنشئًا يأخذ الحقول بالترتيب المعلن. وتولّد مقارنة == لهذه الكائنات تقارن حقولها عندما تكون من الصنف نفسه. قد تكون قيمتان متساويتين مع أنهما كائنان مختلفان في اختبار is."
+        },
+        {
+          "heading": "قيمة ثابتة تقرؤها سجلات متعددة",
+          "body": "الصيغة @dataclass(frozen=True) تمنع الإسناد المعتاد إلى الحقول بعد الإنشاء. يرفع المثال FrozenInstanceError إذا حاولنا تغيير السعر بهذه الطريقة. ثبات الحقول لا يجمّد محتويات قائمة محفوظة فيها؛ اختر حقولًا من قيم مثل str وint إذا كانت المواصفات كلها ثابتة. التلميحات ما زالت وصفًا. إذا احتجت رفض السعر السالب في المشروع، اكتب def __post_init__(self) داخل الصنف كي يستدعيها المُنشئ المولّد مباشرة بعد تهيئة الحقول."
+        },
+        {
+          "heading": "قائمة افتراضية لكل كائن",
+          "body": "لو كانت قائمة الملاحظات حقلًا على الصنف أو قيمة افتراضية قابلة للتعديل لدالة، يمكن أن تتشارك الاستدعاءات القائمة نفسها. ترفض dataclass افتراضًا مباشرًا مثل notes: list[str] = [] لحقل ضمن dataclass. اكتب notes: list[str] = field(default_factory=list)، واستورد field من dataclasses. تمرّر list دون أقواس؛ يستدعيها المُنشئ ليصنع قائمة جديدة عند غياب notes. إذا مررت قائمة بنفسك، يستعملها المُنشئ كما هي، ويمكنك تمرير list(existing) حين تريد نسخة سطحية مستقلة."
+        },
+        {
+          "heading": "افصل وصف المنتج عن كميته",
+          "body": "يمكن أن يحمل المخزونان نفس ProductSpec، بينما يملك كل سطر رصيده المتغير. احتفظ بالسلوك الذي يتحقق من السحب داخل سطر المخزون. عند تعديل مواصفات تحتاج الثبات، أنشئ قيمة جديدة واعرض على المستدعي قرار استبدالها."
+        }
+      ],
+      "examples": [
+        {
+          "title": "قيمة متساوية في كائنين",
+          "language": "python",
+          "code": "from dataclasses import FrozenInstanceError, dataclass\n\n@dataclass(frozen=True)\nclass ProductSpec:\n    sku: str\n    unit_price: int\n\nfirst = ProductSpec(\"PEN\", 125)\nsecond = ProductSpec(\"PEN\", 125)\nprint(first == second)\nprint(first is second)\ntry:\n    first.unit_price = 200\nexcept FrozenInstanceError:\n    print(first.unit_price)\n",
+          "explanation": "تتساوى الحقول، بينما لكل استدعاء كائن مستقل. محاولة تغيير unit_price تُرفض ويظل سعر الوحدة 125."
+        },
+        {
+          "title": "لكل جرد ملاحظاته",
+          "language": "python",
+          "code": "from dataclasses import dataclass, field\n\n@dataclass\nclass CountSheet:\n    sku: str\n    notes: list[str] = field(default_factory=list)\n\nshelf_a = CountSheet(\"PEN\")\nshelf_b = CountSheet(\"PEN\")\nshelf_a.notes.append(\"counted\")\nprint(shelf_a.notes is shelf_b.notes)\nprint(len(shelf_a.notes))\nprint(len(shelf_b.notes))\n",
+          "explanation": "استُدعيت list لكل ورقة عند غياب notes. تظهر الملاحظة في shelf_a وحدها."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-04-e1",
+          "type": "choice",
+          "prompt": "نفّذنا ProductSpec(\"A\", 50) مرتين في المثال. ماذا تعرض المقارنة == ثم is؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "True ثم True"
+            },
+            {
+              "id": "b",
+              "text": "False ثم True"
+            },
+            {
+              "id": "c",
+              "text": "True ثم False"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تركّز المقارنة المولّدة على الحقول، أما is فتفحص هل المرجعان يشيران إلى الكائن نفسه.",
+          "hints": [
+            "راجِع الفرق بين المحتوى والهوية."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-04-e2",
+          "type": "text",
+          "prompt": "أكمل notes: list[str] = field(default_factory=___). اكتب اسم الدالة التي تُنشئ قائمة فارغة دون الأقواس.",
+          "options": [],
+          "acceptedAnswers": [
+            "list"
+          ],
+          "explanation": "تستقبل default_factory الدالة list وتستدعيها لكل كائن يحتاج القيمة الافتراضية.",
+          "hints": [
+            "أرسل الدالة نفسها إلى field."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-04-e3",
+          "type": "choice",
+          "prompt": "تعرض dataclass ثابتة حقلًا فيه قائمة. ما الذي يفعله frozen=True عند محاولة append على تلك القائمة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يسمح بالتعديل داخل القائمة."
+            },
+            {
+              "id": "b",
+              "text": "ينشئ قائمة أخرى تلقائيًا."
+            },
+            {
+              "id": "c",
+              "text": "يمنع append لأن كل عنصر يتجمّد."
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "تستدعي append طريقة على القائمة الموجودة، وتبقي مرجع الحقل نفسه.",
+          "hints": [
+            "هل تغيّر مرجع الحقل أم محتوى الكائن الذي يشير إليه؟"
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "شارك وصفًا ثابتًا حين تحتاج قيمة واحدة في أماكن متعددة، وأنشئ حالة قابلة للتعديل مستقلة عندما يملكها كل كائن."
+    },
+    {
+      "id": "oop-05",
+      "title": "استعمل واجهة مشتركة قبل اختيار الوراثة",
+      "summary": "شغّل سلوكًا واحدًا مع كائنات تتبع العقد نفسه، وورّث سلوكًا بسيطًا عندما يظل النوع المتخصص قابلًا للاستبدال.",
+      "why": "يستطيع جزء الطباعة أو حساب التكلفة العمل مع صيغ متعددة عندما يثق في شكل النتيجة والسلوك الذي تتعهد به كل صيغة.",
+      "objectives": [
+        "أصف عقد طريقة من خلال مدخلاتها ومخرجاتها وسلوكها.",
+        "أستدعي طريقتين لهما العقد نفسه دون تفرّع حسب الصنف.",
+        "أفحص قدرة الصنف الفرعي على القيام بدور الصنف الأساس."
+      ],
+      "minutes": "25–32",
+      "skillIds": [
+        "oop.polymorphism"
+      ],
+      "sections": [
+        {
+          "heading": "ابدأ بالعقد الذي يحتاجه المستدعي",
+          "body": "تحتاج show_label طريقة اسمها label تقبل رمزًا نصيًا غير فارغ وتعيد نصًا يحتوي هذا الرمز. يمكن تنفيذ هذا العقد بصيغ متعددة. تظل الدالة show_label تستدعي formatter.label(sku) حتى مع تغيير الكائن الذي مررناه إليها. تعدد الأشكال هو استعمال العملية نفسها مع كائنات تقدّم تنفيذات مختلفة للعقد."
+        },
+        {
+          "heading": "وراثة محدودة بسلوك يمكن استبداله",
+          "body": "نكتب class PriorityLabel(Label) ليَرِث PriorityLabel من Label. يعرّف الصنف الفرعي label بالمدخلات نفسها ليضيف بادئة. تشير super() إلى نسخة السلوك التالية في ترتيب الوراثة، وهي هنا Label. يعيد super().label(sku) النص الأساسي، ثم تضيف إليه الطريقة البادئة. جرّب إبقاء نفس الرمز في الاستدعاء وتبديل المُنسّق لترى أن الناتج يظل نصًا يضم الرمز."
+        },
+        {
+          "heading": "اختبر وعد الطريقة كاملًا",
+          "body": "افترض أن مُنسّقًا فرعيًا يرفض أي رمز طوله ثلاثة أحرف بينما Label يقبله. عند استبدال Label به، قد يفشل استدعاء كان صالحًا وفق العقد. وافترض أنه يعيد قاموسًا، فقد تتوقف دالة تتوقع نصًا عن العمل. تطابق اسم الطريقة وحده لا يكفي لصلاحية الاستبدال. افحص المدخلات التي يجب قبولها وشكل المخرجات والسلوك عند الخطأ قبل توريث نوع جديد."
+        },
+        {
+          "heading": "كائنات مستقلة قد تتفق على العقد",
+          "body": "في مثال آخر، يحسب FixedCharge وPerBoxCharge قيمة عددية بوحدات صغرى على مدخل boxes من نوع int غير سالب، وهو شرط على المستدعي في هذا المثال. تقبل show_quote كلا الكائنين لأن كليهما يوفّر الطريقة quote بالعقد المطلوب. يجعل ذلك كائن السياسة قابلًا للتبديل من خلال معامل الدالة، أو بالاحتفاظ به داخل كائن آخر كما في التركيب."
+        }
+      ],
+      "examples": [
+        {
+          "title": "أضف بادئة وأبق العقد صالحًا",
+          "language": "python",
+          "code": "class Label:\n    def label(self, sku):\n        return f\"SKU {sku}\"\n\nclass PriorityLabel(Label):\n    def label(self, sku):\n        return \"PRIORITY \" + super().label(sku)\n\ndef show_label(formatter, sku):\n    print(formatter.label(sku))\n\nshow_label(Label(), \"PEN\")\nshow_label(PriorityLabel(), \"PEN\")\n",
+          "explanation": "يعيد كلا المُنسّقين نصًا يحوي PEN لمدخل صالح. تضيف PriorityLabel بادئة باستخدام ناتج الطريقة الموروثة."
+        },
+        {
+          "title": "حساب التكلفة بعقد واحد",
+          "language": "python",
+          "code": "class FixedCharge:\n    def quote(self, boxes):\n        return 300\n\nclass PerBoxCharge:\n    def quote(self, boxes):\n        return boxes * 125\n\ndef show_quote(policy, boxes):\n    print(policy.quote(boxes))\n\nshow_quote(FixedCharge(), 4)\nshow_quote(PerBoxCharge(), 4)\n",
+          "explanation": "العقد يسمح باختلاف قيمة الرسم. السياسة الثابتة تعيد 300 وسياسة الوحدات تعيد 500. تدعو show_quote الطريقة نفسها في الحالتين."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-05-e1",
+          "type": "choice",
+          "prompt": "عقد Label.label يعيد نصًا يتضمن أي رمز غير فارغ. أي تغيير يسمح باستبدال Label بنوع فرعي وفق هذا العقد؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "ترفض الطريقة كل رمز من ثلاثة أحرف."
+            },
+            {
+              "id": "b",
+              "text": "تعيد الطريقة قاموسًا بحقلي sku وlabel."
+            },
+            {
+              "id": "c",
+              "text": "تعيد الطريقة نصًا يحتوي الرمز وتضيف قبله بادئة."
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تبقى جميع المدخلات المطلوبة مقبولة ويظل الناتج نصًا يضم الرمز.",
+          "hints": [
+            "راجع ما وعد به النوع العام عن المدخل والناتج."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-05-e2",
+          "type": "text",
+          "prompt": "باستعمال سياسة PerBoxCharge، ما الناتج عند تمرير 3 إلى quote في المثال؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "375"
+          ],
+          "explanation": "تحسب السياسة رسمًا مقداره 125 لكل صندوق، فيكون الناتج 375 وحدة صغرى.",
+          "hints": [
+            "اضرب عدد الصناديق في 125."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-05-e3",
+          "type": "choice",
+          "prompt": "لجهاز التعبئة كائن حساب تكلفة قابل للتبديل. كلا الخيارين ينفّذ quote(boxes) بعقد صحيح. كيف يدعم الجهاز الخيارين؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يقبل كائن السياسة ويستدعي quote عليه."
+            },
+            {
+              "id": "b",
+              "text": "يرث جهاز التعبئة من إحدى السياستين عند كل فاتورة."
+            },
+            {
+              "id": "c",
+              "text": "يفحص اسم الصنف ويفضّل أسلوبًا مختلفًا لكل اسم."
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يقدّم كل خيار الطريقة المتفق عليها، فيفوّض الجهاز الحساب إلى السياسة التي استلمها.",
+          "hints": [
+            "ابحث عن طريقة لاستدعاء السلوك نفسه على السياسة الحالية."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب العقد من منظور المستدعي، واستخدم الوراثة إذا بقي النوع الفرعي صالحًا في مواضع استعمال النوع الأساس."
+    },
+    {
+      "id": "oop-06",
+      "title": "اختبر عقد المخزون عند النجاح والرفض",
+      "summary": "تحقق من السحب المساوي للرصيد والسحب الزائد، ثم أكمل مشروعًا محليًا يركّب أسطر المخزون.",
+      "why": "اختبار النتيجة بعد الخطأ يكشف متى يرفض البرنامج العملية بعد أن غيّر الرصيد بالفعل.",
+      "objectives": [
+        "أكتب اختبارًا يتحقق من الوصول إلى الصفر عند السحب الكامل.",
+        "أتحقق من الاستثناء والحالة المحفوظة بعد السحب غير الصالح.",
+        "أشغّل اختبارات المشروع وأصلح السلوك عبر واجهته العامة."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "oop.testing"
+      ],
+      "sections": [
+        {
+          "heading": "رتّب الاختبار في ثلاث خطوات",
+          "body": "جهّز سطرًا برصيد معلوم، نفّذ طريقة السحب، ثم افحص الكمية عبر الخاصية العامة. نستخدم unittest من المكتبة القياسية كما في pyproj-02. يختبر assertEqual(actual, expected) تساوي قيمتين. ابدأ كل حالة بكائن جديد كي تظل النتيجة مستقلة عن ترتيب تشغيل الاختبارات."
+        },
+        {
+          "heading": "اختر قيمًا تختبر الحد",
+          "body": "عند رصيد 3، استخدم الطلب 3 للتأكد من الوصول إلى صفر، والطلب 4 للتأكد من الرفض، والطلب 0 للتأكد من رفض الكمية غير الموجبة. ضبط المقارنة باستخدام > يسمح بالسحب المساوي. يمكن أيضًا إنشاء مخزون فارغ وفحص أن قيمة مجموعه صفر، وإنشاء منتج بسعر صفر لاختبار حساب القيمة مع وجود وحدات."
+        },
+        {
+          "heading": "تحقّق من الرفض وآثاره",
+          "body": "داخل with self.assertRaises(ValueError) ضع استدعاء السحب المتوقع رفضه. يسجل الاختبار فشلًا إذا انتهت الكتلة بلا ذلك الاستثناء. ثم افحص الرصيد عبر quantity بعد الكتلة. إذا طُرح الطلب أولًا ثم رُفع الاستثناء، تنجح خطوة التحقق من الاستثناء لكن يرصد assertEqual تغير الحالة."
+        },
+        {
+          "heading": "شغّل المشروع من مجلده",
+          "body": "نزّل بداية مشروع المخزون من بطاقة المشروع وافتح PowerShell في المجلد الذي يحتوي main.py. اتّبع README.md لإنشاء بيئة بمفسر Python 3.10 أو أحدث. يكفي تشغيل .\\.venv\\Scripts\\python.exe -m unittest -v مباشرةً. توقّع فشل test_withdraw_full_stock في البداية للجزء المعلَّم TODO. أصلحه في inventory.py وأعد التشغيل، ثم قارن مخرجات main.py بالأرقام الموثقة. يختبر المثالان أدناه حالةً محددة لكل منهما عبر run() التي تعيد نتيجة يمكن الاستفسار عنها باستخدام wasSuccessful()."
+        }
+      ],
+      "examples": [
+        {
+          "title": "السحب الكامل يصل إلى الصفر",
+          "language": "python",
+          "code": "import unittest\n\nclass Stock:\n    def __init__(self, quantity):\n        self._quantity = quantity\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        if amount <= 0 or amount > self._quantity:\n            raise ValueError(\"invalid withdrawal\")\n        self._quantity -= amount\n\nclass BoundaryTest(unittest.TestCase):\n    def test_exact_amount(self):\n        stock = Stock(3)\n        stock.withdraw(3)\n        self.assertEqual(stock.quantity, 0)\n\nresult = BoundaryTest(\"test_exact_amount\").run()\nprint(result.testsRun)\nprint(result.wasSuccessful())\n",
+          "explanation": "يشغّل الكود حالة الاختبار التي سمّيناها. يطبع 1 ثم True. يفحص المثال طلبات بأعداد صحيحة على رصيد بداية معروف. في مشروعك تختلف الحالات وتُكتشف تلقائيًا بأمر unittest."
+        },
+        {
+          "title": "الاستثناء يحفظ الحالة",
+          "language": "python",
+          "code": "import unittest\n\nclass Stock:\n    def __init__(self, quantity):\n        self._quantity = quantity\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        if amount <= 0 or amount > self._quantity:\n            raise ValueError(\"invalid withdrawal\")\n        self._quantity -= amount\n\nclass RejectionTest(unittest.TestCase):\n    def test_overdraw_keeps_quantity(self):\n        stock = Stock(3)\n        with self.assertRaises(ValueError):\n            stock.withdraw(4)\n        self.assertEqual(stock.quantity, 3)\n\nresult = RejectionTest(\"test_overdraw_keeps_quantity\").run()\nprint(result.testsRun)\nprint(result.wasSuccessful())\n",
+          "explanation": "يفحص المثال نوع الاستثناء وبقاء الرصيد. جرّب نقل عملية الطرح إلى قبل التحقق لتلاحظ أن الاختبار يصبح غير ناجح حتى إذا بقي الاستثناء صحيحًا."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "oop-06-e1",
+          "type": "choice",
+          "prompt": "أي اختبار يفحص أن الحد الأعلى للسحب مقبول؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "اسحب 3 من رصيد 3 وتحقق من أن الكمية تساوي صفرًا."
+            },
+            {
+              "id": "b",
+              "text": "اسحب 2 من رصيد 3 وتحقق من أن الكمية تساوي 1."
+            },
+            {
+              "id": "c",
+              "text": "اسحب 4 من رصيد 3 وتوقع ValueError."
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يساوي الطلب الرصيد عند حد القبول، لذلك يكشف الاختبار المقارنة الخاطئة >=.",
+          "hints": [
+            "اختر طلبًا يساوي الرصيد تمامًا."
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-06-e2",
+          "type": "choice",
+          "prompt": "ندرس سحب 4 من رصيد 3. ماذا نتحقق منه بعد توقع ValueError؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "بقاء الكمية عند 3."
+            },
+            {
+              "id": "b",
+              "text": "بقاء نوع متغير الطلب int."
+            },
+            {
+              "id": "c",
+              "text": "أن الكمية تساوي -1 بعد محاولة السحب."
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "رفض الطلب لا ينهي الاختبار. التحقق من الكمية بعد الرفض يرصد أي تعديل سبق الاستثناء.",
+          "hints": [
+            "ما حالة الكائن التي وعدت العملية بحفظها؟"
+          ],
+          "independent": true
+        },
+        {
+          "id": "oop-06-e3",
+          "type": "choice",
+          "prompt": "كيف تعزل اختبار السحب الكامل عن اختبار الرفض كي لا تؤثر نتيجة أحدهما في الآخر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "شغّل الاختبارين دائمًا بالترتيب نفسه على كائن واحد."
+            },
+            {
+              "id": "b",
+              "text": "أنشئ كائنًا جديدًا برصيد معروف لكل اختبار."
+            },
+            {
+              "id": "c",
+              "text": "استعمل الكائن نفسه واختر أي رصيد تركه الاختبار السابق."
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تبدأ كل حالة من الرصيد الذي تحدده، فتستطيع تشغيلها وحدها أو مع بقية الاختبارات.",
+          "hints": [
+            "اختر نقطة بداية يحددها الاختبار نفسه."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "افحص مخرجات العملية وحالتها بعدها، واستعمل الحد وحالات الرفض لكشف أخطاء المقارنة وترتيب التعديل."
+    }
+  ],
+  "skills": [
+    {
+      "id": "oop.methods",
+      "title": "اربط سلوك الكائن بحالته",
+      "description": "استخدم self للقراءة والتعديل، وتتبّع الفرق بين كائن جديد واسم ثانٍ للكائن نفسه.",
+      "required": {
+        "skill": "pyproj.types"
+      },
+      "recommended": []
+    },
+    {
+      "id": "oop.invariants",
+      "title": "احمِ قواعد حالة الكائن",
+      "description": "حافظ على كمية غير سالبة باستخدام مُنشئ يتحقق من البداية وطرائق تتحقق قبل التحديث.",
+      "required": {
+        "skill": "oop.methods"
+      },
+      "recommended": []
+    },
+    {
+      "id": "oop.composition",
+      "title": "ركّب كائنات ذات مسؤوليات واضحة",
+      "description": "اجعل المخزون يملك أسطرًا مستقلة ويفوّض لكل سطر إدارة كميته.",
+      "required": {
+        "skill": "oop.invariants"
+      },
+      "recommended": []
+    },
+    {
+      "id": "oop.values",
+      "title": "مثّل البيانات بقيم واضحة مع dataclass",
+      "description": "اجمع حقول المنتج في قيمة تقارن بحسب محتواها، وأنشئ قائمة مستقلة لكل كائن عندما يحتاج إلى التعديل.",
+      "required": {
+        "skill": "oop.composition"
+      },
+      "recommended": []
+    },
+    {
+      "id": "oop.polymorphism",
+      "title": "استعمل واجهة مشتركة قبل اختيار الوراثة",
+      "description": "شغّل سلوكًا واحدًا مع كائنات تتبع العقد نفسه، وورّث سلوكًا بسيطًا عندما يظل النوع المتخصص قابلًا للاستبدال.",
+      "required": {
+        "skill": "oop.values"
+      },
+      "recommended": []
+    },
+    {
+      "id": "oop.testing",
+      "title": "اختبر عقد المخزون عند النجاح والرفض",
+      "description": "تحقق من السحب المساوي للرصيد والسحب الزائد، ثم أكمل مشروعًا محليًا يركّب أسطر المخزون.",
+      "required": {
+        "skill": "oop.polymorphism"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "oop-01",
+      "title": "اربط سلوك الكائن بحالته",
+      "why": "عند تتبّع وصول صنف من البضائع إلى المخزن، تحتاج إلى معرفة أي سجل تغير كي تبقى أرصدة الأصناف صحيحة.",
+      "skillIds": [
+        "oop.methods"
+      ]
+    },
+    {
+      "id": "oop-02",
+      "title": "احمِ قواعد حالة الكائن",
+      "why": "الرصيد السالب يفسد التقارير التالية. منع الحالة عند مدخل التحديث يحافظ على توقعات القراء وبقية العمليات.",
+      "skillIds": [
+        "oop.invariants"
+      ]
+    },
+    {
+      "id": "oop-03",
+      "title": "ركّب كائنات ذات مسؤوليات واضحة",
+      "why": "تقسيم العمل يتيح لك تعديل قاعدة كمية منتج واحد مع إبقاء البحث عن المنتجات وتجميع الأرصدة في مكانهما.",
+      "skillIds": [
+        "oop.composition"
+      ]
+    },
+    {
+      "id": "oop-04",
+      "title": "مثّل البيانات بقيم واضحة مع dataclass",
+      "why": "قد تتشارك سجلات مخزون مختلفة وصف المنتج وسعره، بينما تحتاج كل عملية جرد إلى ملاحظاتها الخاصة.",
+      "skillIds": [
+        "oop.values"
+      ]
+    },
+    {
+      "id": "oop-05",
+      "title": "استعمل واجهة مشتركة قبل اختيار الوراثة",
+      "why": "يستطيع جزء الطباعة أو حساب التكلفة العمل مع صيغ متعددة عندما يثق في شكل النتيجة والسلوك الذي تتعهد به كل صيغة.",
+      "skillIds": [
+        "oop.polymorphism"
+      ]
+    },
+    {
+      "id": "oop-06",
+      "title": "اختبر عقد المخزون عند النجاح والرفض",
+      "why": "اختبار النتيجة بعد الخطأ يكشف متى يرفض البرنامج العملية بعد أن غيّر الرصيد بالفعل.",
+      "skillIds": [
+        "oop.testing"
+      ]
+    }
+  ],
+  "goal": {
+    "id": "oop",
+    "title": "تصميم الكائنات بـPython",
+    "description": "صمّم كائنات Python تحفظ قواعد حالتها، وركّبها في مشروع مخزون صغير تتحقق منه بالاختبارات.",
+    "status": "sample",
+    "skillIds": [
+      "oop.methods",
+      "oop.invariants",
+      "oop.composition",
+      "oop.values",
+      "oop.polymorphism",
+      "oop.testing"
+    ]
+  },
+  "track": {
+    "id": "oop",
+    "title": "تصميم الكائنات بـPython",
+    "lessonIds": [
+      "oop-01",
+      "oop-02",
+      "oop-03",
+      "oop-04",
+      "oop-05",
+      "oop-06"
+    ]
+  },
+  "project": {
+    "id": "oop-inventory",
+    "title": "مخزون صغير بأسطر مستقلة",
+    "lessonId": "oop-06",
+    "summary": "أكمل سحب الوحدات في مشروع يركّب أسطر مخزون ويحسب قيمتها بوحدات صغرى افتراضية.",
+    "criteria": [
+      "شغّل المشروع محليًا باستخدام Python 3.10 أو أحدث ومكتبته القياسية. استخدم مفسّر البيئة صراحةً داخل PowerShell.",
+      "احتفظ بمواصفات المنتج الثابتة في Product ورصيده داخل StockLine، واجعل Inventory يدير التسجيل ويفوّض تحديث الكمية.",
+      "قبل الإصلاح يفشل test_withdraw_full_stock وحده. أكمل مهمة TODO الوحيدة داخل StockLine.withdraw.",
+      "اقبل السحب المساوي للرصيد فيصبح صفرًا، وارفض السحب الزائد والكمية غير الصالحة باستثناء ValueError قبل تغيير الرصيد.",
+      "شغّل الاختبارات الثمانية بعد الإصلاح. تحقق من حساب القيمة الكلية بالأعداد الصحيحة واستقلال كميتي مخزنين سجّلا المنتج نفسه.",
+      "شغّل main.py بعد الإصلاح. يجب أن يظهر PEN: 0 ثم NOTE: 2 ثم total_minor_units: 720 في ثلاثة أسطر."
+    ],
+    "download": "/projects/oop-starter-v1.zip"
+  },
+  "glossary": [
+    {
+      "term": "طريقة كائن",
+      "technical": "instance method",
+      "definition": "دالة داخل الصنف يمر إليها الكائن المرتبط بالاستدعاء عادةً عبر معامل اسمه self."
+    },
+    {
+      "term": "قاعدة الحالة",
+      "technical": "invariant",
+      "definition": "شرط يجب أن يتحقق في الحالة بعد إنشاء الكائن وعند انتهاء العمليات المعلنة."
+    },
+    {
+      "term": "خاصية للقراءة",
+      "technical": "read-only property",
+      "definition": "قيمة تظهر بصيغة قراءة الحقل، ويحسبها كود خلف الخاصية. الإسناد إليها يحتاج إلى setter."
+    },
+    {
+      "term": "تركيب",
+      "technical": "composition",
+      "definition": "تنظيم يملك فيه كائن كائنات أخرى أو يستخدمها لأداء أجزاء من عمله."
+    },
+    {
+      "term": "مصنع القيمة الافتراضية",
+      "technical": "default_factory",
+      "definition": "دالة تستدعيها dataclass لتوليد قيمة حقل عند غياب القيمة من المُنشئ."
+    },
+    {
+      "term": "تعدد الأشكال",
+      "technical": "polymorphism",
+      "definition": "استدعاء عملية مشتركة على كائنات تستطيع تنفيذ العقد بطرق مختلفة."
+    },
+    {
+      "term": "قابلية الاستبدال",
+      "technical": "substitutability",
+      "definition": "إمكان استعمال كائن متخصص في موضع يتوقع سلوك كائن عام، مع الحفاظ على عقده."
+    },
+    {
+      "term": "اختبار حد",
+      "technical": "boundary test",
+      "definition": "اختبار يستخدم قيمة عند طرف النطاق المسموح أو بجواره للتحقق من سلوك العقد."
+    }
+  ],
+  "labs": [
+    {
+      "lessonId": "oop-02",
+      "id": "oop-02-lab",
+      "language": "python",
+      "title": "اسحب كمية واحفظ الرصيد عند الرفض",
+      "prompt": "الإدخال سطر JSON واحد يمثل [initial, attempts]. الرصيد initial عدد صحيح غير سالب، وattempts قائمة قيم تُجرّب بالترتيب على كائن واحد. أكمل withdraw. اقبل فقط كمية من نوع int بالضبط أكبر من صفر ولا تزيد على الرصيد الحالي، واطرحها عند النجاح. ارفع ValueError قبل أي تعديل عند الرفض. يطبع الكود الجاهز الرصيد بعد كل نجاح، أو rejected ثم مسافة ثم الرصيد الذي بقي بعد الرفض. القائمة الفارغة لا تنتج أسطرًا.",
+      "starterCode": "import json\n\nclass Stock:\n    def __init__(self, quantity):\n        self._quantity = quantity\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        # افحص الكمية والرصيد ثم نفّذ السحب\n        pass\n\ninitial, attempts = json.loads(input())\nstock = Stock(initial)\nfor amount in attempts:\n    try:\n        stock.withdraw(amount)\n    except ValueError:\n        print(f\"rejected {stock.quantity}\")\n    else:\n        print(stock.quantity)\n",
+      "sampleInput": "[5, [2, 4, 3]]\n",
+      "sampleOutput": "3\nrejected 3\n0\n",
+      "skillId": "oop.invariants",
+      "hiddenTests": [
+        {
+          "input": "[0, [1, 0, -1]]\n",
+          "expectedOutput": "rejected 0\nrejected 0\nrejected 0\n"
+        },
+        {
+          "input": "[6, [true, \"3\", 3.0, null, 6]]\n",
+          "expectedOutput": "rejected 6\nrejected 6\nrejected 6\nrejected 6\n0\n"
+        },
+        {
+          "input": "[7, []]\n",
+          "expectedOutput": ""
+        }
+      ],
+      "solution": "import json\n\nclass Stock:\n    def __init__(self, quantity):\n        self._quantity = quantity\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        if type(amount) is not int or amount <= 0:\n            raise ValueError(\"invalid amount\")\n        if amount > self._quantity:\n            raise ValueError(\"not enough stock\")\n        self._quantity -= amount\n\ninitial, attempts = json.loads(input())\nstock = Stock(initial)\nfor amount in attempts:\n    try:\n        stock.withdraw(amount)\n    except ValueError:\n        print(f\"rejected {stock.quantity}\")\n    else:\n        print(stock.quantity)\n"
+    },
+    {
+      "lessonId": "oop-06",
+      "id": "oop-06-lab",
+      "language": "python",
+      "title": "اكتب فحصًا يكشف عيوب السحب",
+      "prompt": "الإدخال سطر يختار تنفيذًا تجريبيًا للسحب، ويقرأه الكود الجاهز. أكمل check_withdraw باستخدام make_stock() للحصول على كائن جديد برصيد 3 لكل حالة. افحص أن withdraw(3) ينجح ويترك 0. ثم افحص على كائن آخر أن withdraw(4) يرفع ValueError وأن quantity تبقى 3. أعد True عند تحقق الشرطين معًا وFalse عند فشل أحدهما. استخدم withdraw وquantity في الفحص. يطبع الكود pass عند True وfail عند False.",
+      "starterCode": "class Stock:\n    def __init__(self, fault):\n        self._quantity = 3\n        self._fault = fault\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        if self._fault == \"boundary\" and amount == self._quantity:\n            raise ValueError(\"incorrect boundary\")\n        if amount > self._quantity:\n            if self._fault == \"ignored\":\n                return\n            if self._fault == \"premature\":\n                self._quantity -= amount\n            raise ValueError(\"not enough stock\")\n        self._quantity -= amount\n\ndef check_withdraw(make_stock):\n    # افحص الحد والرفض على كائنين جديدين\n    return True\n\nselected = input().strip()\n\ndef make_stock():\n    return Stock(selected)\n\nprint(\"pass\" if check_withdraw(make_stock) else \"fail\")\n",
+      "sampleInput": "normal\n",
+      "sampleOutput": "pass\n",
+      "skillId": "oop.testing",
+      "hiddenTests": [
+        {
+          "input": "boundary\n",
+          "expectedOutput": "fail\n"
+        },
+        {
+          "input": "ignored\n",
+          "expectedOutput": "fail\n"
+        },
+        {
+          "input": "premature\n",
+          "expectedOutput": "fail\n"
+        }
+      ],
+      "solution": "class Stock:\n    def __init__(self, fault):\n        self._quantity = 3\n        self._fault = fault\n\n    @property\n    def quantity(self):\n        return self._quantity\n\n    def withdraw(self, amount):\n        if self._fault == \"boundary\" and amount == self._quantity:\n            raise ValueError(\"incorrect boundary\")\n        if amount > self._quantity:\n            if self._fault == \"ignored\":\n                return\n            if self._fault == \"premature\":\n                self._quantity -= amount\n            raise ValueError(\"not enough stock\")\n        self._quantity -= amount\n\ndef check_withdraw(make_stock):\n    exact = make_stock()\n    try:\n        exact.withdraw(3)\n    except ValueError:\n        return False\n    if exact.quantity != 0:\n        return False\n\n    overdraw = make_stock()\n    try:\n        overdraw.withdraw(4)\n    except ValueError:\n        return overdraw.quantity == 3\n    return False\n\nselected = input().strip()\n\ndef make_stock():\n    return Stock(selected)\n\nprint(\"pass\" if check_withdraw(make_stock) else \"fail\")\n"
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "oop-01",
+      "index": 0,
+      "input": "",
+      "output": "7\n2\n"
+    },
+    {
+      "lessonId": "oop-01",
+      "index": 1,
+      "input": "",
+      "output": "True\n1\n0\n"
+    },
+    {
+      "lessonId": "oop-02",
+      "index": 0,
+      "input": "",
+      "output": "rejected\n3\nrejected\n3\n0\n"
+    },
+    {
+      "lessonId": "oop-02",
+      "index": 1,
+      "input": "",
+      "output": "read-only\n1\n"
+    },
+    {
+      "lessonId": "oop-03",
+      "index": 0,
+      "input": "",
+      "output": "4\n0\n"
+    },
+    {
+      "lessonId": "oop-03",
+      "index": 1,
+      "input": "",
+      "output": "12\n15\n"
+    },
+    {
+      "lessonId": "oop-04",
+      "index": 0,
+      "input": "",
+      "output": "True\nFalse\n125\n"
+    },
+    {
+      "lessonId": "oop-04",
+      "index": 1,
+      "input": "",
+      "output": "False\n1\n0\n"
+    },
+    {
+      "lessonId": "oop-05",
+      "index": 0,
+      "input": "",
+      "output": "SKU PEN\nPRIORITY SKU PEN\n"
+    },
+    {
+      "lessonId": "oop-05",
+      "index": 1,
+      "input": "",
+      "output": "300\n500\n"
+    },
+    {
+      "lessonId": "oop-06",
+      "index": 0,
+      "input": "",
+      "output": "1\nTrue\n"
+    },
+    {
+      "lessonId": "oop-06",
+      "index": 1,
+      "input": "",
+      "output": "1\nTrue\n"
+    }
+  ]
+}

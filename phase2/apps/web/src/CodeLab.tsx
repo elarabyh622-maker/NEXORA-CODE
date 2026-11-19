@@ -72,7 +72,7 @@ function waitForPoll(signal: AbortSignal) {
       signal.removeEventListener('abort', finish);
       resolve();
     };
-    const timer = window.setTimeout(finish, 900);
+    const timer = window.setTimeout(finish, 1500);
     signal.addEventListener('abort', finish, { once: true });
     if (signal.aborted) finish();
   });
@@ -202,7 +202,7 @@ function LabEditor({ exercise, available, releaseId, lessonId, goalParam, user, 
         });
       activeRun = { ...submission, runId: run.id };
       updateDraft(value => ({ ...value, pendingRun: activeRun }));
-      for (let poll = 0; run.status === 'running' && poll < 24; poll++) {
+      for (let poll = 0; run.status === 'running' && poll < 300; poll++) {
         await waitForPoll(signal);
         signal.throwIfAborted();
         run = await request<Run>(`/lab/runs/${segment(run.id)}`, { scope, signal });

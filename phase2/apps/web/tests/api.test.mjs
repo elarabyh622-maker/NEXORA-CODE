@@ -141,6 +141,30 @@ test('a network failure after a mutation is not retried automatically', async t 
   assert.equal(calls.length, 2);
 });
 
+test('a temporarily unavailable catalogue recovers with one bounded read retry', async t => {
+  const { calls } = responses(t, json({ code: 'service_unavailable' }, 503), json({ activeReleaseId: 'reviewed' }));
+  assert.deepEqual(await request('/catalog'), { activeReleaseId: 'reviewed' });
+  assert.equal(calls.length, 2);
+});
+
+test('catalogue retry stops after a second failure and can be cancelled', async t => {
+  const { calls } = responses(t, ...Array.from({ length: 3 }, () => json({ code: 'database_unavailable' }, 503)));
+  await assert.rejects(request('/catalog'), error => error.status === 503);
+  assert.equal(calls.length, 2);
+  const controller = new AbortController();
+  const cancelled = request('/catalog', { signal: controller.signal });
+  await new Promise(resolve => setTimeout(resolve, 20));
+  controller.abort();
+  await assert.rejects(cancelled, error => error.name === 'AbortError');
+  assert.equal(calls.length, 3);
+});
+
+test('a temporary service error never replays a submitted mutation', async t => {
+  const { calls } = responses(t, json({ token: 'csrf', userId: 'account-a' }), json({ code: 'service_unavailable' }, 503));
+  await assert.rejects(request('/practice/attempts', { method: 'POST', scope: scope(), body: { answer: 'test' } }), error => error.status === 503);
+  assert.equal(calls.length, 2);
+});
+
 test('version conflicts preserve the status for draft and release recovery', async t => {
   responses(t, json({ token: 'account-csrf', userId: 'account-a' }), json({ code: 'version_conflict', message: 'تغيرت النسخة المحفوظة.' }, 409));
   await assert.rejects(request('/me/drafts/release/exercise', { method: 'PUT', scope: scope(), body: { answer: 'نصي', expectedVersion: 1 } }), error => error.status === 409 && error.code === 'version_conflict');

@@ -1,0 +1,1306 @@
+{
+  "track": {
+    "id": "sql-write",
+    "title": "SQL: كتابة البيانات والمعاملات",
+    "lessonIds": [
+      "sql-write-01",
+      "sql-write-02",
+      "sql-write-03",
+      "sql-write-04"
+    ]
+  },
+  "goal": {
+    "id": "sql-write",
+    "title": "SQL: كتابة البيانات والمعاملات",
+    "description": "أبني كتالوج SQLite خياليًا بقيود وإضافات وتعديلات ومعاملات قابلة للتحقق.",
+    "status": "sample",
+    "skillIds": [
+      "sqlwrite.schema",
+      "sqlwrite.insert",
+      "sqlwrite.mutations",
+      "sqlwrite.transactions"
+    ]
+  },
+  "lessons": [
+    {
+      "id": "sql-write-01",
+      "title": "أصمم جداول كتالوج بقيود واضحة",
+      "summary": "أبني مخطط كتالوج تجريبي يمنع المعرّفات المكررة والكميات غير الصالحة.",
+      "why": "القيود تحمي اتساق البيانات حتى عندما ينسى كاتب أمر الإدخال التحقق منها.",
+      "objectives": [
+        "أستخدم PRIMARY KEY وUNIQUE وNOT NULL وCHECK.",
+        "أفعّل المفاتيح المرجعية في كل اتصال قبل بدء أي معاملة."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "sqlwrite.schema"
+      ],
+      "sections": [
+        {
+          "heading": "مساحة تدريب واحدة",
+          "body": "نطوّر كتالوجًا خياليًا للمنتجات، مستقلًا عن أي قاعدة حقيقية. افتح ملف SQLite جديدًا باسم catalogue-training.db في محرر يدعم SQLite، ثم نفّذ كتلة الإعداد مرة واحدة فقط. احتفظ بالملف نفسه خلال الدروس الأربعة، ولا تنسخ الإعداد فوق جداول موجودة. لا تحتاج إلى Python أو ربط تطبيق. الأمثلة نصوص قابلة للنسخ إلى محرر SQLite خارجي؛ الصفحة نفسها لا تشغّل SQL. عند إعادة تجربة مسار كامل، أنشئ ملف تدريب جديدًا من الإعداد بدل حذف جداول ملف تستخدمه فعلًا. هذا الاختيار يجعل حالة البداية معروفة ويمنع خلط التدريب ببيانات العمل. هذا مخطط تدريب SQL مستقل: quantity تعني الكمية التي يسميها مشروع Backend stock، وcategory_id يرتبط بجدول categories بينما يستخدم Backend حقل category، وsku خاص بهذا التدريب. لا يوجد هنا عمود سعر؛ price_minor في Backend يمثل السعر بأصغر وحدة نقدية. هذه مقابلة للمعنى وليست توافقًا بين مخططين؛ لا تنقل ملف التدريب إلى التطبيق ولا تنفذ عليه ترحيلاته. عند بناء API استخدم مخطط مشروع Backend وأسماء حقوله وعقده الموثق."
+        },
+        {
+          "heading": "ماذا يمثل كل قيد؟",
+          "body": "كل صف في categories يمثل فئة، وكل صف في products منتجًا له كمية حالية. PRIMARY KEY يجعل id هوية فريدة للصف، وUNIQUE يمنع تكرار sku حتى مع اختلاف id. NOT NULL يطلب قيمة موجودة؛ النص الفارغ مختلف عن NULL ولا يمنعه هذا القيد وحده. CHECK يفحص تعبيرًا عند الإدخال والتعديل؛ شرط الكمية هنا يجمع بين نوع عدد صحيح وقيمة لا تقل عن صفر. SQLite مرن في أنواع الأعمدة، لذلك لا يكفي اسم INTEGER وحده لمنع كل القيم غير الصحيحة. القيد المكتوب يرفض القيمة النصية غير العددية والعدد الكسري والعدد السالب."
+        },
+        {
+          "heading": "الرابط يحتاج تفعيلًا",
+          "body": "يشير category_id إلى categories.id. يجب أن تكون الفئة موجودة قبل المنتج، ولا يجوز حذف فئة لها منتجات في هذا المخطط. نفّذ PRAGMA foreign_keys = ON في كل اتصال جديد، وقبل BEGIN؛ تغيير الإعداد داخل معاملة لا يفعّل الحماية المطلوبة. اقرأ PRAGMA foreign_keys وتأكد أن النتيجة 1. ظهور تعريف REFERENCES في المخطط وحده لا يكفي. لا نستخدم حذفًا متسلسلًا ضمنيًا؛ عند رفض العملية افهم السبب بدل تعطيل الحماية لإكمالها. استخدم معرّفات صريحة في هذا التدريب حتى يسهل مقارنة النتائج، واعلم أن تفاصيل توليد المعرّف آليًا ليست موضوع هذا الدرس."
+        }
+      ],
+      "examples": [
+        {
+          "title": "إعداد ملف التدريب الجديد مرة واحدة",
+          "language": "text",
+          "code": "PRAGMA foreign_keys = ON;\nCREATE TABLE categories (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL UNIQUE\n);\nCREATE TABLE products (\n  id INTEGER PRIMARY KEY,\n  sku TEXT NOT NULL UNIQUE,\n  name TEXT NOT NULL,\n  category_id INTEGER NOT NULL REFERENCES categories(id),\n  quantity INTEGER NOT NULL CHECK (typeof(quantity) = 'integer' AND quantity >= 0)\n);\nINSERT INTO categories (id, name) VALUES (1, 'Books'), (2, 'Tools');\nINSERT INTO products (id, sku, name, category_id, quantity) VALUES\n  (1, 'B-01', 'SQL Guide', 1, 5),\n  (2, 'T-01', 'Ruler', 2, 8);",
+          "explanation": "يبدأ الكتالوج بفئتين ومنتجين: الكمية 5 للمنتج 1 و8 للمنتج 2. فعّل PRAGMA مجددًا كلما فتحت اتصالًا جديدًا."
+        },
+        {
+          "title": "أتأكد من تفعيل المرجع",
+          "language": "text",
+          "code": "PRAGMA foreign_keys;",
+          "explanation": "النتيجة صف واحد قيمته 1 في الاتصال الذي نفّذ الإعداد."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-write-01-q1",
+          "prompt": "أي قيد يمنع تكرار sku لمنتجين مختلفين؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "CHECK فقط"
+            },
+            {
+              "id": "2",
+              "text": "UNIQUE"
+            },
+            {
+              "id": "3",
+              "text": "ORDER BY"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "UNIQUE يختبر رمز المنتج عبر جميع الصفوف.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-write-01-q2",
+          "prompt": "ما ناتج PRAGMA foreign_keys بعد كتلة الإعداد في الاتصال نفسه؟ اكتب رقمًا.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "القيمة 1 تؤكد التفعيل في هذا الاتصال.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-write-01-q3",
+          "prompt": "حاول إدخال كمية -1. هل تقبلها CHECK الحالية؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "تقبلها"
+            },
+            {
+              "id": "2",
+              "text": "ترفضها"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "الكمية السالبة تخالف quantity >= 0 فتُرفض.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أبني مخطط كتالوج تجريبي يمنع المعرّفات المكررة والكميات غير الصالحة."
+    },
+    {
+      "id": "sql-write-02",
+      "title": "أضيف منتجًا وأتعامل مع القيم بأمان",
+      "summary": "أكتب INSERT بأسماء أعمدة صريحة وأراجع رفض البيانات المخالفة.",
+      "why": "الإضافة الصحيحة تربط قيمة كل عمود بمكانها وتحترم هوية المنتج وفئته.",
+      "objectives": [
+        "أضيف صفًا صالحًا وأتحقق منه باستخدام SELECT.",
+        "أميز القيم الثابتة التعليمية عن ربط القيم بمعاملات في التطبيقات."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "sqlwrite.insert"
+      ],
+      "sections": [
+        {
+          "heading": "إضافة قابلة للمراجعة",
+          "body": "ابدأ من ملف التدريب بعد الدرس الأول. INSERT INTO يحدد الجدول، ثم قائمة الأعمدة توضح موضع كل قيمة في VALUES. نكتب القائمة حتى لو وافق ترتيبها ترتيب تعريف الجدول؛ هذا يسهل المراجعة عندما يضاف عمود لاحقًا. المثال يضيف المنتج 3 إلى الفئة 1 بكمية 4. قبل التنفيذ افحص أن المعرّف ورمز المنتج جديدان وأن الفئة موجودة. بعد التنفيذ اقرأ الصف بشرط id = 3 وقارن الأعمدة الخمسة. لا تكرر الأمر نفسه لمجرد أن المحرر لم يعرض جدول نتائج؛ أوامر الكتابة لا تعرض صفوفًا مثل SELECT، وتكرار الإضافة يصطدم بالمفتاح."
+        },
+        {
+          "heading": "النص الثابت ومعاملات التطبيق",
+          "body": "الاقتباس المفرد يحصر النص في SQL. لكتابة فاصلة عليا داخل قيمة ثابتة نكررها: O''Reilly يمثل O'Reilly. هذا مثال تعليمي لقيمة معلومة مسبقًا. عندما تأتي القيم من مستخدم أو ملف، يرسل التطبيق قالب SQL مستقلًا مثل INSERT INTO products (id, sku, name, category_id, quantity) VALUES (?, ?, ?, ?, ?) ثم يربط القيم عبر واجهة مشغّل قاعدة البيانات. علامة ? ليست قيمة نصية ولا توضع بين اقتباسين. لا تلصق مدخلات المستخدم في SQL، ولا تعتمد على استبدال الاقتباسات يدويًا كبديل لواجهة الربط. القالب هنا شرح للعقد فقط؛ تشغيله يحتاج واجهة تمرير قيم، لذلك لا نعرضه كأمر مستقل جاهز للمحرر."
+        },
+        {
+          "heading": "الرفض معلومة مفيدة",
+          "body": "إعادة id موجود ترفضها PRIMARY KEY، وإعادة sku موجود ترفضها UNIQUE حتى لو كان المعرّف جديدًا. category_id = 99 يرفضه المفتاح المرجعي لأن فئة 99 غير موجودة. كمية NULL يرفضها NOT NULL، وكمية سالبة يرفضها CHECK. اختبر الحالات المخالفة أمرًا واحدًا في كل مرة، وتوقع رسالة خطأ بدل عدّها نجاحًا. لا تستخدم INSERT OR IGNORE هنا: التجاوز الصامت يخفي أن المنتج لم يضف. افحص عدد الصفوف والمنتج المقصود بعد الفشل لتتأكد من بقاء الكتالوج كما كان."
+        }
+      ],
+      "examples": [
+        {
+          "title": "إضافة المنتج الثالث ثم قراءته",
+          "language": "text",
+          "code": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);\nSELECT id, sku, name, category_id, quantity FROM products WHERE id = 3;",
+          "explanation": "الناتج (3, B-02, O'Reilly Notes, 1, 4). نفّذ هذه الإضافة مرة واحدة في المسار المتصل."
+        },
+        {
+          "title": "تجربة فئة مجهولة: نفّذ منفردًا",
+          "language": "text",
+          "code": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (4, 'X-01', 'Unknown category', 99, 1);",
+          "explanation": "يجب أن تظهر FOREIGN KEY constraint failed، ويبقى عدد المنتجات 3 بعد المثال السابق. إذا نجح الأمر، توقف وافحص PRAGMA في الاتصال نفسه."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-write-02-q1",
+          "prompt": "لماذا نكتب قائمة الأعمدة بعد products؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "لتوضيح موضع القيم"
+            },
+            {
+              "id": "2",
+              "text": "لإلغاء القيود"
+            },
+            {
+              "id": "3",
+              "text": "لترتيب النتائج"
+            }
+          ],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "القائمة تجعل علاقة كل قيمة بعمودها صريحة.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-write-02-q2",
+          "prompt": "بعد الإضافة الصحيحة للمنتج 3، أعد نفس INSERT مرة ثانية. كم منتجًا يبقى بعد رفض التكرار؟ اكتب رقمًا.",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "يرفض المفتاح المكرر الصف الجديد؛ لا يضيف نسخة أخرى.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-write-02-q3",
+          "prompt": "أي أسلوب مناسب لقيم يكتبها المستخدم في تطبيق؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "لصق النص في الاستعلام"
+            },
+            {
+              "id": "2",
+              "text": "قالب placeholders مع ربط القيم عبر المشغّل"
+            },
+            {
+              "id": "3",
+              "text": "وضع اسم المستخدم مكان اسم الجدول مباشرة"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "واجهة الربط تفصل القيم عن بنية SQL.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أكتب INSERT بأسماء أعمدة صريحة وأراجع رفض البيانات المخالفة."
+    },
+    {
+      "id": "sql-write-03",
+      "title": "أعدّل وأحذف ضمن نطاق أفحصه",
+      "summary": "أستخدم WHERE وأقرأ عدد الصفوف المتأثرة قبل تثبيت التغيير.",
+      "why": "نسيان شرط الكتابة قد يغيّر الكتالوج كله؛ المراجعة تربط النتيجة بالمنتج المقصود.",
+      "objectives": [
+        "أعاين الصفوف المستهدفة قبل UPDATE وDELETE.",
+        "أميز نجاح الأمر عن تحقق توقع عدد الصفوف."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "sqlwrite.mutations"
+      ],
+      "sections": [
+        {
+          "heading": "المعاينة ثم التغيير",
+          "body": "ابدأ من المسار المتصل: المنتجات 1 و2 و3 موجودة. نريد إضافة وحدتين للمنتج 1 فقط، وليس جعل كل الكميات تساوي رقمًا واحدًا. اكتب SELECT بنفس WHERE الذي ستستخدمه في UPDATE، واقرأ أن الناتج صف واحد بكمية 5. SET quantity = quantity + 2 يحسب القيمة الجديدة من القيمة القديمة لذلك تصبح 7. غياب WHERE يعني استهداف جميع الصفوف؛ هذا أمر صالح نحويًا لكنه مختلف عن المطلوب. كذلك شرط غير دقيق مثل category_id = 1 قد يستهدف عدة منتجات، حتى لو أعطى التجريب الأول صفًا واحدًا."
+        },
+        {
+          "heading": "عدد الصفوف جزء من العقد",
+          "body": "نضع العملية داخل BEGIN ونقرأ SELECT changes() مباشرة بعد UPDATE أو DELETE. في التدريب نتوقع 1؛ ظهور 0 يعني أن المعرّف لم يطابق أي صف، وليس بالضرورة خطأ SQL. ظهور أكثر من 1 يعني أن الشرط أوسع من المطلوب. changes() يصف أحدث أمر كتابة، لذلك لا تفصل بينه وبين الأمر بكتابة أخرى، ولا تتعامل معه كسجل شامل للتغييرات أو المشغلات. أعد قراءة الصف وقارن قيمته بما توقعت. إذا وافق العدد والقيم، نفّذ COMMIT؛ إذا اختلفا نفّذ ROLLBACK وراجع الشرط. مثالنا يعرض مسار النجاح، ومسار التراجع يأتي في الدرس التالي."
+        },
+        {
+          "heading": "الحذف ليس إخفاء",
+          "body": "في مثال الحذف نستهدف المنتج 3 المضاف في الدرس الثاني. المعاينة تعرض رمزه، وDELETE يزيل الصف نفسه. بعد نجاح الحذف تكون changes() مساوية 1 وعدد الصفوف بشرط id = 3 مساويًا 0. محاولة حذف categories.id = 1 الآن تُرفض لأن المنتج 1 ما زال يشير إليها. نختار معالجة العلاقة صراحة بدل تعطيل المفتاح المرجعي. كذلك UPDATE لكمية سالبة يفشل ولا يجعل الكمية سالبة. لا تجرّب الأوامر على كتالوج عمل، ولا تستخدم الحذف وسيلة لاختبار اتصالك. احتفظ بتسلسل التدريب المعروف كي لا تفسّر اختلاف الحالة على أنه خطأ في الصياغة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "تعديل المنتج 1 والتحقق قبل التثبيت",
+          "language": "text",
+          "code": "BEGIN;\nSELECT id, quantity FROM products WHERE id = 1;\nUPDATE products SET quantity = quantity + 2 WHERE id = 1;\nSELECT changes();\nSELECT id, quantity FROM products WHERE id = 1;\nCOMMIT;",
+          "explanation": "القراءة الأولى (1, 5)، ثم changes() = 1، ثم القراءة (1, 7). نفّذ COMMIT فقط بعد تحقق هذين الشرطين."
+        },
+        {
+          "title": "حذف المنتج 3 بعد معاينته",
+          "language": "text",
+          "code": "BEGIN;\nSELECT id, sku FROM products WHERE id = 3;\nDELETE FROM products WHERE id = 3;\nSELECT changes();\nSELECT COUNT(*) FROM products WHERE id = 3;\nCOMMIT;",
+          "explanation": "بعد إضافة المنتج 3 في الدرس الثاني، العدد المتأثر 1 ويصبح عدد صفوفه 0. تبقى المنتجات 1 و2."
+        },
+        {
+          "title": "معرّف مجهول لا يغيّر صفًا",
+          "language": "text",
+          "code": "UPDATE products SET quantity = 10 WHERE id = 999;\nSELECT changes();",
+          "explanation": "الأمر صالح ويعرض 0. في عملية تتوقع منتجًا واحدًا، هذه نتيجة تحتاج معالجة، وليست إثباتًا لتحديث المنتج."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-write-03-q1",
+          "prompt": "أي UPDATE يزيد كمية المنتج 1 وحده بمقدار 2؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "UPDATE products SET quantity = 2;"
+            },
+            {
+              "id": "2",
+              "text": "UPDATE products SET quantity = quantity + 2 WHERE id = 1;"
+            },
+            {
+              "id": "3",
+              "text": "UPDATE products SET quantity = quantity + 2;"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "WHERE يقصر التحديث على المعرّف المطلوب.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-write-03-q2",
+          "prompt": "نفّذ UPDATE بشرط id = 999 ثم SELECT changes() مباشرة. ما الرقم؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "المنتج 999 غير موجود فلا يوجد صف متأثر.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-write-03-q3",
+          "prompt": "توقعت صفًا واحدًا لكن changes() أرجعت 2 داخل المعاملة. أي خطوة مناسبة؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "ROLLBACK ومراجعة WHERE"
+            },
+            {
+              "id": "2",
+              "text": "COMMIT فورًا"
+            },
+            {
+              "id": "3",
+              "text": "تعطيل المفاتيح المرجعية"
+            }
+          ],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "نرجع التغييرات ونصحح شرط الاستهداف قبل المحاولة من جديد.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أستخدم WHERE وأقرأ عدد الصفوف المتأثرة قبل تثبيت التغيير."
+    },
+    {
+      "id": "sql-write-04",
+      "title": "أثبت مجموعة تغييرات أو أرجعها كاملة",
+      "summary": "أنجز مشروع الكتالوج باستخدام COMMIT وROLLBACK وأختبر فشل خطوة وسط المعاملة.",
+      "why": "نجاح خطوة أولى لا يكفي إذا كانت العملية التجارية تحتاج نجاح جميع خطواتها معًا.",
+      "objectives": [
+        "أثبت نقلًا تدريبيًا بين كميتين بعد فحص الصفوف.",
+        "أرجع التغييرات السابقة عند فشل قيد داخل المعاملة."
+      ],
+      "minutes": "35–45",
+      "skillIds": [
+        "sqlwrite.transactions"
+      ],
+      "sections": [
+        {
+          "heading": "ما الذي تجمعه المعاملة؟",
+          "body": "ابدأ بعد الدرس الثالث: المنتج 1 كميته 7 والمنتج 2 كميته 8، والمنتج 3 محذوف. نتدرب على حركة كمية خيالية بين صفين حتى نرى معنى العملية الواحدة ذات خطوتين. BEGIN يفتح معاملة، وتظهر تغييراتها في الاتصال نفسه قبل COMMIT. التثبيت يجعل المجموعة مكتملة، أما ROLLBACK فيلغي ما حدث داخل المعاملة منذ بدايتها. نتوقع تأثر صف واحد في كل خطوة وبقاء مجموع الكميتين 15. هذه قاعدة تدريب للحركة وليست نموذجًا محاسبيًا كاملًا للمخزون. التطبيق الحقيقي يحتاج سجلات للحركات وقواعد عمل وصلاحيات لا نغطيها هنا."
+        },
+        {
+          "heading": "التثبيت قرار مبني على فحص",
+          "body": "في مسار النجاح ننقص المنتج 1 وحدة ونزيد المنتج 2 وحدة. بعد كل كتابة نقرأ changes() فورًا، ثم نقرأ الكميتين: تصبحان 6 و9. إذا لم يكن عدد الصفوف واحدًا لكل عملية، أو اختلفت القيم، فلا تثبّت المعاملة. نفّذ ROLLBACK بدل COMMIT وأصلح السبب. لا تنفذ المسارين معًا في معاملة واحدة، ولا تفتح BEGIN ثانية قبل إنهاء الأولى. عند فتح ملف التدريب من جديد، فعّل foreign_keys خارج المعاملة وتحقق من القيمة 1. احتفظ بالاتصال مفتوحًا أثناء خطوات المعاملة؛ نافذتان مختلفتان قد تستخدمان اتصالين مختلفين."
+        },
+        {
+          "heading": "فشل أمر لا يعني رجوع كل شيء",
+          "body": "بعد مسار النجاح تصبح البداية 6 و9. في مسار الفشل ننقص المنتج 1 وحدتين، ثم نحاول جعل كمية المنتج 2 سالبة. CHECK ترفض الأمر الثاني، لكن سلوك القيد الافتراضي هنا يرجع الأمر المخالف فقط؛ قد يبقى التعديل الأول داخل المعاملة المفتوحة. لذلك لا تعتمد على ظهور الخطأ كتراجع تلقائي للمجموعة. بعض المحررات توقف كتلة التنفيذ عند الخطأ، ولهذا نفّذ أوامر هذا المثال واحدًا واحدًا، ثم نفّذ ROLLBACK صراحة في الاتصال نفسه. أعد SELECT وتأكد من رجوع 6 و9 وبقاء المجموع 15. وثّق النتيجة المتوقعة والفعلية في المشروع، وجرّب أيضًا معرّفًا مجهولًا: عدم وجود خطأ لا يعوض فشل شرط عدد الصفوف."
+        }
+      ],
+      "examples": [
+        {
+          "title": "المشروع: تثبيت حركة ناجحة",
+          "language": "text",
+          "code": "BEGIN;\nUPDATE products SET quantity = quantity - 1 WHERE id = 1;\nSELECT changes();\nUPDATE products SET quantity = quantity + 1 WHERE id = 2;\nSELECT changes();\nSELECT id, quantity FROM products ORDER BY id;\nCOMMIT;",
+          "explanation": "في المسار المتصل: تغيّر صف واحد في كل UPDATE، وتصبح الكميتان (1, 6) و(2, 9) قبل COMMIT وبعده."
+        },
+        {
+          "title": "المشروع: خطأ CHECK ثم تراجع صريح",
+          "language": "text",
+          "code": "BEGIN;\nUPDATE products SET quantity = quantity - 2 WHERE id = 1;\nSELECT changes();\nUPDATE products SET quantity = -1 WHERE id = 2;\n-- يتوقف التنفيذ هنا بخطأ CHECK: نفّذ ROLLBACK منفردًا أدناه.\nROLLBACK;\nSELECT id, quantity FROM products ORDER BY id;",
+          "explanation": "شغّل كل أمر منفردًا. بعد فشل UPDATE الثاني نفّذ ROLLBACK حتى لو توقف المحرر، ثم اقرأ (1, 6) و(2, 9)."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "sql-write-04-q1",
+          "prompt": "فشل UPDATE الثاني بسبب CHECK بعد نجاح الأول داخل BEGIN. ماذا تفعل لإلغاء المجموعة كلها؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "ROLLBACK",
+            "rollback"
+          ],
+          "explanation": "نرجع المعاملة صراحة؛ فشل الأمر الثاني لا يلغي الأول تلقائيًا في هذا المثال.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": false
+        },
+        {
+          "id": "sql-write-04-q2",
+          "prompt": "بدأت تجربة الفشل بعد مسار النجاح بكميتين 6 و9. ما كمية المنتج 1 بعد ROLLBACK؟",
+          "type": "text",
+          "options": [],
+          "acceptedAnswers": [
+            "6"
+          ],
+          "explanation": "التراجع يعيد القيمة التي كانت قبل BEGIN.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        },
+        {
+          "id": "sql-write-04-q3",
+          "prompt": "بدأت حركة تتطلب صفين، لكن UPDATE الثاني أثّر في صفر صفوف. هل تثبّتها؟",
+          "type": "choice",
+          "options": [
+            {
+              "id": "1",
+              "text": "نعم لأن SQL لم يعرض خطأ"
+            },
+            {
+              "id": "2",
+              "text": "لا؛ أراجع النطاق وأرجع المعاملة"
+            }
+          ],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "فشل توقع عدد الصفوف يكفي لرفض العملية حتى دون خطأ SQLite.",
+          "hints": [
+            "ارجع إلى العقد وبيانات التدريب، وافحص الصفوف قبل تنفيذ التغيير."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أنجز مشروع الكتالوج باستخدام COMMIT وROLLBACK وأختبر فشل خطوة وسط المعاملة."
+    }
+  ],
+  "skills": [
+    {
+      "id": "sqlwrite.schema",
+      "title": "أصمم جداول كتالوج بقيود واضحة",
+      "description": "أبني مخطط كتالوج تجريبي يمنع المعرّفات المكررة والكميات غير الصالحة.",
+      "required": {
+        "skill": "sql.report"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sqlwrite.insert",
+      "title": "أضيف منتجًا وأتعامل مع القيم بأمان",
+      "description": "أكتب INSERT بأسماء أعمدة صريحة وأراجع رفض البيانات المخالفة.",
+      "required": {
+        "skill": "sqlwrite.schema"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sqlwrite.mutations",
+      "title": "أعدّل وأحذف ضمن نطاق أفحصه",
+      "description": "أستخدم WHERE وأقرأ عدد الصفوف المتأثرة قبل تثبيت التغيير.",
+      "required": {
+        "skill": "sqlwrite.insert"
+      },
+      "recommended": []
+    },
+    {
+      "id": "sqlwrite.transactions",
+      "title": "أثبت مجموعة تغييرات أو أرجعها كاملة",
+      "description": "أنجز مشروع الكتالوج باستخدام COMMIT وROLLBACK وأختبر فشل خطوة وسط المعاملة.",
+      "required": {
+        "skill": "sqlwrite.mutations"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "sql-write-01",
+      "title": "أصمم جداول كتالوج بقيود واضحة",
+      "why": "القيود تحمي اتساق البيانات حتى عندما ينسى كاتب أمر الإدخال التحقق منها.",
+      "skillIds": [
+        "sqlwrite.schema"
+      ]
+    },
+    {
+      "id": "sql-write-02",
+      "title": "أضيف منتجًا وأتعامل مع القيم بأمان",
+      "why": "الإضافة الصحيحة تربط قيمة كل عمود بمكانها وتحترم هوية المنتج وفئته.",
+      "skillIds": [
+        "sqlwrite.insert"
+      ]
+    },
+    {
+      "id": "sql-write-03",
+      "title": "أعدّل وأحذف ضمن نطاق أفحصه",
+      "why": "نسيان شرط الكتابة قد يغيّر الكتالوج كله؛ المراجعة تربط النتيجة بالمنتج المقصود.",
+      "skillIds": [
+        "sqlwrite.mutations"
+      ]
+    },
+    {
+      "id": "sql-write-04",
+      "title": "أثبت مجموعة تغييرات أو أرجعها كاملة",
+      "why": "نجاح خطوة أولى لا يكفي إذا كانت العملية التجارية تحتاج نجاح جميع خطواتها معًا.",
+      "skillIds": [
+        "sqlwrite.transactions"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "قيد سلامة",
+      "technical": "Constraint",
+      "definition": "قاعدة تتحقق منها قاعدة البيانات عند كتابة الصفوف."
+    },
+    {
+      "term": "معاملة",
+      "technical": "Transaction",
+      "definition": "مجموعة أوامر تثبّت معًا أو تتراجع معًا بقرار صريح."
+    },
+    {
+      "term": "تثبيت",
+      "technical": "COMMIT",
+      "definition": "إنهاء المعاملة مع حفظ تغييراتها."
+    },
+    {
+      "term": "تراجع",
+      "technical": "ROLLBACK",
+      "definition": "إلغاء تغييرات المعاملة المفتوحة."
+    },
+    {
+      "term": "معامل قيمة",
+      "technical": "Placeholder",
+      "definition": "موضع قيمة في قالب SQL يربطه التطبيق عبر المشغّل بدل لصق النص."
+    },
+    {
+      "term": "صفوف متأثرة",
+      "technical": "changes()",
+      "definition": "عدد الصفوف التي غيّرها أحدث أمر كتابة مباشر في الاتصال؛ افحصه فورًا."
+    }
+  ],
+  "labs": [],
+  "project": {
+    "id": "sql-write-catalogue",
+    "title": "كتالوج منتجات بقيود ومعاملات",
+    "lessonId": "sql-write-04",
+    "summary": "سلّم ملف SQLite تدريبيًا واحدًا وسجلًا للأوامر والنتائج من البداية حتى COMMIT وتجربة فشل يعقبها ROLLBACK.",
+    "criteria": [
+      "إنشاء فئات ومنتجات بمفاتيح وUNIQUE وNOT NULL وCHECK وتفعيل foreign_keys في كل اتصال.",
+      "إضافة المنتج 3 مرة واحدة، ثم اختبار تكرار الهوية والرمز وفئة مجهولة وكمية غير صالحة مع بقاء البيانات السابقة.",
+      "تحديث المنتج 1 إلى 7 وحذف المنتج 3 بعد المعاينة، وتوثيق تأثر صف واحد ومعالجة معرّف مجهول بصفر صفوف.",
+      "تثبيت حركة تصبح بعدها الكميتان 6 و9، ثم فشل CHECK في حركة أخرى والتراجع صراحة مع استعادة 6 و9 ومجموع 15.",
+      "ذكر أن هذه بيانات خيالية وأن صفحة الدرس لا تشغّل SQL؛ لا تُستخدم أي قاعدة إنتاج."
+    ]
+  },
+  "exampleChecks": [],
+  "sqlSetup": "PRAGMA foreign_keys = ON;\nCREATE TABLE categories (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL UNIQUE\n);\nCREATE TABLE products (\n  id INTEGER PRIMARY KEY,\n  sku TEXT NOT NULL UNIQUE,\n  name TEXT NOT NULL,\n  category_id INTEGER NOT NULL REFERENCES categories(id),\n  quantity INTEGER NOT NULL CHECK (typeof(quantity) = 'integer' AND quantity >= 0)\n);\nINSERT INTO categories (id, name) VALUES (1, 'Books'), (2, 'Tools');\nINSERT INTO products (id, sku, name, category_id, quantity) VALUES\n  (1, 'B-01', 'SQL Guide', 1, 5),\n  (2, 'T-01', 'Ruler', 2, 8);",
+  "sqlCheckContract": {
+    "connection": "Fresh SQLite connection per check, isolation_level=None (autocommit); sqlSetup first, then optional setupSql using executescript before transaction statements. PRAGMA foreign_keys must return 1.",
+    "statements": "Execute each statements[i].sql with connection.execute in order, never executescript. If expectedError exists, sqlite3.Error must occur and its message must contain that substring; otherwise any error fails. Continue to subsequent statements after an expected error, including explicit ROLLBACK. Do not auto-rollback on expected error.",
+    "result": "After statements, execute query and compare all fetched rows and row order exactly to expectedRows. Close the connection after comparison; an unfinished transaction is discarded on close.",
+    "examples": "index is zero-based within lesson.examples. A check may summarize a multi-statement example using its final query; companion checks validate changes() and intermediate failed-state behavior. All examples are text, not Python or browser SQL labs.",
+    "training": "Learner path uses one persistent training file and lesson order; isolated QA checks recreate equivalent prerequisite state in setupSql or statements."
+  },
+  "sqlChecks": [
+    {
+      "id": "sqlwrite-schema-fixture",
+      "lessonId": "sql-write-01",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "index": 0
+    },
+    {
+      "id": "sqlwrite-foreign-keys-enabled",
+      "lessonId": "sql-write-01",
+      "query": "PRAGMA foreign_keys;",
+      "expectedRows": [
+        [
+          1
+        ]
+      ],
+      "index": 1
+    },
+    {
+      "id": "sqlwrite-reject-negative",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (3, 'BAD', 'Bad', 1, -1);",
+          "expectedError": "CHECK constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-reject-fraction",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (3, 'BAD', 'Bad', 1, 1.5);",
+          "expectedError": "CHECK constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-reject-text",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (3, 'BAD', 'Bad', 1, 'many');",
+          "expectedError": "CHECK constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-reject-null",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (3, 'BAD', 'Bad', 1, NULL);",
+          "expectedError": "NOT NULL constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-reject-duplicate-id",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (1, 'NEW', 'Bad', 1, 1);",
+          "expectedError": "UNIQUE constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-reject-duplicate-sku",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (3, 'B-01', 'Bad', 1, 1);",
+          "expectedError": "UNIQUE constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-reject-unknown-category",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products VALUES (3, 'BAD', 'Bad', 99, 1);",
+          "expectedError": "FOREIGN KEY constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-insert",
+      "lessonId": "sql-write-02",
+      "query": "SELECT id, sku, name, category_id, quantity FROM products WHERE id = 3;",
+      "expectedRows": [
+        [
+          3,
+          "B-02",
+          "O'Reilly Notes",
+          1,
+          4
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);"
+        }
+      ],
+      "index": 0
+    },
+    {
+      "id": "sqlwrite-example-foreign-key",
+      "lessonId": "sql-write-02",
+      "query": "SELECT COUNT(*) FROM products;",
+      "expectedRows": [
+        [
+          3
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);"
+        },
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity) VALUES (4, 'X-01', 'Unknown category', 99, 1);",
+          "expectedError": "FOREIGN KEY constraint failed"
+        }
+      ],
+      "index": 1
+    },
+    {
+      "id": "sqlwrite-duplicate-after-insert",
+      "lessonId": "sql-write-02",
+      "query": "SELECT COUNT(*) FROM products;",
+      "expectedRows": [
+        [
+          3
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);"
+        },
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);",
+          "expectedError": "UNIQUE constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-update-one",
+      "lessonId": "sql-write-03",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          7
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "BEGIN;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity + 2 WHERE id = 1;"
+        },
+        {
+          "sql": "COMMIT;"
+        }
+      ],
+      "index": 0
+    },
+    {
+      "id": "sqlwrite-update-count",
+      "lessonId": "sql-write-03",
+      "query": "SELECT changes();",
+      "expectedRows": [
+        [
+          1
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "UPDATE products SET quantity = quantity + 2 WHERE id = 1;"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-delete-one",
+      "lessonId": "sql-write-03",
+      "query": "SELECT COUNT(*) FROM products WHERE id = 3;",
+      "expectedRows": [
+        [
+          0
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);"
+        },
+        {
+          "sql": "BEGIN;"
+        },
+        {
+          "sql": "DELETE FROM products WHERE id = 3;"
+        },
+        {
+          "sql": "COMMIT;"
+        }
+      ],
+      "index": 1
+    },
+    {
+      "id": "sqlwrite-delete-count",
+      "lessonId": "sql-write-03",
+      "query": "SELECT changes();",
+      "expectedRows": [
+        [
+          1
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "INSERT INTO products (id, sku, name, category_id, quantity)\nVALUES (3, 'B-02', 'O''Reilly Notes', 1, 4);"
+        },
+        {
+          "sql": "DELETE FROM products WHERE id = 3;"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-unknown-id",
+      "lessonId": "sql-write-03",
+      "query": "SELECT changes();",
+      "expectedRows": [
+        [
+          0
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "UPDATE products SET quantity = 10 WHERE id = 999;"
+        }
+      ],
+      "index": 2
+    },
+    {
+      "id": "sqlwrite-delete-referenced-category",
+      "lessonId": "sql-write-03",
+      "query": "SELECT id FROM categories ORDER BY id;",
+      "expectedRows": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "DELETE FROM categories WHERE id = 1;",
+          "expectedError": "FOREIGN KEY constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-update-invalid",
+      "lessonId": "sql-write-03",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "UPDATE products SET quantity = -1 WHERE id = 1;",
+          "expectedError": "CHECK constraint failed"
+        }
+      ]
+    },
+    {
+      "id": "sqlwrite-commit",
+      "lessonId": "sql-write-04",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          9
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "BEGIN;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity - 1 WHERE id = 1;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity + 1 WHERE id = 2;"
+        },
+        {
+          "sql": "COMMIT;"
+        }
+      ],
+      "index": 0,
+      "setupSql": "UPDATE products SET quantity = 7 WHERE id = 1;"
+    },
+    {
+      "id": "sqlwrite-failed-transaction-rollback",
+      "lessonId": "sql-write-04",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          9
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "BEGIN;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity - 2 WHERE id = 1;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = -1 WHERE id = 2;",
+          "expectedError": "CHECK constraint failed"
+        },
+        {
+          "sql": "ROLLBACK;"
+        }
+      ],
+      "index": 1,
+      "setupSql": "UPDATE products SET quantity = 6 WHERE id = 1; UPDATE products SET quantity = 9 WHERE id = 2;"
+    },
+    {
+      "id": "sqlwrite-failed-statement-leaves-first-change",
+      "lessonId": "sql-write-04",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          9
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "BEGIN;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity - 2 WHERE id = 1;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = -1 WHERE id = 2;",
+          "expectedError": "CHECK constraint failed"
+        }
+      ],
+      "setupSql": "UPDATE products SET quantity = 6 WHERE id = 1; UPDATE products SET quantity = 9 WHERE id = 2;"
+    },
+    {
+      "id": "sqlwrite-unknown-id-rollback",
+      "lessonId": "sql-write-04",
+      "query": "SELECT id, quantity FROM products ORDER BY id;",
+      "expectedRows": [
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "statements": [
+        {
+          "sql": "BEGIN;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity - 1 WHERE id = 1;"
+        },
+        {
+          "sql": "UPDATE products SET quantity = quantity + 1 WHERE id = 999;"
+        },
+        {
+          "sql": "ROLLBACK;"
+        }
+      ]
+    }
+  ],
+  "sqlDisplayChecks": [
+    {
+      "lessonId": "sql-write-01",
+      "index": 0,
+      "steps": [
+        {},
+        {},
+        {},
+        {},
+        {}
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-01",
+      "index": 1,
+      "steps": [
+        {
+          "rows": [
+            [
+              1
+            ]
+          ]
+        }
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-02",
+      "index": 0,
+      "steps": [
+        {},
+        {
+          "rows": [
+            [
+              3,
+              "B-02",
+              "O'Reilly Notes",
+              1,
+              4
+            ]
+          ]
+        }
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-02",
+      "index": 1,
+      "steps": [
+        {
+          "error": "FOREIGN KEY constraint failed"
+        }
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-03",
+      "index": 0,
+      "steps": [
+        {},
+        {
+          "rows": [
+            [
+              1,
+              5
+            ]
+          ]
+        },
+        {},
+        {
+          "rows": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "rows": [
+            [
+              1,
+              7
+            ]
+          ]
+        },
+        {}
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-03",
+      "index": 1,
+      "steps": [
+        {},
+        {
+          "rows": [
+            [
+              3,
+              "B-02"
+            ]
+          ]
+        },
+        {},
+        {
+          "rows": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "rows": [
+            [
+              0
+            ]
+          ]
+        },
+        {}
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-03",
+      "index": 2,
+      "steps": [
+        {},
+        {
+          "rows": [
+            [
+              0
+            ]
+          ]
+        }
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-04",
+      "index": 0,
+      "steps": [
+        {},
+        {},
+        {
+          "rows": [
+            [
+              1
+            ]
+          ]
+        },
+        {},
+        {
+          "rows": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "rows": [
+            [
+              1,
+              6
+            ],
+            [
+              2,
+              9
+            ]
+          ]
+        },
+        {}
+      ],
+      "inTransaction": false
+    },
+    {
+      "lessonId": "sql-write-04",
+      "index": 1,
+      "steps": [
+        {},
+        {},
+        {
+          "rows": [
+            [
+              1
+            ]
+          ]
+        },
+        {
+          "error": "CHECK constraint failed"
+        },
+        {},
+        {
+          "rows": [
+            [
+              1,
+              6
+            ],
+            [
+              2,
+              9
+            ]
+          ]
+        }
+      ],
+      "inTransaction": false
+    }
+  ],
+  "sqlDisplayFinal": {
+    "query": "SELECT id, quantity FROM products ORDER BY id;",
+    "expectedRows": [
+      [
+        1,
+        6
+      ],
+      [
+        2,
+        9
+      ]
+    ]
+  }
+}

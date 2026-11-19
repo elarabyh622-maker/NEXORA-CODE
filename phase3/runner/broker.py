@@ -195,7 +195,7 @@ process.stdout.write(fs.readFileSync(0, 'utf8'));
 
 
 def preflight(docker, images):
-    info = docker.metadata("info", "--format", "{{json .}}", timeout=PREFLIGHT_SECONDS)
+    info = docker.host_info(timeout=PREFLIGHT_SECONDS)
     validate_host(info)
     docker.sweep()
     for language, image in images.items():
