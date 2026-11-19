@@ -42,7 +42,8 @@ internal static class CurriculumPresentation
                 ("/projects/web-starter-v1.zip" or "/projects/backend-starter-v1.zip" or
                  "/projects/react-starter-v1.zip" or "/projects/typescript-starter-v1.zip" or
                  "/projects/algorithms-starter-v1.zip" or "/projects/oop-starter-v1.zip" or
-                 "/projects/problem-solving-starter-v1.zip"))
+                 "/projects/problem-solving-starter-v1.zip" or "/projects/applied-data-starter-v1.zip" or
+                 "/projects/ml-sales-starter-v1.zip"))
                 throw Invalid();
         }
     }

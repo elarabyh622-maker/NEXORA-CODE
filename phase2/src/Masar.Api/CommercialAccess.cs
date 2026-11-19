@@ -71,7 +71,11 @@ public static class CommercialAccess
                     path.Equals(new PathString("/projects/oop-starter-v1.zip")) &&
                     (access.GoalIds.Contains("oop") || access.LessonIds.Contains("oop-06")) ||
                     path.Equals(new PathString("/projects/problem-solving-starter-v1.zip")) &&
-                    (access.GoalIds.Contains("problem-solving") || access.LessonIds.Contains("solve-06"));
+                    (access.GoalIds.Contains("problem-solving") || access.LessonIds.Contains("solve-06")) ||
+                    path.Equals(new PathString("/projects/applied-data-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("applied-data") || access.LessonIds.Contains("applied-01")) ||
+                    path.Equals(new PathString("/projects/ml-sales-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("machine-learning") || access.LessonIds.Contains("mlproject-01"));
                 var scopedEndpoint = api && ctx.GetEndpoint()?.Metadata.GetMetadata<ScopedCommercialEndpoint>() is not null;
                 if (!allowedProject && (!access.HasAccess || !scopedEndpoint)) throw AccessRequired();
             }

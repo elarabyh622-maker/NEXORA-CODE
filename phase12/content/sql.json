@@ -1,0 +1,731 @@
+{
+  "lessons": [
+    {
+      "id": "ana-sql-01",
+      "title": "حدّد ما يمثله كل صف",
+      "summary": "حوّل سطور البيع إلى ملخص شهري وحدّد معنى كل عدد في الناتج.",
+      "why": "يعتمد معنى التقرير على وحدة العد. يمكن لسطر بيع واحد أن يضم عدة وحدات من الصنف نفسه.",
+      "objectives": [
+        "أحدد مستوى التفاصيل في جدول المبيعات وفي ناتج التقرير.",
+        "أفرّق بين عدد سطور البيع ومجموع الوحدات.",
+        "أختار مفتاح تجميع يميّز الشهر والسنة."
+      ],
+      "minutes": "23–30",
+      "skillIds": [
+        "anasql.grain"
+      ],
+      "sections": [
+        {
+          "heading": "اكتب معنى الصف قبل الاستعلام",
+          "body": "في المشروع يمثل كل صف في sales سطر بيع واحدًا، ويظهر كل sale_id مرة واحدة. يحتوي السطر على صنف وكمية وإيراد بالقروش. في التقرير المطلوب يمثل كل صف شهرًا واحدًا. يحدد GROUP BY month مفتاح التجميع حتى تدخل كل السطور التي تحمل الشهر نفسه في مجموعة واحدة."
+        },
+        {
+          "heading": "عدّ السطور واجمع القيم",
+          "body": "يحسب COUNT(*) عدد السطور في المجموعة. لذلك يعرض العمود orders عدد سطور البيع في بيانات المشروع. يحسب SUM(quantity) عدد الوحدات المبيعة، ويحسب SUM(revenue_piastres) إجمالي إيراد السطور بالقروش. حافظ على وحدة القروش في التجميع حتى يبقى الحساب بأعداد صحيحة."
+        },
+        {
+          "heading": "اختر مفتاحًا يغطي السنة والشهر",
+          "body": "تأتي sold_on في البيانات النظيفة بصيغة YYYY-MM-DD. تستخرج substr(sold_on, 1, 7) بادئة YYYY-MM، وتبدأ المواضع في SQLite من 1. لذلك يظل يناير 2025 منفصلًا عن يناير 2026. ضع تعبير الشهر مع الدوال التجميعية في SELECT. إذا احتجت صفًا لكل شهر وفئة، اجمع بواسطة الشهر والفئة معًا."
+        },
+        {
+          "heading": "تحقق من عدد الصفوف",
+          "body": "حدّد الأشهر التي تظهر في سطور الإدخال واحسب عددها. ينبغي أن يظهر كل شهر منها مرة واحدة في ناتج التجميع الشهري. استخدم ORDER BY month عندما تريد قراءة الناتج بترتيب زمني."
+        }
+      ],
+      "examples": [
+        {
+          "title": "عدّ سطور البيع والوحدات شهريًا",
+          "language": "text",
+          "code": "CREATE TABLE sales (\n    sale_id TEXT PRIMARY KEY,\n    sold_on TEXT NOT NULL,\n    quantity INTEGER NOT NULL,\n    revenue_piastres INTEGER NOT NULL\n);\nINSERT INTO sales VALUES\n    ('a', '2025-01-03', 2, 900),\n    ('b', '2025-01-18', 1, 350),\n    ('c', '2026-01-08', 4, 1200);\n\nSELECT substr(sold_on, 1, 7) AS month,\n       COUNT(*) AS orders,\n       SUM(quantity) AS units,\n       SUM(revenue_piastres) AS revenue_piastres\nFROM sales\nGROUP BY substr(sold_on, 1, 7)\nORDER BY month;\n",
+          "explanation": "في يناير 2025 يوجد سطران، وبلغت كمية الصنفين معًا 3 وحدات، وبلغ مجموع الإيراد 1250 قرشًا. يحافظ المفتاح على يناير 2026 في صف مستقل."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "ana-sql-01-e1",
+          "type": "text",
+          "prompt": "يضم شهر واحد ثلاثة سطور بيع، كمياتها 2 و4 و1. كم يعيد COUNT(*) لهذا الشهر؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "تحسب COUNT(*) السطور. مجموع عمود الكمية في هذه الحالة 7 وحدات.",
+          "hints": [
+            "عدّ السطور المذكورة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-01-e2",
+          "type": "choice",
+          "prompt": "تحتوي البيانات على يناير من عامين مختلفين. أي مفتاح يضع كل شهر من العامين في مجموعة مستقلة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "رقم الشهر MM"
+            },
+            {
+              "id": "b",
+              "text": "السنة فقط YYYY"
+            },
+            {
+              "id": "c",
+              "text": "السنة والشهر YYYY-MM"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يجمع المفتاح YYYY-MM الأيام داخل الشهر نفسه ويميّز الشهور ذات الرقم المتطابق عندما تختلف السنة.",
+          "hints": [
+            "احتفظ بجزأي التاريخ اللازمين للتقرير."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-01-e3",
+          "type": "choice",
+          "prompt": "ما مفاتيح GROUP BY لتقرير يحتوي على صف لكل فئة في كل شهر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "الشهر والفئة"
+            },
+            {
+              "id": "b",
+              "text": "الشهر"
+            },
+            {
+              "id": "c",
+              "text": "الفئة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يجب أن تتفق السطور في الشهر والفئة لكي تدخل في المجموعة نفسها.",
+          "hints": [
+            "اكتب بيانات الهوية التي تحتاجها في كل صف من الناتج."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ثبّت معنى صف الإدخال وصف الناتج ثم اختر مفاتيح التجميع وطريقة حساب كل عمود."
+    },
+    {
+      "id": "ana-sql-02",
+      "title": "قسّم الاستعلام باستخدام WITH",
+      "summary": "سمِّ النتائج الوسيطة واحسب أعمدة التقرير على مراحل قابلة للفحص.",
+      "why": "عندما يضم التقرير اشتقاق الشهر ثم التجميع ثم التصفية، يساعدك الفصل بين المراحل على معرفة أين تغيّر عدد الصفوف.",
+      "objectives": [
+        "أقرأ CTE مسمّاة باعتبارها نتيجة وسيطة داخل استعلام.",
+        "أتتبّع مستوى التفاصيل عند انتقال البيانات بين مرحلتين.",
+        "أميّز أثر تصفية سطور البيع من أثر تصفية المجاميع الشهرية."
+      ],
+      "minutes": "24–32",
+      "skillIds": [
+        "anasql.cte"
+      ],
+      "sections": [
+        {
+          "heading": "أنشئ نتيجة وسيطة باسم مفهوم",
+          "body": "اكتب WITH sale_months AS (SELECT ...)، ثم اقرأ الناتج باسم sale_months داخل FROM في الاستعلام نفسه. تعني CTE تعبير جدول مشترك. يمكن وضع أكثر من تعبير في WITH واحدة، مع فاصلة بين التعريفات. في المثال يستخرج sale_months الشهر مع إبقاء كل سطر بيع مستقلًا."
+        },
+        {
+          "heading": "اجمع في المرحلة التي تغيّر معنى الصف",
+          "body": "تقرأ monthly بيانات sale_months وتجمعها بالشهر. يصبح كل صف فيها ملخصًا لشهر كامل. بعد ذلك تستطيع SELECT النهائية تطبيق شرط على مجموع الشهر، لأن monthly تعرض الإيراد الشهري في عمود جاهز للقراءة."
+        },
+        {
+          "heading": "احسب أثر مكان الشرط",
+          "body": "لنفترض أن شهرًا يحتوي على إيرادين 700 و500 قرش. إذا اشترطت قيمة لا تقل عن 1000 على سطر البيع، فسيخرج السطران قبل التجميع. إذا وضعت الشرط على مجموع الشهر بعد التجميع فسيظهر الشهر بإجمالي 1200 قرش. اختر موقع الشرط بناءً على المقصود من التقرير."
+        },
+        {
+          "heading": "اعرض نتيجة مرحلة أثناء المراجعة",
+          "body": "في نسخة العمل المحلية، اجعل نهاية الاستعلام SELECT * FROM sale_months لفحص مفاتيح الشهور على سطور البيع. ثم جرّب SELECT * FROM monthly ORDER BY month لمراجعة عدد الصفوف والمجاميع قبل تطبيق شرط العرض النهائي."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اعرض الأشهر التي بلغت حد الإيراد",
+          "language": "text",
+          "code": "WITH sales(sale_id, sold_on, revenue_piastres) AS (\n    VALUES ('a', '2026-01-05', 700),\n           ('b', '2026-01-15', 500),\n           ('c', '2026-02-11', 800)\n),\nsale_months AS (\n    SELECT substr(sold_on, 1, 7) AS month, revenue_piastres\n    FROM sales\n),\nmonthly AS (\n    SELECT month, SUM(revenue_piastres) AS revenue_piastres\n    FROM sale_months\n    GROUP BY month\n)\nSELECT month, revenue_piastres\nFROM monthly\nWHERE revenue_piastres >= 1000\nORDER BY month;\n",
+          "explanation": "يقدّم VALUES عينة داخل الاستعلام نفسه. تجمع monthly السطور أولًا، ثم تختار القراءة النهائية يناير لأن مجموعه 1200 قرش."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "ana-sql-02-e1",
+          "type": "choice",
+          "prompt": "في المثال، في أي مرحلة يتحوّل الناتج من صف لكل سطر بيع إلى صف لكل شهر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "sales"
+            },
+            {
+              "id": "b",
+              "text": "monthly"
+            },
+            {
+              "id": "c",
+              "text": "sale_months"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تستخدم monthly عبارة GROUP BY month، فتختصر كل مجموعة من سطور البيع في صف واحد.",
+          "hints": [
+            "ابحث عن المرحلة التي تحتوي على GROUP BY."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-02-e2",
+          "type": "text",
+          "prompt": "يحتوي أبريل على سطرين بإيراد 450 و650 قرشًا. صفِّ المجاميع الشهرية بعد حسابها بشرط الإيراد أكبر من أو يساوي 1000. ما إيراد أبريل في الناتج؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "1100"
+          ],
+          "explanation": "يبلغ مجموع الشهر 1100، فيمر شرط العرض النهائي.",
+          "hints": [
+            "اجمع السطرين قبل المقارنة بالحد."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-02-e3",
+          "type": "choice",
+          "prompt": "تريد مراجعة كل سطر بعد استخراج شهره وقبل التجميع. أي قراءة تضع في نهاية المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "SELECT * FROM monthly"
+            },
+            {
+              "id": "b",
+              "text": "SELECT * FROM sales"
+            },
+            {
+              "id": "c",
+              "text": "SELECT * FROM sale_months"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تعرض sale_months مفتاح الشهر والإيراد لكل سطر بيع.",
+          "hints": [
+            "اختر المرحلة التي تحسب الشهر قبل GROUP BY."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "سمِّ مراحل الاستعلام بحسب ما تعرضه وحدّد المستوى الذي ينتمي إليه كل شرط."
+    },
+    {
+      "id": "ana-sql-03",
+      "title": "احسب حصة الفئة داخل الشهر",
+      "summary": "استخدم دالة نافذة لإضافة الإجمالي الشهري إلى كل صف من صفوف الفئات.",
+      "why": "حساب حصة الفئة يتطلب إيراد الفئة والمجموع الشهري في الصف نفسه.",
+      "objectives": [
+        "أحسب إيراد كل فئة في كل شهر باستخدام GROUP BY.",
+        "أستعمل OVER وPARTITION BY لحساب إجمالي النافذة مع الاحتفاظ بالصفوف.",
+        "أحسب نسبة مئوية عشرية وأمثل القسمة على إجمالي صفر بقيمة NULL."
+      ],
+      "minutes": "26–34",
+      "skillIds": [
+        "anasql.windows"
+      ],
+      "sections": [
+        {
+          "heading": "اجمع أولًا بحسب الشهر والفئة",
+          "body": "ابدأ بصف لكل فئة داخل كل شهر. استخدم GROUP BY month, category مع SUM(revenue_piastres). إذا عرضت الفئات بجوار المجاميع، فاحتفظ باسم الفئة في كل صف من هذا الناتج الوسيط."
+        },
+        {
+          "heading": "أضف الإجمالي من نافذة",
+          "body": "يقرأ التعبير SUM(category_revenue) OVER (PARTITION BY month) صفوف الفئات داخل الشهر نفسه. يضيف إجمالي ذلك الشهر إلى كل صف منها. PARTITION BY تحدد الصفوف المشاركة في الحساب، ويظل معنى الصف في الناتج فئة داخل شهر. استخدم المجموعة الكاملة بلا ORDER BY داخل OVER عندما تريد إجمالي الشهر على كل صف."
+        },
+        {
+          "heading": "اضبط وحدة النسبة وتعامل مع الصفر",
+          "body": "قسّم إيراد الفئة على إيراد الشهر لقياس الحصة. استخدم 100.0 * category_revenue لتحصل على نسبة مئوية عشرية في SQLite. يحوّل NULLIF(month_revenue, 0) مقام الصفر إلى NULL، فتظهر النسبة غير معرّفة مع بقاء صفوف الفئات وإيراداتها. قرّب النسبة وقت العرض باستخدام ROUND."
+        },
+        {
+          "heading": "تحقق من نافذة كل شهر",
+          "body": "افحص صفين من الشهر نفسه وتأكد من تكرار قيمة month_revenue فيهما. افحص صفًا من شهر آخر وتأكد من أن إجماليه مبني على فئات ذلك الشهر. قبل التقريب، تساوي حصص كل فئات الشهر 100% حسابيًا عندما يكون المجموع غير صفري."
+        }
+      ],
+      "examples": [
+        {
+          "title": "احسب الحصة في نافذة كل شهر",
+          "language": "text",
+          "code": "WITH monthly_category(month, category, category_revenue) AS (\n    VALUES ('2026-01', 'tools', 800),\n           ('2026-01', 'paper', 200),\n           ('2026-02', 'tools', 0),\n           ('2026-03', 'paper', 300)\n),\nwith_totals AS (\n    SELECT month, category, category_revenue,\n           SUM(category_revenue) OVER (PARTITION BY month) AS month_revenue\n    FROM monthly_category\n)\nSELECT month, category, category_revenue, month_revenue,\n       ROUND(100.0 * category_revenue / NULLIF(month_revenue, 0), 1) AS share_pct\nFROM with_totals\nORDER BY month, category;\n",
+          "explanation": "تتشارك فئتا يناير إجمالي 1000 قرش وتبلغ حصتاهما 20% و80%. إجمالي فبراير صفر، لذلك تظهر حصة الفئة فيه بقيمة NULL، ويمثّلها null في ناتج المثال."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "ana-sql-03-e1",
+          "type": "choice",
+          "prompt": "تريد إجماليًا خاصًا بكل شهر إلى جوار كل فئة. أي نافذة تختار لحساب SUM(category_revenue)؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "OVER ()"
+            },
+            {
+              "id": "b",
+              "text": "OVER (PARTITION BY month)"
+            },
+            {
+              "id": "c",
+              "text": "OVER (PARTITION BY category)"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تحصر PARTITION BY month عملية الجمع في صفوف الشهر نفسه.",
+          "hints": [
+            "قسّم صفوف الفئات باستخدام البعد الذي يحدد الإجمالي المطلوب."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-03-e2",
+          "type": "text",
+          "prompt": "إيراد فئة واحدة 250 قرشًا، وإيراد شهرها 2000 قرش. كم تبلغ حصتها المئوية؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "12.5",
+            "12٫5"
+          ],
+          "explanation": "النسبة المئوية تساوي 250 مضروبًا في 100 ومقسومًا على 2000، أي 12.5%.",
+          "hints": [
+            "احسب حصة الفئة من إجمالي الشهر ثم اضرب في 100."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-03-e3",
+          "type": "choice",
+          "prompt": "ما قيمة share_pct في المثال عندما يساوي month_revenue صفرًا؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "100"
+            },
+            {
+              "id": "b",
+              "text": "0"
+            },
+            {
+              "id": "c",
+              "text": "NULL"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تحوّل NULLIF الإجمالي الصفري إلى NULL. تبقى الحصة غير معرّفة.",
+          "hints": [
+            "تتبّع المقام الذي تعيده NULLIF."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم GROUP BY لتغيير مستوى تفاصيل الصف، ثم احسب القيم المشتركة داخل كل مجموعة بوساطة نافذة."
+    },
+    {
+      "id": "ana-sql-04",
+      "title": "قارن بالشهر السابق المتاح",
+      "summary": "رتّب ملخص الأشهر واستخدم LAG لإظهار الشهر السابق وقيمة الفرق.",
+      "why": "قد يفصل شهر بلا مبيعات بين سجلين في التقرير. عرض تاريخ الأساس مع فرق الإيراد يجعل المقارنة قابلة للتفسير.",
+      "objectives": [
+        "أستخدم LAG بترتيب زمني على صفوف شهرية فريدة.",
+        "أفرق بين الشهر السابق الظاهر في البيانات والشهر السابق في التقويم.",
+        "أحسب فرق الإيراد عندما يكون السابق صفرًا وأمثل غياب السابق بقيمة NULL."
+      ],
+      "minutes": "25–33",
+      "skillIds": [
+        "anasql.compare"
+      ],
+      "sections": [
+        {
+          "heading": "رتّب ملخص الأشهر داخل النافذة",
+          "body": "بعد التجميع يوجد صف واحد لكل شهر. يعطي LAG(month) OVER (ORDER BY month) مفتاح الشهر السابق حسب هذا الترتيب، ويعطي LAG(revenue_piastres) القيمة من الصف السابق نفسه. تتوافق مقارنة نصوص YYYY-MM مرتبة من الأقدم إلى الأحدث مع الترتيب الزمني. استخدم ORDER BY أيضًا في القراءة النهائية لتثبيت ترتيب العرض."
+        },
+        {
+          "heading": "اجعل معنى السابق ظاهرًا",
+          "body": "إذا ظهرت يناير ومارس فقط، فإن LAG تعيد يناير عند قراءة صف مارس. يسمّى هذا الشهر السابق الموجود في البيانات. إذا طلب التقرير مقارنة مارس بفبراير تحديدًا، ابحث عن المفتاح المحسوب بـ strftime('%Y-%m', date(month || '-01', '-1 month')) واربطه بالشهر الموافق باستخدام LEFT JOIN. عندما يغيب المفتاح، تعيد أعمدة الشهر السابق في الربط NULL."
+        },
+        {
+          "heading": "حافظ على فرق الإيراد حتى عند أساس صفري",
+          "body": "يحسب revenue_piastres - previous_revenue_piastres فرق الإيراد بالقروش. فرق شهر إيراده 500 عن شهر سابق إيراده صفر يساوي 500. إذا غاب السجل السابق فتعيد LAG قيمة NULL، ويعطي الطرح NULL. تحتاج نسبة التغيّر المئوية إلى مقام، ولذلك يلزم التعامل مع الأساس الصفري باستعمال NULLIF عند حسابها."
+        },
+        {
+          "heading": "اعرض المفتاح والقيمة معًا",
+          "body": "احتفظ بعمودي previous_month وprevious_revenue_piastres في ناتج المقارنة. وجودهما يتيح تفسير الفرق والتحقق من الشهر المستخدم حتى عندما توجد فجوات زمنية."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اعرض الفجوة والأساس الصفري",
+          "language": "text",
+          "code": "WITH monthly(month, revenue_piastres) AS (\n    VALUES ('2026-01', 800),\n           ('2026-03', 0),\n           ('2026-04', 1500)\n),\nwith_previous AS (\n    SELECT month, revenue_piastres,\n           LAG(month) OVER (ORDER BY month) AS previous_month,\n           LAG(revenue_piastres) OVER (ORDER BY month) AS previous_revenue_piastres\n    FROM monthly\n)\nSELECT month, revenue_piastres, previous_month, previous_revenue_piastres,\n       revenue_piastres - previous_revenue_piastres AS change_piastres\nFROM with_previous\nORDER BY month;\n",
+          "explanation": "يناير بلا أساس سابق. يقارن مارس بين 0 و800 قرش في يناير، ثم يقارن أبريل بين 1500 وصفر في مارس. يبقى الفرق رقمًا في الحالتين."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "ana-sql-04-e1",
+          "type": "choice",
+          "prompt": "يتضمن الملخص 2026-02 و2026-04 فقط. ما previous_month لصف أبريل عند استخدام LAG(month) OVER (ORDER BY month)؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "2026-02"
+            },
+            {
+              "id": "b",
+              "text": "2026-03"
+            },
+            {
+              "id": "c",
+              "text": "NULL"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "تسترجع LAG المفتاح من الصف السابق الموجود حسب ترتيب النافذة، وهو فبراير.",
+          "hints": [
+            "تتبّع مواقع الصفوف الموجودة في الملخص."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-04-e2",
+          "type": "text",
+          "prompt": "إيراد الشهر 650 قرشًا وإيراد الشهر السابق المسجل صفر. ما فرق الإيراد بالقروش؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "650"
+          ],
+          "explanation": "يجري حساب الفرق بالطرح، أي 650 ناقص صفر.",
+          "hints": [
+            "فرّق بين متطلبات الطرح ومتطلبات القسمة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-04-e3",
+          "type": "choice",
+          "prompt": "تحتاج تقريرًا يقارن كل شهر بشهره السابق في التقويم مع إبقاء الشهور التي تغيب عنها قيمة المقارنة. كيف تربط الملخص؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "استخدم LAG وحدها"
+            },
+            {
+              "id": "b",
+              "text": "احسب مفتاح الشهر السابق في التقويم واستخدم LEFT JOIN"
+            },
+            {
+              "id": "c",
+              "text": "رتّب مفاتيح الأشهر تنازليًا وخذ أول صف لكل شهر"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يحدد مفتاح التقويم الشهر المطلوب تحديدًا. يبقي LEFT JOIN صف الشهر الحالي عند غياب صف الشهر السابق.",
+          "hints": [
+            "احتفظ بصف الشهر الحالي حتى عند فشل المطابقة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أظهر الشهر الذي استُخدم أساسًا، وعبّر عن غياب أساس المقارنة بقيمة NULL."
+    },
+    {
+      "id": "ana-sql-05",
+      "title": "طابق الملخص الشهري مع المصدر",
+      "summary": "تحقق من عدد السطور والإيراد في المصدر والملخص، ثم افحص تفرد مفاتيح الأشهر.",
+      "why": "قد ينتج التجميع رقمًا يبدو معقولًا مع إسقاط سطر أو تكراره. تمنحك المطابقة أدلة محددة عن نوع الخطأ ومكانه.",
+      "objectives": [
+        "أطابق عدد سطور المبيعات مع مجموع العد الشهري.",
+        "أطابق إجمالي الإيراد الخام مع مجموع الإيرادات الشهرية.",
+        "أبحث عن تكرار مفتاح الشهر وأميّز بين التقرير الفارغ وفرق المطابقة."
+      ],
+      "minutes": "26–35",
+      "skillIds": [
+        "anasql.audit"
+      ],
+      "sections": [
+        {
+          "heading": "حدّد المقاييس التي يفترض أن تتطابق",
+          "body": "استخدم مجموعة سطور المصدر نفسها في الجانبين. قارن COUNT(*) من sales بمجموع orders في monthly_sales، ثم قارن SUM(revenue_piastres) من المصدر بمجموع الإيرادات الشهرية. لأن كل سطر بيع ينتمي لشهر واحد، يساوي مجموع سطور الأشهر عدد سطور المصدر ويظل مجموع الإيراد محفوظًا."
+        },
+        {
+          "heading": "اتفق على إشارة الفرق وحالة الفراغ",
+          "body": "يعرّف المثال الفرق بطرح قيم الملخص من المصدر. عودة الصفر تعني تطابق ذلك المقياس. يعيد COUNT(*) صفرًا عند غياب الصفوف، أما SUM فقد تعيد NULL. استخدم COALESCE(SUM(...), 0) للأعداد المجمعة وقيم الإيراد في المطابقة كي يكون إجمالي مجموعة السطور الفارغة صفرًا. قيمة السابق في المقارنة الشهرية تعبّر عن غياب سجل وتبقى NULL."
+        },
+        {
+          "heading": "افحص مفاتيح الأشهر والنتيجة الفارغة",
+          "body": "يجمع GROUP BY month HAVING COUNT(*) > 1 صفوف الملخص ويعرض أي شهر مكرر. راجع مفاتيح الأشهر بمقارنتها مع SELECT DISTINCT substr(sold_on, 1, 7) من المصدر. تحقق من قيم كل شهر عندما تتطابق المجاميع العامة، لأن توزيع مبالغ على أشهر خاطئة قد يحافظ على الإجمالي العام. صِف غياب سطور المصدر صراحةً إذا كانت نتيجة التقرير فارغة."
+        },
+        {
+          "heading": "ابدأ من السطور إذا ظهر فرق",
+          "body": "إذا اختلف عدد السطور، راجع شروط القراءة وأي ربط قبل GROUP BY. عدّ المعرفات المميزة بعد الربط في بيانات المشروع، حيث يظهر sale_id مرة واحدة في المصدر. إذا اختلف الإيراد مع تطابق العدد، قارن المجاميع لكل شهر وافحص قيم revenue_piastres في السطور التي دخلت التقرير."
+        }
+      ],
+      "examples": [
+        {
+          "title": "احسب فرق السطور والإيراد",
+          "language": "text",
+          "code": "WITH sales(sale_id, sold_on, revenue_piastres) AS (\n    VALUES ('a', '2026-01-04', 300),\n           ('b', '2026-01-18', 900),\n           ('c', '2026-03-10', 400)\n),\nmonthly_sales AS (\n    SELECT substr(sold_on, 1, 7) AS month,\n           COUNT(*) AS orders,\n           SUM(revenue_piastres) AS revenue_piastres\n    FROM sales\n    GROUP BY substr(sold_on, 1, 7)\n),\nsource_totals AS (\n    SELECT COUNT(*) AS orders,\n           COALESCE(SUM(revenue_piastres), 0) AS revenue_piastres\n    FROM sales\n),\nreport_totals AS (\n    SELECT COALESCE(SUM(orders), 0) AS orders,\n           COALESCE(SUM(revenue_piastres), 0) AS revenue_piastres\n    FROM monthly_sales\n)\nSELECT source_totals.orders AS source_orders,\n       report_totals.orders AS report_orders,\n       source_totals.orders - report_totals.orders AS order_difference,\n       source_totals.revenue_piastres AS source_revenue,\n       report_totals.revenue_piastres AS report_revenue,\n       source_totals.revenue_piastres - report_totals.revenue_piastres AS revenue_difference\nFROM source_totals\nCROSS JOIN report_totals;\n",
+          "explanation": "يعيد كل إجمالي صفًا واحدًا، ويجمعهما CROSS JOIN في صف للمراجعة. يعرض الناتج 3 سطور بيع و1600 قرش على كل جانب وفرق صفر لكل مقياس."
+        },
+        {
+          "title": "اعثر على الشهر المكرر",
+          "language": "text",
+          "code": "WITH submitted_summary(month, orders) AS (\n    VALUES ('2026-01', 2),\n           ('2026-01', 1),\n           ('2026-03', 1)\n)\nSELECT month, COUNT(*) AS report_rows\nFROM submitted_summary\nGROUP BY month\nHAVING COUNT(*) > 1\nORDER BY month;\n",
+          "explanation": "يظهر يناير لأنه موجود في صفين من الملخص. في ملخص يحتوي على صف واحد لكل شهر تعيد هذه القراءة صفر صفوف."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "ana-sql-05-e1",
+          "type": "choice",
+          "prompt": "يضم المصدر 12 سطر بيع موزعة على 3 أشهر. أي رقم من monthly_sales يجب أن يساوي 12؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "COUNT(*)"
+            },
+            {
+              "id": "b",
+              "text": "COUNT(DISTINCT month)"
+            },
+            {
+              "id": "c",
+              "text": "SUM(orders)"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يمثل كل صف في الملخص شهرًا واحدًا ويسجل orders عدد سطور البيع فيه. جمع الأعداد الشهرية يستعيد عدد سطور المصدر.",
+          "hints": [
+            "اتبع العمود الذي يحمل عدد السطور لكل شهر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-05-e2",
+          "type": "text",
+          "prompt": "يبلغ إيراد المصدر 1000 قرش، ويبلغ مجموع إيراد الملخص 880 قرشًا. ما الفرق وفق تعريف المصدر مطروحًا منه الملخص؟ اكتب العدد وحده.",
+          "options": [],
+          "acceptedAnswers": [
+            "120"
+          ],
+          "explanation": "طرح 880 من 1000 يعطي فرقًا موجبًا قدره 120 قرشًا.",
+          "hints": [
+            "ضع إجمالي الملخص بعد علامة الطرح."
+          ],
+          "independent": true
+        },
+        {
+          "id": "ana-sql-05-e3",
+          "type": "choice",
+          "prompt": "تطابق إجمالي الإيراد وعدد السطور. أي فحص يكشف توزيع الإيراد على أشهر خاطئة مع بقاء الإجمالي العام نفسه؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "أعد قراءة إجمالي الإيراد مرة أخرى بلا تغيير"
+            },
+            {
+              "id": "b",
+              "text": "طابق قيم كل شهر مع تجميع مستقل من المصدر"
+            },
+            {
+              "id": "c",
+              "text": "اعرض أول شهر زمنيًا وحده"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تقارن المطابقة بحسب الشهر مفاتيح التقرير والقيمة المنسوبة لكل مفتاح.",
+          "hints": [
+            "قارن على مستوى التفاصيل الذي قد يقع فيه الخطأ."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "طابق عدد السطور والإيراد مع المصدر وافحص مفاتيح الأشهر والقيم داخل كل شهر."
+    }
+  ],
+  "skills": [
+    {
+      "id": "anasql.grain",
+      "title": "حدّد ما يمثله كل صف",
+      "description": "حوّل سطور البيع إلى ملخص شهري وحدّد معنى كل عدد في الناتج.",
+      "required": {
+        "skill": "sql.report"
+      },
+      "recommended": []
+    },
+    {
+      "id": "anasql.cte",
+      "title": "قسّم الاستعلام باستخدام WITH",
+      "description": "سمِّ النتائج الوسيطة واحسب أعمدة التقرير على مراحل قابلة للفحص.",
+      "required": {
+        "skill": "anasql.grain"
+      },
+      "recommended": []
+    },
+    {
+      "id": "anasql.windows",
+      "title": "احسب حصة الفئة داخل الشهر",
+      "description": "استخدم دالة نافذة لإضافة الإجمالي الشهري إلى كل صف من صفوف الفئات.",
+      "required": {
+        "skill": "anasql.cte"
+      },
+      "recommended": []
+    },
+    {
+      "id": "anasql.compare",
+      "title": "قارن بالشهر السابق المتاح",
+      "description": "رتّب ملخص الأشهر واستخدم LAG لإظهار الشهر السابق وقيمة الفرق.",
+      "required": {
+        "skill": "anasql.windows"
+      },
+      "recommended": []
+    },
+    {
+      "id": "anasql.audit",
+      "title": "طابق الملخص الشهري مع المصدر",
+      "description": "تحقق من عدد السطور والإيراد في المصدر والملخص، ثم افحص تفرد مفاتيح الأشهر.",
+      "required": {
+        "skill": "anasql.compare"
+      },
+      "recommended": []
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "ana-sql-01",
+      "title": "حدّد ما يمثله كل صف",
+      "why": "يعتمد معنى التقرير على وحدة العد. يمكن لسطر بيع واحد أن يضم عدة وحدات من الصنف نفسه.",
+      "skillIds": [
+        "anasql.grain"
+      ]
+    },
+    {
+      "id": "ana-sql-02",
+      "title": "قسّم الاستعلام باستخدام WITH",
+      "why": "عندما يضم التقرير اشتقاق الشهر ثم التجميع ثم التصفية، يساعدك الفصل بين المراحل على معرفة أين تغيّر عدد الصفوف.",
+      "skillIds": [
+        "anasql.cte"
+      ]
+    },
+    {
+      "id": "ana-sql-03",
+      "title": "احسب حصة الفئة داخل الشهر",
+      "why": "حساب حصة الفئة يتطلب إيراد الفئة والمجموع الشهري في الصف نفسه.",
+      "skillIds": [
+        "anasql.windows"
+      ]
+    },
+    {
+      "id": "ana-sql-04",
+      "title": "قارن بالشهر السابق المتاح",
+      "why": "قد يفصل شهر بلا مبيعات بين سجلين في التقرير. عرض تاريخ الأساس مع فرق الإيراد يجعل المقارنة قابلة للتفسير.",
+      "skillIds": [
+        "anasql.compare"
+      ]
+    },
+    {
+      "id": "ana-sql-05",
+      "title": "طابق الملخص الشهري مع المصدر",
+      "why": "قد ينتج التجميع رقمًا يبدو معقولًا مع إسقاط سطر أو تكراره. تمنحك المطابقة أدلة محددة عن نوع الخطأ ومكانه.",
+      "skillIds": [
+        "anasql.audit"
+      ]
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "ana-sql-01",
+      "index": 0,
+      "input": "",
+      "output": "[\"2025-01\",2,3,1250]\n[\"2026-01\",1,4,1200]\n"
+    },
+    {
+      "lessonId": "ana-sql-02",
+      "index": 0,
+      "input": "",
+      "output": "[\"2026-01\",1200]\n"
+    },
+    {
+      "lessonId": "ana-sql-03",
+      "index": 0,
+      "input": "",
+      "output": "[\"2026-01\",\"paper\",200,1000,20.0]\n[\"2026-01\",\"tools\",800,1000,80.0]\n[\"2026-02\",\"tools\",0,0,null]\n[\"2026-03\",\"paper\",300,300,100.0]\n"
+    },
+    {
+      "lessonId": "ana-sql-04",
+      "index": 0,
+      "input": "",
+      "output": "[\"2026-01\",800,null,null,null]\n[\"2026-03\",0,\"2026-01\",800,-800]\n[\"2026-04\",1500,\"2026-03\",0,1500]\n"
+    },
+    {
+      "lessonId": "ana-sql-05",
+      "index": 0,
+      "input": "",
+      "output": "[3,3,0,1600,1600,0]\n"
+    },
+    {
+      "lessonId": "ana-sql-05",
+      "index": 1,
+      "input": "",
+      "output": "[\"2026-01\",2]\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "مستوى تفاصيل الصف",
+      "technical": "row grain",
+      "definition": "ما يمثله صف واحد في بيانات الإدخال أو في ناتج الاستعلام، مثل سطر بيع أو شهر أو فئة داخل شهر."
+    },
+    {
+      "term": "تعبير جدول مشترك",
+      "technical": "CTE / WITH",
+      "definition": "نتيجة وسيطة مسمّاة يمكن أن تقرأ منها مراحل أخرى ضمن الاستعلام نفسه."
+    },
+    {
+      "term": "دالة نافذة",
+      "technical": "window function / OVER",
+      "definition": "دالة تحسب قيمة لكل صف بالاستعانة بصفوف نافذته مع الاحتفاظ بالصفوف في الناتج."
+    },
+    {
+      "term": "تقسيم النافذة",
+      "technical": "PARTITION BY",
+      "definition": "تحديد الأعمدة التي تجمع الصفوف التي تشارك في حساب النافذة."
+    },
+    {
+      "term": "قيمة الصف السابق",
+      "technical": "LAG",
+      "definition": "دالة نافذة تجلب قيمة من الصف السابق وفق ترتيب النافذة، وتعيد NULL افتراضيًا عند غياب ذلك الصف."
+    },
+    {
+      "term": "مطابقة المجاميع",
+      "technical": "reconciliation",
+      "definition": "مقارنة أعداد السطور والمبالغ في التقرير مع القيم المحسوبة من المصدر وفحص أي فرق."
+    }
+  ]
+}

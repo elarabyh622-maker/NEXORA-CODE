@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory)][string]$Assembly,
     [switch]$Test,
     [switch]$InitializeContent,
-    [ValidateSet('phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1')][string]$TargetRelease = 'phase11-ar-v1'
+    [ValidateSet('phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1','phase12-ar-v1','phase13-ar-v1')][string]$TargetRelease = 'phase13-ar-v1'
 )
 
 $workspace = Split-Path -Parent $PSScriptRoot
@@ -20,6 +20,8 @@ $releases = @(
     @{ Id = 'phase9-ar-v1'; File = 'phase9\dist\curriculum.json'; Digest = 'bf66b58d76aaa54bd0d760eecde443cb7c98081b474c0e04ffe92ee9973d525a' }
     @{ Id = 'phase10-ar-v1'; File = 'phase10\dist\curriculum.json'; Digest = 'a418cbb4f6f64fc809716f4fc634ba6b6df50e75e083bdd6925cfbde4d80df62' }
     @{ Id = 'phase11-ar-v1'; File = 'phase11\dist\curriculum.json'; Digest = '9cbf77989eb597c44a6d4bf0011587a52c5a35a23c4a6b8d0792a81c7e171ef7' }
+    @{ Id = 'phase12-ar-v1'; File = 'phase12\dist\curriculum.json'; Digest = '71e7df9dffaf548b3ad6a98f60d8acc3002d4b24addb2679db0e5ed93e8d77d2' }
+    @{ Id = 'phase13-ar-v1'; File = 'phase13\dist\curriculum.json'; Digest = '772e3e44cafb95b6f9ab44ce85ef558f703ab101392a69b9d132a18df3b35171' }
 )
 
 $catalogStateQuery = @'

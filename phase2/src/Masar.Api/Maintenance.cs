@@ -118,9 +118,9 @@ public static class Maintenance
             ["python"] = [.. LessonRange("core", 12), .. LessonRange("py", 12)],
             ["web"] = [.. LessonRange("core", 12), .. LessonRange("web", 12)]
         };
-        if (release is "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1")
+        if (release is "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
             paths.Add("data-analysis", [.. paths["python"], .. LessonRange("data", 8)]);
-        if (release is "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1")
+        if (release is "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
         {
             paths.Add("sql", LessonRange("sql", 6));
             paths.Add("web-data", [.. paths["web"], .. LessonRange("web-data", 5)]);
@@ -134,7 +134,7 @@ public static class Maintenance
         else if (release is not ("phase4-ar-v1" or "phase7-ar-v1"))
             throw new MigrationFailure("unsupported_reviewed_curriculum");
 
-        if (release is "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1")
+        if (release is "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
         {
             paths.Add("python-projects", [.. paths["python"], .. LessonRange("pyproj", 3)]);
             paths.Add("sql-write", [.. paths["sql"], .. LessonRange("sql-write", 4)]);
@@ -148,7 +148,7 @@ public static class Maintenance
                 LessonRange("fullstack", 2));
         }
 
-        if (release is "phase10-ar-v1" or "phase11-ar-v1")
+        if (release is "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
         {
             paths.Add("javascript-projects", [.. paths["web-data"], .. LessonRange("jsproj", 4)]);
             paths.Add("react", [.. paths["javascript-projects"], .. LessonRange("react", 7)]);
@@ -160,7 +160,7 @@ public static class Maintenance
             VerifyPlan(CurriculumEngine.Plan(bundle, "react-fullstack", ["react.project", "backend.tests"]), []);
         }
 
-        if (release == "phase11-ar-v1")
+        if (release is "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
         {
             paths.Add("algorithms", [.. paths["explore"], .. LessonRange("alg", 8)]);
             paths.Add("oop", [.. paths["python-projects"], .. LessonRange("oop", 6)]);
@@ -168,6 +168,27 @@ public static class Maintenance
             VerifyPlan(CurriculumEngine.Plan(bundle, "algorithms", ["core.debugging"]), LessonRange("alg", 8));
             VerifyPlan(CurriculumEngine.Plan(bundle, "oop", ["pyproj.types"]), LessonRange("oop", 6));
             VerifyPlan(CurriculumEngine.Plan(bundle, "problem-solving", ["alg.recursion"]), LessonRange("solve", 6));
+        }
+
+        if (release is "phase12-ar-v1" or "phase13-ar-v1")
+        {
+            string[] modules = [.. LessonRange("pd", 5), .. LessonRange("stat", 5),
+                .. LessonRange("ana-sql", 5), "applied-01"];
+            paths.Add("applied-data", [.. paths["data-analysis"], .. modules.Take(10),
+                .. paths["sql"], .. modules.Skip(10)]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "applied-data", ["data.project", "sql.report"]), modules);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "applied-data", ["pd.clean", "stat.interpret", "anasql.audit"]),
+                ["applied-01"]);
+        }
+
+        if (release == "phase13-ar-v1")
+        {
+            string[] modules = [.. LessonRange("mlprep", 4), .. LessonRange("mlmod", 4),
+                .. LessonRange("mleval", 4), "mlproject-01"];
+            paths.Add("machine-learning", [.. paths["data-analysis"], .. LessonRange("pd", 5),
+                .. LessonRange("stat", 5), .. modules]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "machine-learning", ["pd.clean", "stat.interpret"]), modules);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "machine-learning", ["mleval.report"]), ["mlproject-01"]);
         }
 
         var exercises = Content.Lessons(bundle).SelectMany(Content.Exercises).ToArray();
@@ -203,7 +224,7 @@ public static class Maintenance
         var releaseId = Input.String(bundle["sample"]?["releaseId"]);
         if (reviewedHash is not null)
         {
-            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1") || hash != reviewedHash.ToLowerInvariant())
+            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1") || hash != reviewedHash.ToLowerInvariant())
                 throw new MigrationFailure("reviewed_curriculum_digest_mismatch");
             VerifyCurriculum(bundle);
         }
@@ -249,6 +270,8 @@ public static class Maintenance
         if (active == releaseId && status == "published") return;
         var requiredPredecessor = releaseId switch
         {
+            "phase13-ar-v1" => "phase12-ar-v1",
+            "phase12-ar-v1" => "phase11-ar-v1",
             "phase11-ar-v1" => "phase10-ar-v1",
             "phase10-ar-v1" => "phase9-ar-v1",
             "phase9-ar-v1" => "phase8-ar-v1",
