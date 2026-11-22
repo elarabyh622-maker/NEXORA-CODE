@@ -1,0 +1,159 @@
+{
+  "lesson": {
+    "id": "go-project-01",
+    "title": "مشروع API محلي لإدارة المهام بلغة Go",
+    "summary": "أكمل عملية إنهاء مهمة، ثم اختبر إنشاء المهام وعرضها وإنهاءها على خادم يعمل على جهازك.",
+    "why": "عندما يرسل عميلان طلب إنهاء المهمة نفسها، ينبغي أن ينجح الطلب الأول وأن يقرأ الثاني حالة محدثة قبل اتخاذ قراره.",
+    "objectives": [
+      "تشغيل نسخة البداية",
+      "تنفيذ قاعدة الإنهاء",
+      "التحقق من الأثر"
+    ],
+    "minutes": "45–60",
+    "skillIds": [
+      "go.project"
+    ],
+    "sections": [
+      {
+        "heading": "تشغيل نسخة البداية",
+        "body": "نزّل أرشيف المشروع من بطاقة المشروع وفك الضغط. افتح الطرفية بجوار go.mod واقرأ README.md. شغّل فحص البداية الموضح أدناه. تعرض الخدمة قائمة فارغة عند البدء، وتعيد عملية الإنهاء 501 قبل تنفيذ التمرين."
+      },
+      {
+        "heading": "تنفيذ قاعدة الإنهاء",
+        "body": "افتح complete.go وابحث عن Store.complete. احمِ البحث والتعديل بقفل s.mu.Lock() وdefer s.mu.Unlock() حتى تحرّر القفل في كل مسار خروج. استعمل taskIndex للبحث بالرقم. أعد خطأ عدم الوجود أو خطأ الإنهاء السابق كما يحدد README. عند النجاح عدّل Completed داخل الشريحة نفسها ثم أعد سجل المهمة المحدّث."
+      },
+      {
+        "heading": "التحقق من الأثر",
+        "body": "شغّل الاختبارات الكاملة ثم الخادم. من طرفية ثانية اعرض القائمة وأنشئ مهمة وأنهِها بالرقم الذي عاد من الإنشاء. كرّر الإنهاء وسجّل 409، ثم اعرض القائمة وتحقق أن العنوان والرقم بقيا كما هما. أوقف الخادم باستخدام Ctrl+C وأعد تشغيله؛ تحفظ هذه النسخة المهام في الذاكرة، فتبدأ بقائمة فارغة."
+      }
+    ],
+    "examples": [
+      {
+        "title": "تدريب مستقل على تعديل سجل داخل شريحة",
+        "language": "go",
+        "code": "package main\n\nimport \"fmt\"\n\ntype Task struct {\n\tID int\n\tCompleted bool\n}\n\nfunc main() {\n\ttasks := []Task{{ID: 7}, {ID: 12}}\n\tfor i := range tasks {\n\t\tif tasks[i].ID == 12 {\n\t\t\ttasks[i].Completed = true\n\t\t\tbreak\n\t\t}\n\t}\n\tfor _, task := range tasks {\n\t\tfmt.Println(task.ID, task.Completed)\n\t}\n}\n",
+        "explanation": "يظل السجل رقم 7 مفتوحًا ويتغير السجل رقم 12. احفظ هذا التدريب في مجلد مستقل عن المشروع. يضيف المشروع البحث وإرجاع الأخطاء وقفل المخزن."
+      },
+      {
+        "title": "التحقق قبل تعديل complete.go",
+        "language": "text",
+        "code": "go test ./... -args -starter",
+        "explanation": "ينجح فحص نقطة البداية. إذا شغّلت الاختبارات الكاملة الآن فستفشل حالات الإنهاء حتى تكتمل الدالة."
+      },
+      {
+        "title": "التحقق والتشغيل بعد إكمال الدالة",
+        "language": "text",
+        "code": "go test ./...\ngo build .\ngo run .",
+        "explanation": "شغّل الأوامر بالترتيب بعد نجاح كل خطوة. يبقى الخادم المحلي قيد التشغيل عند 127.0.0.1 على المنفذ 8080."
+      },
+      {
+        "title": "تجربة من طرفية PowerShell ثانية",
+        "language": "text",
+        "code": "$tasksUri = 'http://127.0.0.1:8080/tasks'\nInvoke-RestMethod -Uri $tasksUri\n$task = Invoke-RestMethod -Uri $tasksUri -Method Post -ContentType 'application/json' -Body '{\"title\":\"Learn Go\"}'\n$task\nInvoke-RestMethod -Uri \"$tasksUri/$($task.id)/complete\" -Method Post\nInvoke-RestMethod -Uri \"$tasksUri/$($task.id)/complete\" -Method Post\nInvoke-RestMethod -Uri $tasksUri",
+        "explanation": "نفّذ الأوامر سطرًا سطرًا. يعيد الإنشاء سجلًا بحالة completed تساوي false. يغيّر الإنهاء الأول القيمة إلى true. عند ظهور خطأ الطلب المكرر، نفّذ أمر العرض الأخير وتحقق من البيانات."
+      }
+    ],
+    "exercises": [
+      {
+        "id": "go-project-01-e1",
+        "type": "choice",
+        "prompt": "أي عملية تغيّر حالة المهمة رقم 3 إلى مكتملة؟",
+        "options": [
+          {
+            "id": "a",
+            "text": "GET /tasks"
+          },
+          {
+            "id": "b",
+            "text": "POST /tasks/3/complete"
+          },
+          {
+            "id": "c",
+            "text": "POST /tasks"
+          }
+        ],
+        "acceptedAnswers": [
+          "b"
+        ],
+        "explanation": "يحدد المسار رقم المهمة وتطلب POST تنفيذ العملية.",
+        "hints": [
+          "راجع الطريقة والمسار الخاصين بالإنهاء."
+        ],
+        "independent": true
+      },
+      {
+        "id": "go-project-01-e2",
+        "type": "text",
+        "prompt": "نجح إنهاء المهمة، ثم وصل طلب إنهاء ثانٍ لها. اكتب رمز حالة الرد الثاني.",
+        "options": [],
+        "acceptedAnswers": [
+          "409"
+        ],
+        "explanation": "يعيد المشروع 409 عندما تكون المهمة مكتملة مسبقًا.",
+        "hints": [
+          "المهمة موجودة لكن حالتها تتعارض مع التكرار."
+        ],
+        "independent": true
+      },
+      {
+        "id": "go-project-01-e3",
+        "type": "choice",
+        "prompt": "ما نتيجة عرض القائمة بعد إيقاف الخادم وإعادة تشغيله؟",
+        "options": [
+          {
+            "id": "a",
+            "text": "تعرض كل المهام السابقة"
+          },
+          {
+            "id": "b",
+            "text": "تضيف مهمة افتراضية"
+          },
+          {
+            "id": "c",
+            "text": "تعرض قائمة فارغة"
+          }
+        ],
+        "acceptedAnswers": [
+          "c"
+        ],
+        "explanation": "تبدأ العملية الجديدة بمخزن فارغ في الذاكرة.",
+        "hints": [
+          "أين يخزن هذا المشروع المهام؟"
+        ],
+        "independent": true
+      }
+    ],
+    "takeaway": "أكمل عملية إنهاء مهمة، ثم اختبر إنشاء المهام وعرضها وإنهاءها على خادم يعمل على جهازك."
+  },
+  "skill": {
+    "id": "go.project",
+    "title": "مشروع API محلي لإدارة المهام بلغة Go",
+    "description": "أكمل عملية إنهاء مهمة، ثم اختبر إنشاء المهام وعرضها وإنهاءها على خادم يعمل على جهازك.",
+    "required": {
+      "skill": "go.tests"
+    },
+    "recommended": []
+  },
+  "exampleChecks": [
+    {
+      "lessonId": "go-project-01",
+      "index": 0,
+      "input": "",
+      "output": "7 false\n12 true\n"
+    }
+  ],
+  "project": {
+    "id": "go-tasks-api",
+    "title": "واجهة HTTP محلية لإدارة المهام",
+    "lessonId": "go-project-01",
+    "summary": "أكمل عملية إنهاء مهمة، ثم اختبر إنشاء المهام وعرضها وإنهاءها على خادم يعمل على جهازك.",
+    "criteria": [
+      "شغّل فحص البداية وسجّل نتيجته قبل تعديل complete.go.",
+      "أكمل Store.complete مع حماية البحث والتعديل بالقفل والتحقق من وجود المهمة وحالتها.",
+      "شغّل الاختبارات الكاملة والبناء وسجّل النتائج، ثم ابدأ الخادم على 127.0.0.1:8080.",
+      "أنشئ مهمة واعرضها، ثم أنهِها وتحقق من أن رقمها وعنوانها ثابتان وأن completed أصبحت true.",
+      "جرّب إنهاء مهمة مكتملة وأخرى مفقودة وتحقق من 409 و404. أعد تشغيل الخادم وتحقق من فراغ القائمة."
+    ],
+    "download": "/projects/go-tasks-api-starter-v1.zip"
+  }
+}

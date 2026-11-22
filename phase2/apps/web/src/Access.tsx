@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ACCESS_INVALIDATED, errorText, request, type SessionScope } from './api';
-import type { Catalog, CommercialEntitlement, CommercialOffer, User } from './types';
+import type { Catalog, CommercialEntitlement, CommercialOffer, Purchase, User } from './types';
 import { ErrorBox, Heading, Loading } from './ui';
 
 type AccessState = { scope?: SessionScope; entitlement?: CommercialEntitlement; loading: boolean; error: string; version: number };
@@ -89,9 +89,47 @@ function OfferList({ catalog }: { catalog: Catalog }) {
   })}</ul>;
 }
 
-export function OffersPage({ catalog, user }: { catalog: Catalog; user: User | null }) {
+function PurchaseForm({ catalog, scope }: { catalog: Catalog; scope: SessionScope }) {
+  const [goalId, setGoalId] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState<Purchase | null>(null);
+  const prices = new Map(catalog.offers?.filter(offer => offer.currency === 'EGP' && offer.price > 0).map(offer => [offer.goalId, offer]));
+  const choices = catalog.goals.filter(goal => goal.status !== 'planned' && prices.has(goal.id));
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!goalId || busy) return;
+    setBusy(true); setError(''); setSaved(null);
+    try {
+      const purchase = await request<Purchase>('/me/purchases', { method: 'POST', scope, body: { goalId } });
+      if (!scope.signal.aborted) setSaved(purchase);
+    } catch (cause) { if (!scope.signal.aborted) setError(errorText(cause)); }
+    finally { setBusy(false); }
+  }
+
+  if (!choices.length) return null;
+  return <section className="panel stack" aria-labelledby="order-link">
+    <h2 id="order-link">اطلب رابط دفع</h2>
+    <p>اختَر مسارًا. هتلاقي رابط Paymob في حسابك لما تجهّزه الإدارة.</p>
+    <form className="stack" onSubmit={submit} aria-busy={busy}>
+      <label>المسار<select value={goalId} required disabled={busy} onChange={event => {
+        setGoalId(event.target.value); setSaved(null); setError('');
+      }}>
+        <option value="">اختر المسار</option>
+        {choices.map(goal => <option key={goal.id} value={goal.id}>{goal.title} · {formatOffer(prices.get(goal.id)!)}</option>)}
+      </select></label>
+      <ErrorBox message={error} />
+      {saved && <p className="feedback success" role="status">تم تسجيل الطلب بمبلغ <bdi>{formatOffer(saved)}</bdi>. <a href="#auth">تابع الطلب من حسابك</a>.</p>}
+      <div className="actions"><button className="btn primary" disabled={!goalId || busy}>{busy ? 'جارٍ تسجيل الطلب…' : 'إرسال طلب الشراء'}</button></div>
+    </form>
+  </section>;
+}
+
+export function OffersPage({ catalog, user, scope }: { catalog: Catalog; user: User | null; scope?: SessionScope }) {
   const contact = contactLink(catalog.contactUrl);
-  return <><Heading title="أسعار المسارات">لكل مسار سعره. تفعّل الإدارة الوصول لحسابك بعد تأكيد السداد خارج المنصة.</Heading>
+  return <><Heading title="أسعار المسارات">تفعّل الإدارة الوصول للمسار بعد تأكيد السداد. شراء المسار دفعة واحدة.</Heading>
+    {user?.role === 'Learner' && scope && <PurchaseForm key={user.id} catalog={catalog} scope={scope} />}
     <section className="panel" aria-label="أسعار المسارات"><OfferList catalog={catalog} />
       <div className="actions">{!user && <a className="btn primary" href="#auth">تسجيل الدخول أو إنشاء حساب</a>}
         {contact && <a className="btn" href={contact} target="_blank" rel="noopener noreferrer">تواصل بشأن الشراء</a>}
@@ -114,10 +152,10 @@ export function AccessGate({ user, catalog, loading, error, reload, unavailable 
     <div className="actions">
       {!user && <a className="btn primary" href="#auth">تسجيل الدخول أو إنشاء حساب</a>}
       {contact && <a className="btn" href={contact} target="_blank" rel="noopener noreferrer">تواصل مع إدارة المنصة بشأن الشراء</a>}
+      {user?.role === 'Learner' && <a className="btn" href="#offers">اختَر مسارًا واطلب رابط دفع</a>}
       {user && <button className="btn" disabled={loading} onClick={reload}>تحديث حالة الوصول</button>}
       {unavailable && <a className="btn" href="#start">ارجع إلى محتواك</a>}
     </div>
-    {!contact && <p className="field-help">لمعرفة تفاصيل الشراء والتفعيل، تواصل مع مسؤول المنصة عبر وسيلة التواصل التي حصلت منها على رابطها.</p>}
     {catalog.offers && <div><h2>أسعار المسارات</h2><OfferList catalog={catalog} /></div>}
   </section>;
 }

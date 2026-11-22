@@ -22,7 +22,5 @@
 .commercial-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .commercial-search { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
 .commercial-settings .feedback, .commercial-settings .actions { margin: 0; }
-.offer-price { color: var(--brand); font-weight: 700; white-space: nowrap; }
-.offer-list > li { flex-wrap: wrap; }
 @media (max-width: 850px) { .commercial-settings { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 420px) { .commercial-fields { grid-template-columns: minmax(0, 1fr); } }

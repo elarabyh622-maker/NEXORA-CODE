@@ -1,0 +1,159 @@
+{
+  "lesson": {
+    "id": "java-project-01",
+    "title": "مشروع المكتبة المحلية بلغة Java",
+    "summary": "أكمل أمر borrow في برنامج طرفية يحفظ كتب المكتبة وإعاراتها في ملف نصي.",
+    "why": "يمكن لأمين المكتبة إغلاق البرنامج ثم معرفة من استعار كتابًا في تشغيل جديد. المطلوب الحفاظ على سجل صحيح حتى عند رفض طلب إعارة.",
+    "objectives": [
+      "تشغيل النسخة الابتدائية",
+      "تنفيذ قاعدة borrow",
+      "تأكيد الحفظ ورفض الإعارة المكررة"
+    ],
+    "minutes": "45–60",
+    "skillIds": [
+      "java.project"
+    ],
+    "sections": [
+      {
+        "heading": "تشغيل النسخة الابتدائية",
+        "body": "نزّل ملف المشروع من بطاقة المشروع وفك الضغط وافتح الطرفية داخل المجلد الذي يحتوي src وtests. اقرأ README وشغّل أوامر الترجمة وفحص البداية أدناه. ملفات المشروع تستخدم الصنف Library كنقطة تشغيل. مثال Main المستقل في هذه الصفحة للتدريب على استبدال سجل فقط."
+      },
+      {
+        "heading": "تنفيذ قاعدة borrow",
+        "body": "افتح src/Lending.java وابحث عن borrow. استعن بـ Library.index للعثور على الكتاب وLibrary.field لفحص اسم المستعير كما يوضح README. ارفض إعارة كتاب له مستعير، ثم انسخ القائمة، واستبدل في النسخة سجل الكتاب المطلوب بسجل يحمل نفس الرمز والعنوان واسم المستعير الجديد. أعِد القائمة الجديدة. تتولى طبقة البرنامج حفظ النتيجة عند النجاح."
+      },
+      {
+        "heading": "تأكيد الحفظ ورفض الإعارة المكررة",
+        "body": "أعد ترجمة المشروع والاختبارات بعد التعديل. شغّل الاختبار الكامل، ثم جرّب أوامر الطرفية على ملف تدريب جديد. بعد نجاح الإعارة لاسم Mona شغّل list في عملية جديدة وتحقق من الاسم. كرّر الإعارة بقارئ آخر قبل الإرجاع، وقارن البيانات قبل الرفض وبعده. اختتم بإرجاع الكتاب وفحص خانة المستعير."
+      }
+    ],
+    "examples": [
+      {
+        "title": "تدريب مستقل على استبدال سجل في نسخة من القائمة",
+        "language": "java",
+        "code": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Main {\n    record Book(String id, String title, String borrower) {}\n\n    public static void main(String[] args) {\n        Book book = new Book(\"B001\", \"Java Basics\", \"\");\n        List<Book> before = List.of(book);\n        List<Book> after = new ArrayList<>(before);\n        after.set(0, new Book(book.id(), book.title(), \"Mona\"));\n        System.out.println(before.get(0).borrower().isEmpty());\n        System.out.println(after.get(0).borrower());\n    }\n}\n",
+        "explanation": "تظهر true ثم Mona. هنا موضع الكتاب معروف للتدريب، بينما يحتاج المشروع للبحث بالرمز وفحص الحالة قبل إنشاء النتيجة."
+      },
+      {
+        "title": "بناء المشروع وفحص نقطة البداية",
+        "code": "javac -encoding UTF-8 -d out src/Library.java src/Lending.java\njavac -encoding UTF-8 -cp out -d out tests/LibraryTests.java\njava -cp out LibraryTests --starter",
+        "language": "text",
+        "explanation": "نفّذ الأوامر بالترتيب بعد نجاح كل أمر. فحص البداية يتوقع أن تكون الدالة غير مكتملة ويطبع PASSED: starter scaffolding."
+      },
+      {
+        "title": "التحقق بعد تنفيذ borrow",
+        "code": "javac -encoding UTF-8 -d out src/Library.java src/Lending.java\njavac -encoding UTF-8 -cp out -d out tests/LibraryTests.java\njava -cp out LibraryTests",
+        "language": "text",
+        "explanation": "بعد اكتمال التنفيذ تظهر PASSED: completed library. عند فشل فحص، اقرأ اسم الحالة وراجع شرط الرفض أو القائمة الناتجة."
+      },
+      {
+        "title": "دورة إعارة على ملف تدريب جديد",
+        "code": "java -cp out Library practice.tsv add B003 \"Java Basics\"\njava -cp out Library practice.tsv borrow B003 \"Mona\"\njava -cp out Library practice.tsv list\njava -cp out Library practice.tsv borrow B003 \"Ali\"\njava -cp out Library practice.tsv list\njava -cp out Library practice.tsv return B003\njava -cp out Library practice.tsv list",
+        "language": "text",
+        "explanation": "ابدأ باسم ملف جديد. بعد الإعارة الأولى تظهر Mona في خانة المستعير. محاولة الإعارة إلى Ali تفشل عمدًا ويظل الاسم Mona. بعد الإرجاع تصبح الخانة فارغة."
+      }
+    ],
+    "exercises": [
+      {
+        "id": "java-project-01-e1",
+        "type": "choice",
+        "prompt": "أين تنفّذ قاعدة الإعارة المطلوبة؟",
+        "options": [
+          {
+            "id": "a",
+            "text": "داخل src/Lending.java في borrow"
+          },
+          {
+            "id": "b",
+            "text": "داخل ملفات .class في out"
+          },
+          {
+            "id": "c",
+            "text": "داخل بيانات العينة بتغيير الأسماء يدويًا"
+          }
+        ],
+        "acceptedAnswers": [
+          "a"
+        ],
+        "explanation": "تستدعي واجهة البرنامج Lending.borrow لحساب الحالة الجديدة.",
+        "hints": [
+          "راجع فقرة تنفيذ قاعدة borrow."
+        ],
+        "independent": true
+      },
+      {
+        "id": "java-project-01-e2",
+        "type": "text",
+        "prompt": "كان B002 مُعارًا إلى Sara. طلب قارئ آخر استعارة نفس الكتاب قبل إرجاعه. اكتب الاسم الذي يجب أن يبقى في الملف.",
+        "options": [],
+        "acceptedAnswers": [
+          "Sara"
+        ],
+        "explanation": "يفشل طلب الإعارة الثانية وتبقى بيانات الإعارة الأولى محفوظة.",
+        "hints": [
+          "الفحص يسبق الحفظ."
+        ],
+        "independent": true
+      },
+      {
+        "id": "java-project-01-e3",
+        "type": "choice",
+        "prompt": "أي تجربة تثبت بقاء الإعارة بعد إغلاق الأمر؟",
+        "options": [
+          {
+            "id": "a",
+            "text": "قراءة رسالة OK: borrow فقط"
+          },
+          {
+            "id": "b",
+            "text": "تشغيل list على ملف مختلف"
+          },
+          {
+            "id": "c",
+            "text": "تشغيل list من جديد على نفس ملف البيانات وفحص المستعير"
+          }
+        ],
+        "acceptedAnswers": [
+          "c"
+        ],
+        "explanation": "تشغيل list في عملية مستقلة يقرأ الملف المحفوظ.",
+        "hints": [
+          "اختر تحققًا يعتمد على نسخة القرص."
+        ],
+        "independent": true
+      }
+    ],
+    "takeaway": "أكمل أمر borrow في برنامج طرفية يحفظ كتب المكتبة وإعاراتها في ملف نصي."
+  },
+  "skill": {
+    "id": "java.project",
+    "title": "مشروع المكتبة المحلية بلغة Java",
+    "description": "أكمل أمر borrow في برنامج طرفية يحفظ كتب المكتبة وإعاراتها في ملف نصي.",
+    "required": {
+      "skill": "java.tests"
+    },
+    "recommended": []
+  },
+  "exampleChecks": [
+    {
+      "lessonId": "java-project-01",
+      "index": 0,
+      "input": "",
+      "output": "true\nMona\n"
+    }
+  ],
+  "project": {
+    "id": "java-library",
+    "title": "مكتبة إعارة محلية بلغة Java",
+    "lessonId": "java-project-01",
+    "summary": "أكمل منطق إعارة كتاب، وشغّل أوامر الإضافة والعرض والإرجاع على ملف TSV بترميز UTF-8.",
+    "criteria": [
+      "شغّل فحص البداية قبل تعديل Lending.java وسجّل نتيجته.",
+      "أكمل borrow بحيث يتحقق من الكتاب والمستعير، ويرفض الإعارة المكررة، ويعيد نسخة محدّثة مع بقاء القائمة الأصلية كما كانت.",
+      "أعد الترجمة وشغّل اختبارات المكتبة الكاملة، وسجّل الناتج الفعلي.",
+      "أثبت استمرار البيانات بتشغيل list بعد إعارة ناجحة في عملية مستقلة، وبقاء اسم المستعير الأول بعد رفض إعارة مكررة.",
+      "أرجع الكتاب واعرضه مرة أخرى، وتحقق من بقاء الرمز والعنوان وفراغ خانة المستعير."
+    ],
+    "download": "/projects/java-library-starter-v1.zip"
+  }
+}

@@ -1,0 +1,432 @@
+{
+  "lessons": [
+    {
+      "id": "core-02",
+      "sections": [
+        {
+          "heading": "عرض النص في C#",
+          "body": "تمرر النص بين علامتي الاقتباس إلى Console.WriteLine ليظهر في الطرفية. يعرض البرنامج الحروف داخل العلامتين ويبدأ سطرًا جديدًا.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "رسالة الاستعداد في C#",
+          "language": "csharp",
+          "code": "Console.WriteLine(\"Ready to start\");\n",
+          "explanation": "تأتي الرسالة من الشيفرة وتظهر بوصفها المخرج."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-input-output-read",
+          "prompt": "تعمل تعليمة العرض على طباعة النص بين علامتي الاقتباس. في التعليمة «اعرض النص \"مفتوح\"»، ما الكلمة المعروضة؟ اكتب الكلمة وحدها.",
+          "hints": [
+            "اقرأ النص الذي تستقبله تعليمة العرض.",
+            "الحروف داخل علامتي الاقتباس هي المدخل إلى التعليمة."
+          ],
+          "code": null,
+          "language": null
+        }
+      ]
+    },
+    {
+      "id": "core-03",
+      "sections": [
+        {
+          "heading": "تتبّع سطرين في C#",
+          "body": "ينفّذ البرنامج السطر الأول ثم الذي يليه. اقرأ ترتيب المخرجات لاحقًا في النافذة لتتأكد من أن الخطوة التي تعتمد عليها التالية حدثت أولًا.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "ترتيب سطرين في C#",
+          "language": "csharp",
+          "code": "Console.WriteLine(\"Prepare the card\");\nConsole.WriteLine(\"Show the card\");\n",
+          "explanation": "تظهر رسالة تجهيز البطاقة قبل رسالة عرضها."
+        }
+      ],
+      "exercises": []
+    },
+    {
+      "id": "core-04",
+      "sectionOverrides": [
+        {
+          "index": 1,
+          "heading": "إنشاء القيمة وتغييرها",
+          "body": "عندما تسند 6 إلى chairs لأول مرة، يصبح لديك متغير يحمل هذه القيمة. بعد إسناد 4 إلى chairs، يحمل الاسم نفسه القيمة الجديدة. راجع في المثال طريقة كتابة التعريف أول مرة وطريقة الإسناد اللاحق."
+        }
+      ],
+      "sections": [
+        {
+          "heading": "تغيير القيمة في C#",
+          "body": "يعرّف int chairs = 6 متغيرًا يحمل عددًا صحيحًا. يحدّث chairs = 4 نفس المتغير. لاحظ ظهور نوع العدد أول مرة عند تعريف المتغير.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "تحديث عدد المقاعد في C#",
+          "language": "csharp",
+          "code": "int chairs = 6;\nConsole.WriteLine(chairs);\nchairs = 4;\nConsole.WriteLine(chairs);\n",
+          "explanation": "تعرض كل طباعة قيمة chairs الحالية. يحدث التغيير بين عمليتي العرض."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-variables-trace",
+          "prompt": "تسند الخطوة الأولى 5 إلى tickets، والثانية 3. تعرض الثالثة قيمة tickets ثم تغيّر الرابعة القيمة إلى 2. اكتب العدد المعروض.",
+          "hints": [
+            "اكتب قيمة tickets بعد كل إسناد.",
+            "اقرأ القيمة في اللحظة التي تعمل فيها خطوة العرض."
+          ],
+          "code": null,
+          "language": null
+        },
+        {
+          "id": "core-variables-transfer",
+          "prompt": "كانت قيمة buses تساوي 2. ستتغير إلى 5 ثم إلى 7. تريد عرض 5 فقط. أين تضيف خطوة عرض buses لتعمل مرة واحدة؟"
+        }
+      ]
+    },
+    {
+      "id": "core-05",
+      "sectionOverrides": [
+        {
+          "index": 0,
+          "body": "نكتب العدد 8 دون تنصيص إذا كان يمثل كمية. نكتب \"08\" بين علامتي تنصيص إذا أردنا الاحتفاظ بالحرفين في رمز. القيمة المنطقية لها احتمالان، صحيح وخطأ."
+        },
+        {
+          "index": 1,
+          "body": "يمكن أن يحوّل البرنامج النص \"08\" إلى العدد الصحيح 8 عند الحاجة إلى الحساب. إذا كان \"08\" رمز باب، احتفظ به نصًا لئلا تفقد الصفر في بدايته."
+        }
+      ],
+      "sections": [
+        {
+          "heading": "الأعداد والرموز في C#",
+          "body": "يمثل string نصًا يمكن أن يحتفظ بالأصفار التي يبدأ بها الرمز. يمثل int عددًا صحيحًا مناسبًا للعد. يمثل bool حالة صحيحة أو خاطئة، ويكتب ثابتاه true وfalse.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "عرض رمز الباب والعدد في C#",
+          "language": "csharp",
+          "code": "string badge = \"08\";\nint count = 8;\nConsole.WriteLine(badge);\nConsole.WriteLine(count);\n",
+          "explanation": "يمثل السطران المعروضان معنيين مختلفين. يبقى الصفر جزءًا من الرمز النصي."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-types-match",
+          "prompt": "أي قيمة تناسب تمثيل حالة «المعمل متاح» بوصفها حالة صحيحة أو خاطئة؟",
+          "options": [
+            {
+              "id": "literal-text",
+              "text": "النص \"متاح\""
+            },
+            {
+              "id": "bool",
+              "text": "القيمة المنطقية صحيح"
+            },
+            {
+              "id": "number",
+              "text": "العدد 1"
+            }
+          ],
+          "explanation": "تمثّل القيمة المنطقية صحيح حالة تحقق الشرط. النص وصف للحالة، و1 قيمة من نوع عددي.",
+          "hints": [
+            "تذكر نوعًا له قيمتان لحالتي نعم ولا.",
+            "ابحث عن القيمة التي تنتمي مباشرة إلى هذا النوع."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core-06",
+      "sections": [
+        {
+          "heading": "القراءة والتحويل في C#",
+          "body": "يقرأ Console.ReadLine سطرًا. يستعمل المثال int.TryParse ليحوّل السطر إلى عدد ويترك الناتج في count عند النجاح. أدخل 3 ثم اقرأ المخرج. ستتوسع في قراءة المدخلات بعد هذه الخطوة.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "حساب عدد القطع في C#",
+          "language": "csharp",
+          "code": "string? line = Console.ReadLine();\nif (int.TryParse(line, out int count))\n{\n    int items = count * 2 + 2;\n    Console.WriteLine(items);\n}\n",
+          "explanation": "إذا كان عدد الحزم 3، تحصل على 6 قطع من الحزم وقطعتين عينات."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-expressions-convert",
+          "prompt": "يكتب المستخدم عددًا صحيحًا في سطر من الطرفية. أي خطوات تضع القيمة العددية في count كي تدخل في الحساب؟",
+          "options": [
+            {
+              "id": "literal",
+              "text": "احفظ نصًا ثابتًا قيمته \"3\" دون قراءة السطر."
+            },
+            {
+              "id": "raw",
+              "text": "اقرأ السطر واحفظ النص كما وصل."
+            },
+            {
+              "id": "converted",
+              "text": "اقرأ السطر وحوّل النص إلى عدد صحيح ثم احفظ العدد."
+            }
+          ],
+          "explanation": "ترجع قراءة السطر نصًا. يأتي التحويل إلى نوع عددي قبل حفظه كعدد صالح للحساب.",
+          "hints": [
+            "يبدأ الحل بالقيمة التي يكتبها المستخدم.",
+            "حدّد متى تصبح المحارف رقمًا يمكنك حسابه."
+          ]
+        },
+        {
+          "id": "core-expressions-precedence",
+          "prompt": "يعرض البرنامج نتيجة (2 + 3) * 4. اكتب عددًا واحدًا يمثل الناتج.",
+          "hints": [
+            "ابدأ بما في القوسين.",
+            "استخدم نتيجة الجمع في عملية الضرب التالية."
+          ],
+          "code": null,
+          "language": null
+        }
+      ]
+    },
+    {
+      "id": "core-07",
+      "sections": [
+        {
+          "heading": "كتابة الشرط في C#",
+          "body": "ضع المقارنة بين قوسي if والتعليمات الخاصة بكل فرع بين القوسين المعقوفين. ينفذ فرع else عندما تكون عبارة المقارنة خطأ.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "فتح النشاط عند بلوغ الحد في C#",
+          "language": "csharp",
+          "code": "int signups = 6;\nif (signups >= 6)\n{\n    Console.WriteLine(\"Start\");\n}\nelse\n{\n    Console.WriteLine(\"Wait\");\n}\n",
+          "explanation": "يتحقق الشرط عند 6 لأن المقارنة تشمل حالة التساوي."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-conditions-transfer",
+          "explanation": "كلمة «تجاوز» تعني أن الحجم أكبر من 10. عند 10 تكون نتيجة المقارنة خطأ فينفذ الفرع الآخر."
+        }
+      ]
+    },
+    {
+      "id": "core-08",
+      "sections": [
+        {
+          "heading": "عدّ الدورات في C#",
+          "body": "يبدأ step في المثال من الصفر. قبل جسم الحلقة يفحص البرنامج step < 3. تزيد step++ العداد بعد كل دورة حتى يصل إلى 3 وتتوقف الحلقة.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "جمع ثلاث دفعات في C#",
+          "language": "csharp",
+          "code": "int total = 0;\nfor (int step = 0; step < 3; step++)\n{\n    total = total + 2;\n}\nConsole.WriteLine(total);\n",
+          "explanation": "تعمل خطوة الجمع ثلاث مرات، وتعمل خطوة العرض بعد الحلقة مرة واحدة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-loops-count",
+          "prompt": "تبدأ حلقة بعدّاد يساوي 0 وتستمر ما دام العداد أقل من 4. تعرض كلمة «دورة» وتزيد العداد بواحد في كل دورة. كم مرة تظهر الكلمة؟ اكتب عددًا واحدًا.",
+          "explanation": "تعرض الحلقة الكلمة لقيم العداد 0 و1 و2 و3. عندما يصل العداد إلى 4 تتوقف.",
+          "code": null,
+          "language": null
+        },
+        {
+          "id": "core-loops-place",
+          "prompt": "تجمع حلقة عدة دفعات وتريد عرض المجموع النهائي مرة واحدة. أين تضع خطوة العرض؟",
+          "options": [
+            {
+              "id": "before",
+              "text": "قبل بدء الحلقة مباشرة."
+            },
+            {
+              "id": "during",
+              "text": "داخل مجموعة التعليمات التي تتكرر في كل دورة."
+            },
+            {
+              "id": "after",
+              "text": "بعد انتهاء الحلقة."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core-09",
+      "sectionOverrides": [
+        {
+          "index": 0,
+          "body": "نجمع القيم المرتبطة في ترتيب معلوم. لكل عنصر فهرس يمثل موضعه بدءًا من الصفر. في مجموعة amounts ذات العناصر 4 و2 و5 على الترتيب، يشير amounts[0] إلى 4 ويشير amounts[1] إلى 2."
+        }
+      ],
+      "sections": [
+        {
+          "heading": "قراءة العناصر في C#",
+          "body": "تنشئ int[] مجموعة مرتبة من أعداد صحيحة. يبدأ الفهرس من 0. تعطي foreach كل عنصر بدوره من دون كتابة فهرسه يدويًا.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "جمع عدد الصفحات من عناصر مصفوفة في C#",
+          "language": "csharp",
+          "code": "int[] amounts = { 4, 2, 5 };\nint total = 0;\nforeach (int amount in amounts)\n{\n    total = total + amount;\n}\nConsole.WriteLine(total);\n",
+          "explanation": "تأخذ amount القيم 4 ثم 2 ثم 5. يكون المجموع النهائي 11."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-collections-index",
+          "prompt": "ترتب مجموعة الأعداد هكذا [3, 8, 1] وتبدأ فهارسها من 0. ما القيمة التي تظهر عند عرض العنصر ذي الفهرس 1؟ اكتب العدد وحده.",
+          "code": null,
+          "language": null
+        }
+      ]
+    },
+    {
+      "id": "core-10",
+      "sections": [
+        {
+          "heading": "تعريف دالة في C#",
+          "body": "يحدد int قبل اسم WithFee نوع القيمة التي ترجع. يحدد int أمام amount نوع المعامل. يأخذ الاستدعاء WithFee(7) القيمة 7 ويعيد القيمة بعد إضافة الرسوم.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "دالة تضيف رسومًا ثابتة في C#",
+          "language": "csharp",
+          "code": "int price = WithFee(7);\nConsole.WriteLine(price);\n\nstatic int WithFee(int amount)\n{\n    return amount + 2;\n}\n",
+          "explanation": "تعيد الدالة 9، ثم يخزنها البرنامج في price ويعرضها."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "core-functions-call",
+          "prompt": "تعيد دالة اسمها with_fee المبلغ مع الرسوم. ما الخطوة التي تستدعي الدالة بمبلغ 7 وتحتفظ بقيمتها المعادة في price؟",
+          "options": [
+            {
+              "id": "shown",
+              "text": "استدعِ الدالة بمبلغ 7 واعرض الناتج مباشرة دون تخزينه."
+            },
+            {
+              "id": "literal",
+              "text": "احفظ النص \"with_fee(7)\" في price."
+            },
+            {
+              "id": "assigned",
+              "text": "استدعِ الدالة بمبلغ 7 وأسند القيمة المعادة إلى price."
+            }
+          ],
+          "explanation": "تصل 7 إلى الدالة عند الاستدعاء، ويحفظ الإسناد ناتج الاستدعاء في price.",
+          "hints": [
+            "تأكد أولًا أن الخطوة تنفذ الدالة.",
+            "ابحث عن المكان الذي تذهب إليه القيمة المعادة."
+          ]
+        },
+        {
+          "id": "core-functions-reuse",
+          "prompt": "تعيد الدالة double(n) حاصل ضرب n في 2. يعرض البرنامج مجموع ناتجَي double(2) وdouble(4). كم يعرض؟ اكتب عددًا واحدًا.",
+          "explanation": "تعيد double(2) القيمة 4 وتعيد double(4) القيمة 8. يعرض البرنامج مجموعهما 12.",
+          "code": null,
+          "language": null
+        }
+      ]
+    },
+    {
+      "id": "core-11",
+      "sections": [
+        {
+          "heading": "تجربة حد المقارنة في C#",
+          "body": "دوّن توقعًا مستقلًا لكل مدخل. جرّب قيمة أقل من الحد، ثم الحد نفسه، ثم قيمة أكبر منه. اقرأ المخرجات بالترتيب وقارنها مع توقعك.",
+          "language": "csharp"
+        }
+      ],
+      "examples": [
+        {
+          "title": "ثلاث حالات عند الحد في C#",
+          "language": "csharp",
+          "code": "Console.WriteLine(Door(3));\nConsole.WriteLine(Door(4));\nConsole.WriteLine(Door(5));\n\nstatic string Door(int tickets)\n{\n    if (tickets >= 4)\n    {\n        return \"Open\";\n    }\n    return \"Wait\";\n}\n",
+          "explanation": "قبل التشغيل توقع Wait عند 3 وOpen عند 4 وعند 5. يكشف المدخل 4 ما إذا كانت المقارنة تشمل التساوي."
+        }
+      ],
+      "exercises": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "core-02",
+      "index": 2,
+      "input": "",
+      "output": "Ready to start\n"
+    },
+    {
+      "lessonId": "core-03",
+      "index": 3,
+      "input": "",
+      "output": "Prepare the card\nShow the card\n"
+    },
+    {
+      "lessonId": "core-04",
+      "index": 2,
+      "input": "",
+      "output": "6\n4\n"
+    },
+    {
+      "lessonId": "core-05",
+      "index": 2,
+      "input": "",
+      "output": "08\n8\n"
+    },
+    {
+      "lessonId": "core-06",
+      "index": 2,
+      "input": "3\n",
+      "output": "8\n"
+    },
+    {
+      "lessonId": "core-07",
+      "index": 2,
+      "input": "",
+      "output": "Start\n"
+    },
+    {
+      "lessonId": "core-08",
+      "index": 2,
+      "input": "",
+      "output": "6\n"
+    },
+    {
+      "lessonId": "core-09",
+      "index": 2,
+      "input": "",
+      "output": "11\n"
+    },
+    {
+      "lessonId": "core-10",
+      "index": 2,
+      "input": "",
+      "output": "9\n"
+    },
+    {
+      "lessonId": "core-11",
+      "index": 2,
+      "input": "",
+      "output": "Wait\nOpen\nOpen\n"
+    }
+  ]
+}

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { ApiError, errorText, request, segment, type SessionScope } from './api';
 import type { LabEvidence } from './CodeLab';
+import { isLocalExampleLanguage } from './exampleLanguages';
 import { useResource } from './hooks';
 import { lessonLink } from './lessonLinks';
-import type { Content, Goal, Plan, Progress, Revision, SavedPlan, User } from './types';
+import type { ContentOverview, Plan, Progress, Revision, SavedPlan, User } from './types';
 import { ErrorBox, Heading, Icon, Loading } from './ui';
 
-export function PlanSteps({ plan, content, currentRelease }: { plan: Plan; content: Content | null; currentRelease: string }) {
-  const exampleLanguage = content?.sample.tracks && plan.goalId === 'web' ? 'javascript' : undefined;
+export function PlanSteps({ plan, content, currentRelease }: { plan: Plan; content: ContentOverview | null; currentRelease: string }) {
+  const webExampleLanguage = content?.sample.tracks && plan.goalId === 'web' ? 'javascript' : undefined;
+  const exampleLanguage = isLocalExampleLanguage(plan.goalId) ? plan.goalId : webExampleLanguage;
   return <><ol className="plan-list">{plan.steps.map((step, index) => {
     const lesson = content?.sample.lessons.find(item => item.id === step.lessonId);
     return <li className="plan-step" key={step.lessonId}><span className="step-number" aria-hidden="true">{index + 1}</span><div><h3>{lesson?.title ?? step.lessonId}</h3><p className="muted">{lesson?.summary}</p><p className="reason">{step.reason}</p>{plan.releaseId === currentRelease && <a className="btn compact" href={lessonLink(step.lessonId, plan.releaseId, exampleLanguage, plan.goalId)}>افتح الدرس <Icon name="arrow" /></a>}</div></li>;
@@ -16,7 +18,7 @@ export function PlanSteps({ plan, content, currentRelease }: { plan: Plan; conte
   </>;
 }
 
-export function PlanPage({ content, releaseId, user, scope, onRelease, refreshProgress, initialGoal, allowedGoalIds }: { content: Content | null; releaseId: string; user: User | null; scope: SessionScope; onRelease: (id: string) => void; refreshProgress: number; initialGoal?: string; allowedGoalIds?: string[] }) {
+export function PlanPage({ content, releaseId, user, scope, onRelease, refreshProgress, initialGoal, allowedGoalIds }: { content: ContentOverview | null; releaseId: string; user: User | null; scope: SessionScope; onRelease: (id: string) => void; refreshProgress: number; initialGoal?: string; allowedGoalIds?: string[] }) {
   const goals = content?.graph.goals.filter(goal => !allowedGoalIds || allowedGoalIds.includes(goal.id)) ?? [];
   const [goalId, setGoalId] = useState(goals.find(goal => goal.id === initialGoal)?.id ?? goals[0]?.id ?? '');
   const [preview, setPreview] = useState<Plan | null>(null);
@@ -83,7 +85,7 @@ export function PlanPage({ content, releaseId, user, scope, onRelease, refreshPr
   </>;
 }
 
-export function ProgressPage({ user, scope, releaseId, content, revision }: { user: User | null; scope?: SessionScope; releaseId: string; content: Content; revision: number }) {
+export function ProgressPage({ user, scope, releaseId, content, revision }: { user: User | null; scope?: SessionScope; releaseId: string; content: ContentOverview; revision: number }) {
   const resource = useResource<Progress>(user ? `/me/progress?releaseId=${segment(releaseId)}` : null, revision, false, scope);
   const evidence = useResource<LabEvidence[]>(user && scope ? `/lab/evidence?releaseId=${segment(releaseId)}` : null, revision, true, scope);
   const labSkills = new Set(evidence.data?.map(item => item.skillId));
@@ -106,8 +108,4 @@ export function ProgressPage({ user, scope, releaseId, content, revision }: { us
       </section>}
     </>}
   </>;
-}
-
-export function GoalCards({ goals, curriculum = false }: { goals: Goal[]; curriculum?: boolean }) {
-  return <div className="goals">{goals.map(goal => <a key={goal.id} className="goal" href={`#plan/${segment(goal.id)}`}><div className="goal-top"><Icon name="route" /><span className={`pill ${goal.status === 'planned' ? '' : 'sample'}`}>{goal.status === 'planned' ? 'مخطط' : curriculum ? 'متاح للتعلّم' : 'عينة متاحة'}</span></div><h3>{goal.title}</h3><p>{goal.description}</p><span className="goal-link">استكشف الخطة <Icon name="arrow" /></span></a>)}</div>;
 }

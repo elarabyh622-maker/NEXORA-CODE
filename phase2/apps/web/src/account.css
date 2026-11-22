@@ -1,0 +1,22 @@
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  align-items: start;
+  gap: 1rem;
+}
+
+.account-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.account-heading h2 { margin: 0; }
+.account-grid .stack > .btn, .account-orders .btn { justify-self: start; }
+.account-orders li { flex-wrap: wrap; }
+.recovery-code { overflow-wrap: anywhere; user-select: all; text-align: start; font-size: 1rem; }
+
+.account-admin-queue { list-style: none; display: grid; gap: 1rem; padding: 0; margin: 0; }
+.account-admin-queue > li + li { border-block-start: 1px solid var(--border); padding-block-start: 1rem; }

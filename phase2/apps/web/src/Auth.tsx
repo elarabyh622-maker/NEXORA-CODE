@@ -1,11 +1,14 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { errorText, request, type SessionScope } from './api';
-import { BRAND_ASSETS, PRODUCT_DESCRIPTOR, PRODUCT_NAME } from './brand';
+import { BrandWordmark, PRODUCT_DESCRIPTOR } from './brand';
 import type { User } from './types';
 import { ErrorBox } from './ui';
 import './auth.css';
 
-export function Auth({ user, scope, onIdentity, commercial = false }: { user: User | null; scope: SessionScope; onIdentity: (userId: string) => Promise<boolean>; commercial?: boolean }) {
+export function Auth({ scope, onIdentity, commercial = false, recovering = false, onPasswordReset, contactUrl }: {
+  scope: SessionScope; onIdentity: (userId: string) => Promise<boolean>; commercial?: boolean;
+  recovering?: boolean; onPasswordReset: () => void; contactUrl?: string | null;
+}) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -29,16 +32,11 @@ export function Auth({ user, scope, onIdentity, commercial = false }: { user: Us
 
   return <section className="auth-layout" aria-labelledby="auth-heading">
     <div className="auth-identity">
-      <img src={BRAND_ASSETS.wordmark} width="1445" height="530" alt={`${PRODUCT_NAME} — Learn to Think. Code to Create.`} lang="en" dir="ltr" />
+      <BrandWordmark />
       <p>{PRODUCT_DESCRIPTOR}</p>
     </div>
     <div className="auth-form-panel">
-      {user ? <>
-        <h1 id="auth-heading">أهلًا، <bdi>{user.displayName}</bdi></h1>
-        <p className="muted">أنت مسجل باسم <bdi>{user.userName}</bdi>.</p>
-        <ErrorBox message={error} />
-        <a className="btn primary auth-submit" href="#plan">الانتقال إلى خطتي</a>
-      </> : <>
+      {recovering ? <PasswordRecovery scope={scope} onPasswordReset={onPasswordReset} contactUrl={contactUrl} /> : <>
         <h1 id="auth-heading">{registering ? 'إنشاء حساب متعلم' : 'تسجيل الدخول'}</h1>
         <p className="muted">{registering ? 'احفظ خطتك وتقدّمك في حسابك.' : 'ادخل إلى حسابك لمتابعة خطتك.'}</p>
         {commercial && <p className="notice">إنشاء الحساب لا يفعّل الوصول المدفوع تلقائيًا. يتم التفعيل بواسطة إدارة المنصة بعد التحقق من الشراء.</p>}
@@ -78,8 +76,58 @@ export function Auth({ user, scope, onIdentity, commercial = false }: { user: Us
             {busy ? 'جارٍ المتابعة…' : registering ? 'إنشاء الحساب' : 'تسجيل الدخول'}
           </button>
         </form>
+        {!registering && <a className="btn text auth-guest" href="#auth/recover">نسيت كلمة المرور؟</a>}
         <a className="btn text auth-guest" href="#start">{commercial ? 'تفاصيل الوصول إلى المنصة' : 'تصفّح عينة الدروس'}</a>
       </>}
     </div>
   </section>;
+}
+
+function PasswordRecovery({ scope, onPasswordReset, contactUrl }: {
+  scope: SessionScope; onPasswordReset: () => void; contactUrl?: string | null;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [show, setShow] = useState(false);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    if (data.get('newPassword') !== data.get('confirmPassword')) {
+      setError('كلمتا المرور غير متطابقتين.');
+      form.querySelector<HTMLInputElement>('[name=confirmPassword]')?.focus();
+      return;
+    }
+    setBusy(true); setError('');
+    try {
+      await request('/auth/reset-password', { method: 'POST', scope, body: {
+        userName: data.get('userName'), recoveryCode: data.get('recoveryCode'), newPassword: data.get('newPassword'),
+      } });
+      if (scope.signal.aborted) return;
+      form.reset();
+      onPasswordReset();
+    } catch (cause) {
+      if (!scope.signal.aborted) { setError(errorText(cause)); requestAnimationFrame(() => errorRef.current?.focus()); }
+    } finally { setBusy(false); }
+  }
+
+  return <>
+    <h1 id="auth-heading">استرجاع الحساب</h1>
+    <p className="muted">استخدم رمز الاسترجاع الذي حفظته أو الرمز المؤقت من إدارة المنصة.</p>
+    <div ref={errorRef} tabIndex={-1}><ErrorBox message={error} /></div>
+    <form className="stack auth-form" onSubmit={submit} aria-busy={busy}>
+      <label>اسم المستخدم<input name="userName" autoComplete="username" dir="auto" required minLength={3} maxLength={40} spellCheck={false} autoCapitalize="none" /></label>
+      <label>رمز الاسترجاع<input name="recoveryCode" type="password" dir="ltr" autoComplete="off" spellCheck={false} required maxLength={128} /></label>
+      <label>كلمة المرور الجديدة<input name="newPassword" type={show ? 'text' : 'password'} autoComplete="new-password" minLength={12} maxLength={128} required /></label>
+      <label>تأكيد كلمة المرور الجديدة<input name="confirmPassword" type={show ? 'text' : 'password'} autoComplete="new-password" minLength={12} maxLength={128} required /></label>
+      <label className="check-label"><input type="checkbox" checked={show} onChange={event => setShow(event.target.checked)} />إظهار كلمة المرور الجديدة</label>
+      <button className="btn primary auth-submit" disabled={busy}>{busy ? 'جارٍ الحفظ…' : 'حفظ كلمة المرور الجديدة'}</button>
+    </form>
+    <p className="field-help">لو فقدت الرمز، اطلب رمزًا مؤقتًا من الإدارة بعد إثبات ملكية الحساب.</p>
+    {contactUrl?.startsWith('https://') && <a className="btn text" href={contactUrl} target="_blank" rel="noopener noreferrer">تواصل مع إدارة المنصة</a>}
+    <a className="btn text auth-guest" href="#auth">العودة إلى تسجيل الدخول</a>
+  </>;
 }

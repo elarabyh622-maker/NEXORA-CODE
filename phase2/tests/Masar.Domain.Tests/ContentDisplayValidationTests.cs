@@ -16,6 +16,19 @@ public sealed class ContentDisplayValidationTests
     }
 
     [Theory]
+    [InlineData("csharp")]
+    [InlineData("cpp")]
+    [InlineData("java")]
+    [InlineData("go")]
+    public void AcceptsLocallyRunLanguagesInExamplesAndSections(string language)
+    {
+        var bundle = Bundle("a");
+        DisplayObject(bundle, "section")["language"] = language;
+        DisplayObject(bundle, "example")["language"] = language;
+        Assert.Empty(CurriculumEngine.Validate(bundle));
+    }
+
+    [Theory]
     [InlineData("sample", "title")]
     [InlineData("sample", "intro")]
     [InlineData("sample", "lessons")]

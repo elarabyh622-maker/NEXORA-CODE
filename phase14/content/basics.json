@@ -1,0 +1,615 @@
+{
+  "lessons": [
+    {
+      "id": "csharp-basics-01",
+      "title": "أول برنامج بـ C# على Windows",
+      "summary": "جهّز أدوات .NET 10 وأنشئ مشروع Console. افتح Program.cs وغيّر سطرًا وشاهد أثره في الطرفية.",
+      "why": "ستستخدم نفس دورة التعديل والبناء والتشغيل في كل تجربة حتى مشروع المخزون.",
+      "objectives": [
+        "أميّز بين لغة C# وبيئة .NET وأدوات تطويرها.",
+        "أنشئ مشروع Console وأجد ملف الشيفرة وملف المشروع.",
+        "أشغّل البرنامج وأصلح خطأ بناء بسيطًا."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "csharp.setup"
+      ],
+      "sections": [
+        {
+          "heading": "جهّز أدوات التطوير",
+          "body": "C# هي اللغة التي تكتب بها التعليمات. .NET يوفّر المكتبات وبيئة التشغيل. ثبّت .NET SDK 10 على Windows لتحصل على أدوات الإنشاء والبناء والتشغيل. يمكنك تنزيل المثبّت الرسمي من موقع .NET واختيار SDK 10 المناسب لمعمارية جهازك، أو استخدام WinGet كما في المثال. افتح نافذة PowerShell جديدة بعد التثبيت واكتب dotnet --list-sdks. تأكد من وجود إصدار يبدأ بـ 10."
+        },
+        {
+          "heading": "تعرّف على مكان العمل",
+          "body": "انتقل في PowerShell إلى مجلد عمل تملك إذن الكتابة فيه واتبع أوامر إنشاء مشروع Console. ستجد ملف Program.cs حيث تكتب الشيفرة، وملفًا ينتهي بـ .csproj يحدد إعدادات المشروع ومنها net10.0. افتح المجلد في محرر نص عادي أو محرر شيفرة واحفظ Program.cs قبل إعادة التشغيل. يبدأ قالب Console الحديث بالتعليمات في أعلى الملف، وتُنفّذ بالترتيب."
+        },
+        {
+          "heading": "جرّب دورة العمل",
+          "body": "اكتب مثال الترحيب مكان النص الموجود في Program.cs وشغّل dotnet run وأنت في مجلد المشروع. دروس هذا المسار تعرض التمارين المصححة في المنصة، وتُشغّل أمثلة C# على جهازك. لكل مثال C# كامل استبدل محتوى Program.cs واحفظه قبل إعادة التشغيل. جرّب حذف الفاصلة المنقوطة من آخر سطر ثم أعد تشغيله لقراءة اسم الملف ورقم السطر في رسالة البناء، وأعدها قبل الانتقال."
+        }
+      ],
+      "examples": [
+        {
+          "title": "أوامر PowerShell لتجهيز أول مشروع",
+          "language": "text",
+          "code": "winget install --id Microsoft.DotNet.SDK.10 --exact\n\n# Open a new PowerShell window after installation.\ndotnet --list-sdks\ndotnet new console --framework net10.0 --output NexoraCSharp\nSet-Location NexoraCSharp\ndotnet build\ndotnet run\n",
+          "explanation": "نفّذ سطر التثبيت عند الحاجة. ينشئ dotnet new مجلد NexoraCSharp داخل مجلد العمل الحالي. مع القالب الافتراضي يطبع التشغيل الأول Hello, World! على سطر واحد."
+        },
+        {
+          "title": "بدّل رسالة الترحيب في Program.cs",
+          "language": "csharp",
+          "code": "Console.WriteLine(\"Inventory practice\");\nConsole.WriteLine(\"Ready\");\n",
+          "explanation": "يطبع WriteLine النص بين علامتي الاقتباس ثم ينتقل إلى سطر جديد. احفظ الملف بعد تغييره كي يقرأ البناء النسخة الجديدة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-basics-01-e1",
+          "type": "choice",
+          "prompt": "جهاز جديد فيه .NET Runtime فقط. ما الذي تحتاج إلى تثبيته كي تنشئ مشروع Console وتبنيه؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "حزمة .NET SDK 10"
+            },
+            {
+              "id": "b",
+              "text": "برنامجك الجاهز بصيغة exe"
+            },
+            {
+              "id": "c",
+              "text": "قاعدة بيانات لتخزين المشاريع"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يحتوي SDK أدوات dotnet new وdotnet build وبيئة التشغيل.",
+          "hints": [
+            "ابحث عن الحزمة التي تحتوي أدوات المطوّر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-01-e2",
+          "type": "choice",
+          "prompt": "أي ملف في مجلد المشروع تبدأ بتعديله لتغيير رسالة Console؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "ملف داخل bin"
+            },
+            {
+              "id": "b",
+              "text": "ملف Program.cs"
+            },
+            {
+              "id": "c",
+              "text": "ملف المشروع الذي ينتهي بـ .csproj"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "Program.cs يحتوي تعليمات التطبيق ومنها سطر طباعة الرسالة.",
+          "hints": [
+            "المطلوب تعديل شيفرة المصدر التي ينفّذها التطبيق."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-01-e3",
+          "type": "choice",
+          "prompt": "غيّرت الرسالة ثم ظهر خطأ بناء يشير إلى سطر عدّلته. ما أول خطوة مفيدة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "إضافة ملف JSON إلى المشروع"
+            },
+            {
+              "id": "b",
+              "text": "إعادة تثبيت Windows"
+            },
+            {
+              "id": "c",
+              "text": "فتح الملف المذكور وفحص السطر والأسطر القريبة"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يشير تشخيص المترجم إلى أقرب موضع لاحظ فيه مشكلة. أحيانًا يكون سببها الفعلي في السطر السابق.",
+          "hints": [
+            "استفد من اسم الملف ورقم السطر في الرسالة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "عدّل Program.cs واحفظه، ثم نفّذ dotnet run من مجلد المشروع لتجربة التغيير."
+    },
+    {
+      "id": "csharp-basics-02",
+      "title": "أنواع القيم وحساب تكلفة المخزون",
+      "summary": "أعطِ كل قيمة نوعًا مناسبًا، واحسب إجمالي قيمة صنف بكميات صحيحة وأسعار عشرية.",
+      "why": "اختيار نوع مناسب لكل حقل يسهّل الحساب ويكشف حالات الخلط بين النص والعدد وقت البناء.",
+      "objectives": [
+        "أعرّف int وdecimal وstring وbool وأقرأ تصريح المتغير.",
+        "أميّز الإسناد عن تعريف متغير جديد.",
+        "أتوقع الفرق بين القسمة الصحيحة والعشرية."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.types"
+      ],
+      "sections": [
+        {
+          "heading": "شكل التصريح في C#",
+          "body": "يبدأ تعريف المتغير بنوعه ثم اسمه، ويمكن إعطاؤه قيمة ابتدائية باستخدام علامة =. مثلاً int quantity = 3; يربط الاسم quantity بعدد صحيح. حقل السعر يناسبه decimal وتلحق m بالعدد العشري مثل 2.50m. الاسم النصي string يكتب بين علامتي اقتباس مزدوجتين. قيمة bool تكون true أو false."
+        },
+        {
+          "heading": "اختر نوعًا يعبر عن المعنى",
+          "body": "رمز الصنف 0012 يبقى نصًا إذا كانت أصفاره جزءًا من الرمز. الكمية في هذا المشروع تعد وحدات كاملة ومن ثم يناسبها int. لا يستطيع متغير int استقبال نص مثل \"3\" مباشرة. يمكنك تغيير قيمته بإسناد جديد مثل quantity = quantity + 1; ويحسب الطرف الأيمن من القيمة القديمة أولًا."
+        },
+        {
+          "heading": "جرّب نوعي القسمة",
+          "body": "إذا قسمت int على int، تكون النتيجة عددًا صحيحًا. لهذا تعطي 9 / 4 القيمة 2. إذا كان أحد العددين decimal مثل 9m / 4، تحصل على 2.25. شغّل المثال وغيّر الكمية والسعر. ثم جرّب أن تخزن 9 / 4 في decimal ولاحظ أن الترقية إلى decimal تحدث بعد أن أعطت القسمة النتيجة الصحيحة 2."
+        }
+      ],
+      "examples": [
+        {
+          "title": "بيانات صنف وقيمة المخزون",
+          "language": "csharp",
+          "code": "using System.Globalization;\n\nstring sku = \"0012\";\nint quantity = 3;\ndecimal unitPrice = 2.50m;\nbool active = true;\n\nquantity = quantity + 1;\ndecimal total = unitPrice * quantity;\nConsole.WriteLine($\"{sku}: {quantity} units, active={active}\");\nConsole.WriteLine(total.ToString(\"F2\", CultureInfo.InvariantCulture));\nConsole.WriteLine(9 / 4);\nConsole.WriteLine((9m / 4).ToString(CultureInfo.InvariantCulture));\n",
+          "explanation": "يضم السطر الأول القيم داخل النص باستخدام الأقواس المعقوفة. بعد الزيادة تصبح الكمية 4 والإجمالي 10.00. يضمن InvariantCulture ثبات النقطة العشرية في مخرجات المثال."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-basics-02-e1",
+          "type": "choice",
+          "prompt": "تريد حفظ رمز الصنف 0009 كاملًا بما فيه الأصفار. ما التعريف المناسب؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "int sku = 9;"
+            },
+            {
+              "id": "b",
+              "text": "string sku = \"0009\";"
+            },
+            {
+              "id": "c",
+              "text": "bool sku = true;"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يحفظ string الحروف والأرقام كما كُتبت داخل النص.",
+          "hints": [
+            "اسأل نفسك هل تحتاج إلى حساب الرمز أو حفظ شكله."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-02-e2",
+          "type": "text",
+          "prompt": "ما العدد الناتج من التعبير 17 / 5 في C# عندما يكون المعاملان int؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "القسمة الصحيحة هنا تعطي 3 وتهمل الجزء الكسري.",
+          "hints": [
+            "لاحظ نوع العددين قبل إجراء القسمة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-02-e3",
+          "type": "choice",
+          "prompt": "أي سطر يمثّل سعر 19.95 بقيمة عشرية من نوع decimal؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "decimal price = \"19.95\";"
+            },
+            {
+              "id": "b",
+              "text": "int price = 19.95m;"
+            },
+            {
+              "id": "c",
+              "text": "decimal price = 19.95m;"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "اللاحقة m تجعل الثابت العددي من نوع decimal، ويطابق نوع المتغير.",
+          "hints": [
+            "اختر قيمة رقمية ونوعًا مناسبًا للسعر."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "حدّد نوع القيمة بحسب استخدامها، واقرأ أنواع معاملات العملية قبل توقع الناتج."
+    },
+    {
+      "id": "csharp-basics-03",
+      "title": "قراءة كمية وفحص المدخل",
+      "summary": "اقرأ سطرًا من الطرفية وحوّله إلى عدد صحيح باستخدام TryParse. ميّز بين رفض التحويل ورفض القيمة بقاعدة المخزون.",
+      "why": "يتعامل برنامج المخزون مع بيانات يكتبها المستخدم، ويحتاج إلى رفض الخطأ قبل تعديل الرصيد.",
+      "objectives": [
+        "أعرف أن Console.ReadLine يعيد نصًا قد يغيب.",
+        "أفحص نتيجة int.TryParse قبل استخدام الناتج.",
+        "أتحقق من أن الكمية عدد صحيح موجب."
+      ],
+      "minutes": "20–25",
+      "skillIds": [
+        "csharp.input"
+      ],
+      "sections": [
+        {
+          "heading": "السطر نص في البداية",
+          "body": "حتى لو كتب المستخدم 12، يستقبل Console.ReadLine النص \"12\". عند نهاية الإدخال قد يرجع null، أي لا توجد قيمة. الرمز ? في string? يوضح أن غياب القيمة وارد. والسطر الفارغ نص موجود لا يحتوي محارف."
+        },
+        {
+          "heading": "افصل النص عن العدد",
+          "body": "يعيد int.TryParse قيمة منطقية تبيّن هل اكتمل التحويل إلى int. يمرّر out العدد الناتج إلى متغير quantity. إذا فشل التحويل تعرض رسالة مفهومة وتتوقف عن تنفيذ العملية. بهذا يمكنك التعامل مع نص مثل twelve أو عدد أكبر من مجال int من خلال مسار عادي في البرنامج."
+        },
+        {
+          "heading": "أضف قاعدة النشاط بعد التحويل",
+          "body": "يُحوَّل النص \"0\" أو \"-2\" إلى عدد صحيح، لكنهما لا يحققان قاعدة حركة المخزون التي تتطلب كمية موجبة. يخرج return من التعليمات الحالية. جرّب 7 ثم 0 ثم نصًا غير رقمي، وأعد التشغيل بين الحالات. قارن رسالة كل رفض كي تعرف أي فحص حدد النتيجة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "استقبال كمية حركة مخزون",
+          "language": "csharp",
+          "code": "Console.WriteLine(\"Enter a quantity:\");\nstring? input = Console.ReadLine();\nif (!int.TryParse(input, out int quantity))\n{\n    Console.WriteLine(\"Enter a whole number.\");\n    return;\n}\n\nif (quantity <= 0)\n{\n    Console.WriteLine(\"Quantity must be positive.\");\n    return;\n}\n\nConsole.WriteLine($\"Recorded: {quantity}\");\n",
+          "explanation": "يعني الرمز ! نفي النتيجة المنطقية. يمثل الفحص الأول قبول شكل المدخل، ويمثل الفحص الثاني قاعدة حركة المخزون."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-basics-03-e1",
+          "type": "choice",
+          "prompt": "أي حالة ينجح فيها int.TryParse ثم يمكن أن ترفضها قاعدة الكمية الموجبة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "النص \"صندوق\""
+            },
+            {
+              "id": "b",
+              "text": "السطر الفارغ"
+            },
+            {
+              "id": "c",
+              "text": "النص \"0\""
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "الصفر عدد صحيح صالح للتحويل، وشرط الكمية الموجبة يرفضه بعد ذلك.",
+          "hints": [
+            "فكر في حالتين منفصلتين، نجاح التحويل وموافقة قاعدة العمل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-03-e2",
+          "type": "choice",
+          "prompt": "كتب المستخدم 9999999999999999. كيف يتعامل المثال مع هذا المدخل؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يرفضه لأن العدد خارج مجال int"
+            },
+            {
+              "id": "b",
+              "text": "يسجله ككمية موجبة لأن جميع المحارف أرقام"
+            },
+            {
+              "id": "c",
+              "text": "يسجله بعد قص آخر الخانات"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يفشل TryParse إذا لم يمكن تمثيل العدد بنوع int مهما كان شكل الأرقام.",
+          "hints": [
+            "نوع int له حد أقصى لحجم القيمة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-03-e3",
+          "type": "text",
+          "prompt": "إذا قرأ البرنامج النص \"08\" وكان التحويل إلى int ناجحًا، ما العدد الذي يحصل عليه؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "8"
+          ],
+          "explanation": "يعبّر int عن القيمة العددية، فتساوي 08 القيمة 8.",
+          "hints": [
+            "قارن القيمة العددية بشكل النص الأصلي."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "تحقّق من نجاح التحويل ثم من توافق القيمة مع شروط العملية."
+    },
+    {
+      "id": "csharp-basics-04",
+      "title": "اتخاذ قرار قبل تعديل الرصيد",
+      "summary": "اكتب شروط الحماية التي تحدد متى يجوز صرف المخزون، وجرّب حالة نفاد الكمية عند الحد.",
+      "why": "تجميع قواعد الرفض قبل الإسناد يمنع تحديث الرصيد عند إدخال كمية خاطئة أو أكبر من المتاح.",
+      "objectives": [
+        "أستخدم if وelse if وelse مع المقارنات.",
+        "أقرأ شرطًا مركبًا يستخدم && أو ||.",
+        "أميّز حالة الصرف بكامل الرصيد عن الصرف بأكثر منه."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.conditions"
+      ],
+      "sections": [
+        {
+          "heading": "اقرأ شروط المقارنة",
+          "body": "تختبر المقارنة > هل الطرف الأيسر أكبر، وتضيف >= حالة التساوي. تكتب المقارنة بين قيمتين باستخدام ==، أما = فتسند قيمة إلى متغير. يتطلب if تعبيرًا نتيجته bool، وتُنفّذ تعليمات الفرع بين الأقواس المعقوفة عندما يكون الشرط true."
+        },
+        {
+          "heading": "ضع قواعد الرفض قبل التغيير",
+          "body": "في سلسلة if وelse if وelse يعمل أول فرع يطابق الحالة. نقول إن حركة الصرف غير صالحة إذا كانت الكمية غير موجبة أو كانت أكبر من الرصيد. نختبر الشرطين قبل طرح الكمية. يمكن جمع شرطي الرفض باستخدام || التي تكفيها حالة صحيحة واحدة، أو كتابة شرط القبول wanted > 0 && wanted <= stock الذي يتطلب تحقق الطرفين."
+        },
+        {
+          "heading": "جرّب الحد المسموح",
+          "body": "جهّز رصيدًا قدره 5 واطلب صرف 5. يقبل التطبيق الطلب وينتهي الرصيد عند الصفر. عدّل wanted إلى 6 لترى رفض الطلب وبقاء الرصيد 5. ثم جرّب صفرًا للتأكد من أن الحركة نفسها تُرفض. اختبر الثلاث حالات من نقطة بداية واحدة حتى يسهل تفسير الفرق."
+        }
+      ],
+      "examples": [
+        {
+          "title": "صرف الكمية المساوية للرصيد",
+          "language": "csharp",
+          "code": "int stock = 5;\nint wanted = 5;\n\nif (wanted <= 0)\n{\n    Console.WriteLine(\"Invalid quantity\");\n}\nelse if (wanted > stock)\n{\n    Console.WriteLine(\"Insufficient stock\");\n}\nelse\n{\n    stock = stock - wanted;\n    Console.WriteLine(\"Issue recorded\");\n}\nConsole.WriteLine($\"Remaining: {stock}\");\n",
+          "explanation": "تنجح الحركة لأن الكمية موجبة ولا تتجاوز الرصيد. يظهر Remaining في كل الحالات ليمكنك ملاحظة أثر الشروط على الرصيد."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-basics-04-e1",
+          "type": "choice",
+          "prompt": "رصيد صنف 7. أي شرط يرفض الكمية التي تتجاوز الرصيد ويسمح بحركة مقدارها 7 إذا تحققت بقية القواعد؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "wanted > stock"
+            },
+            {
+              "id": "b",
+              "text": "wanted >= stock"
+            },
+            {
+              "id": "c",
+              "text": "wanted < stock"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يكون > صحيحًا عندما تتجاوز الكمية الرصيد فقط. التساوي يبقى مسموحًا.",
+          "hints": [
+            "عوّض wanted بقيمة 7 ثم 8."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-04-e2",
+          "type": "text",
+          "prompt": "الرصيد 7 والطلب 9. إذا حدث التحديث داخل فرع القبول وحده، ما الرصيد بعد رفض الطلب؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "7"
+          ],
+          "explanation": "يبقى الرصيد كما بدأ لأن الرفض لا ينفّذ سطر الإسناد.",
+          "hints": [
+            "تتبّع الفروع وحدد هل تنفّذ عملية الطرح."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-basics-04-e3",
+          "type": "choice",
+          "prompt": "أي تعبير يقبل الكمية الموجبة التي لا تتجاوز الرصيد؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "wanted > 0 || wanted <= stock"
+            },
+            {
+              "id": "b",
+              "text": "wanted > 0 && wanted <= stock"
+            },
+            {
+              "id": "c",
+              "text": "wanted < 0 && wanted <= stock"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "القبول يحتاج كلاً من تحقق الإيجابية وتوفر الكمية.",
+          "hints": [
+            "تحقق من التعبير عندما تكون wanted صفرًا أو أكبر من الرصيد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب شروط قبول الحركة قبل تحديث الرصيد وجرّب القيمة المساوية للحد وما يليها."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "csharp-basics-01",
+      "title": "أول برنامج بـ C# على Windows",
+      "why": "ستستخدم نفس دورة التعديل والبناء والتشغيل في كل تجربة حتى مشروع المخزون.",
+      "skillIds": [
+        "csharp.setup"
+      ]
+    },
+    {
+      "id": "csharp-basics-02",
+      "title": "أنواع القيم وحساب تكلفة المخزون",
+      "why": "اختيار نوع مناسب لكل حقل يسهّل الحساب ويكشف حالات الخلط بين النص والعدد وقت البناء.",
+      "skillIds": [
+        "csharp.types"
+      ]
+    },
+    {
+      "id": "csharp-basics-03",
+      "title": "قراءة كمية وفحص المدخل",
+      "why": "يتعامل برنامج المخزون مع بيانات يكتبها المستخدم، ويحتاج إلى رفض الخطأ قبل تعديل الرصيد.",
+      "skillIds": [
+        "csharp.input"
+      ]
+    },
+    {
+      "id": "csharp-basics-04",
+      "title": "اتخاذ قرار قبل تعديل الرصيد",
+      "why": "تجميع قواعد الرفض قبل الإسناد يمنع تحديث الرصيد عند إدخال كمية خاطئة أو أكبر من المتاح.",
+      "skillIds": [
+        "csharp.conditions"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "csharp.setup",
+      "title": "أجهّز .NET وأشغّل مشروع C#",
+      "description": "أستخدم .NET SDK 10 لإنشاء مشروع Console، وتعديل Program.cs وبنائه وتشغيله.",
+      "required": {
+        "skill": "core.workspace"
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.types",
+      "title": "أختار أنواع C# وأحسب قيمًا صحيحة وعشرية",
+      "description": "أستخدم الأنواع المضمنة المناسبة وأتوقع أثر نوع المعاملات في نتيجة العمليات.",
+      "required": {
+        "allOf": [
+          {
+            "skill": "csharp.setup"
+          },
+          {
+            "skill": "core.types"
+          }
+        ]
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.input",
+      "title": "أقرأ المدخل وأتحقق من تحويله في C#",
+      "description": "أقرأ نصًا من Console وأستخدم TryParse وأطبّق قاعدة قيمة بعد التحويل.",
+      "required": {
+        "allOf": [
+          {
+            "skill": "csharp.types"
+          },
+          {
+            "skill": "core.expressions"
+          }
+        ]
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.conditions",
+      "title": "أطبق قواعد القبول والرفض باستخدام شروط C#",
+      "description": "أبني فروعًا منطقية تحمي الرصيد وأفحص الحالات عند حدود المقارنة.",
+      "required": {
+        "allOf": [
+          {
+            "skill": "csharp.input"
+          },
+          {
+            "skill": "core.conditions"
+          }
+        ]
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "csharp-basics-01",
+      "index": 1,
+      "input": "",
+      "output": "Inventory practice\nReady\n"
+    },
+    {
+      "lessonId": "csharp-basics-02",
+      "index": 0,
+      "input": "",
+      "output": "0012: 4 units, active=True\n10.00\n2\n2.25\n"
+    },
+    {
+      "lessonId": "csharp-basics-03",
+      "index": 0,
+      "input": "7\n",
+      "output": "Enter a quantity:\nRecorded: 7\n"
+    },
+    {
+      "lessonId": "csharp-basics-03",
+      "index": 0,
+      "input": "0\n",
+      "output": "Enter a quantity:\nQuantity must be positive.\n"
+    },
+    {
+      "lessonId": "csharp-basics-03",
+      "index": 0,
+      "input": "twelve\n",
+      "output": "Enter a quantity:\nEnter a whole number.\n"
+    },
+    {
+      "lessonId": "csharp-basics-03",
+      "index": 0,
+      "input": "",
+      "output": "Enter a quantity:\nEnter a whole number.\n"
+    },
+    {
+      "lessonId": "csharp-basics-04",
+      "index": 0,
+      "input": "",
+      "output": "Issue recorded\nRemaining: 0\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "حزمة أدوات التطوير",
+      "technical": ".NET SDK",
+      "definition": "أدوات .NET التي تنشئ المشروعات وتبنيها وتشغّلها."
+    },
+    {
+      "term": "مشروع الطرفية",
+      "technical": "Console application",
+      "definition": "برنامج يقرأ من سطر الأوامر أو الإدخال القياسي ويعرض مخرجات نصية."
+    },
+    {
+      "term": "تحويل نص إلى عدد",
+      "technical": "TryParse",
+      "definition": "محاولة تحويل تبلغك بنجاح التحويل، وتسمح بقراءة القيمة الناتجة عند النجاح."
+    },
+    {
+      "term": "نوع عشري",
+      "technical": "decimal",
+      "definition": "نوع رقمي في C# يمثل الكثير من الكسور العشرية الشائعة بدقة، ويلائم حسابات الأسعار."
+    }
+  ]
+}

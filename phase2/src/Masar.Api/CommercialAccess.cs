@@ -42,6 +42,9 @@ public static class CommercialAccess
                      path.StartsWithSegments("/api/v1/admin") ||
                      path.Equals(new PathString("/api/v1/health")) ||
                      path.Equals(new PathString("/api/v1/catalog")) ||
+                     path.Equals(new PathString("/api/v1/me/access-cancellation")) ||
+                     (path.Equals(new PathString("/api/v1/me/purchases")) &&
+                      (HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsPost(ctx.Request.Method))) ||
                      path.Equals(new PathString("/api/v1/me/access"));
         if (project) ctx.Response.Headers.CacheControl = "no-store";
         if (commercial && (project || (api && !exempt)))
@@ -75,7 +78,17 @@ public static class CommercialAccess
                     path.Equals(new PathString("/projects/applied-data-starter-v1.zip")) &&
                     (access.GoalIds.Contains("applied-data") || access.LessonIds.Contains("applied-01")) ||
                     path.Equals(new PathString("/projects/ml-sales-starter-v1.zip")) &&
-                    (access.GoalIds.Contains("machine-learning") || access.LessonIds.Contains("mlproject-01"));
+                    (access.GoalIds.Contains("machine-learning") || access.LessonIds.Contains("mlproject-01")) ||
+                    path.Equals(new PathString("/projects/csharp-inventory-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("csharp") || access.LessonIds.Contains("csproject-01")) ||
+                    path.Equals(new PathString("/projects/codex-automation-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("codex-automation") || access.LessonIds.Contains("codex-project-01")) ||
+                    path.Equals(new PathString("/projects/cpp-expenses-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("cpp") || access.LessonIds.Contains("cpp-project-01")) ||
+                    path.Equals(new PathString("/projects/java-library-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("java") || access.LessonIds.Contains("java-project-01")) ||
+                    path.Equals(new PathString("/projects/go-tasks-api-starter-v1.zip")) &&
+                    (access.GoalIds.Contains("go") || access.LessonIds.Contains("go-project-01"));
                 var scopedEndpoint = api && ctx.GetEndpoint()?.Metadata.GetMetadata<ScopedCommercialEndpoint>() is not null;
                 if (!allowedProject && (!access.HasAccess || !scopedEndpoint)) throw AccessRequired();
             }
@@ -148,6 +161,7 @@ public static class CommercialAccess
         app.MapGet("/api/v1/me/access", ReadAccess).RequireAuthorization();
         if (!app.Services.GetRequiredService<CommercialOptions>().Required) return;
 
+        app.MapAccessCancellations();
         var admin = app.MapGroup("/api/v1/admin/access").RequireAuthorization(policy => policy.RequireRole("Admin"));
         admin.MapPost("/grant", (AccessRequest request, HttpContext ctx, Db db, CancellationToken ct) =>
             Change(request, ctx, db, true, ct));
@@ -245,12 +259,19 @@ public static class CommercialAccess
     private static async Task<IResult> ReadTargets(Db db, CancellationToken ct)
     {
         await using var conn = await db.Open(ct);
-        var release = await ActiveRelease(conn, null, ct);
-        return Results.Ok(new
-        {
-            goals = PublishedGoals(release).Select(Target).ToArray(),
-            lessons = Content.Lessons(release.Bundle).Select(Target).ToArray()
-        });
+        var result = await Db.Query(conn, null, """
+            SELECT
+                (SELECT COALESCE(jsonb_agg(jsonb_build_object('id', item->>'id', 'title', item->>'title')
+                    ORDER BY ordinal), '[]'::jsonb)::text
+                 FROM jsonb_array_elements(r.bundle #> '{graph,goals}') WITH ORDINALITY AS goals(item, ordinal)
+                 WHERE item->>'status'='sample'),
+                (SELECT COALESCE(jsonb_agg(jsonb_build_object('id', item->>'id', 'title', item->>'title')
+                    ORDER BY ordinal), '[]'::jsonb)::text
+                 FROM jsonb_array_elements(r.bundle #> '{sample,lessons}') WITH ORDINALITY AS lessons(item, ordinal))
+            FROM public.content_releases r JOIN public.settings s ON s.key='active_release_id' AND s.value=r.release_id
+            WHERE r.status='published'
+            """, row => new { goals = JsonNode.Parse(row.GetString(0)), lessons = JsonNode.Parse(row.GetString(1)) }, ct);
+        return Results.Ok(result.FirstOrDefault() ?? throw ApiError.Missing());
     }
 
     private static async Task<IResult> ChangeOffer(string goalId, OfferRequest request, HttpContext ctx, Db db, CancellationToken ct)
@@ -306,6 +327,4 @@ public static class CommercialAccess
     private static IEnumerable<JsonObject> PublishedGoals(Release release) =>
         (release.Bundle["graph"]?["goals"] as JsonArray ?? []).OfType<JsonObject>()
             .Where(goal => Input.String(goal["status"]) == "sample");
-
-    private static object Target(JsonObject node) => new { id = Input.String(node["id"]), title = Input.String(node["title"]) };
 }

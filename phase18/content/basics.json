@@ -1,0 +1,571 @@
+{
+  "lessons": [
+    {
+      "id": "go-basics-01",
+      "title": "أول مهمة في برنامج Go",
+      "summary": "اكتب برنامجًا يعرض عنوان مهمة، وغيّر العنوان ثم شغّل الملف من الطرفية.",
+      "why": "قبل بناء قائمة المهام، جرّب تعديل رسالة واحدة وتأكد أن الطرفية تشغّل الملف الذي حفظته.",
+      "objectives": [
+        "تجهيز مجلد التدريب",
+        "تتبّع بداية التنفيذ",
+        "تعديل أول مهمة"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.setup"
+      ],
+      "sections": [
+        {
+          "heading": "تجهيز مجلد التدريب",
+          "body": "ثبّت أدوات Go من موقع go.dev وافتح طرفية جديدة. نفّذ go version وتحقق من ظهور Go 1.26 أو إصدار أحدث. افتح مجلدًا فارغًا واحفظ المثال فيه باسم main.go بترميز UTF-8. نفّذ go mod init example/tasks-practice مرة واحدة داخل مجلد التدريب لإنشاء go.mod الذي يحدد اسم الوحدة ونسخة Go."
+        },
+        {
+          "heading": "تتبّع بداية التنفيذ",
+          "body": "يعرّف package main حزمة قابلة للتشغيل. تبدأ التعليمات داخل func main()، وتتيح import \"fmt\" استخدام دالة Println من حزمة التنسيق. النص بين علامتي التنصيص هو ما سيظهر للمتعلم."
+        },
+        {
+          "heading": "تعديل أول مهمة",
+          "body": "افتح الطرفية داخل مجلد الملف ونفّذ go run main.go. غيّر Plan إلى Review، احفظ ثم أعد التشغيل. في كل درس تالٍ استبدل محتوى main.go بالمثال الجديد وشغّله بالطريقة نفسها."
+        }
+      ],
+      "examples": [
+        {
+          "title": "عنوان المهمة الأولى",
+          "language": "go",
+          "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tfmt.Println(\"Plan\")\n}\n",
+          "explanation": "تعرض الطرفية Plan في سطر واحد. يترجم go run البرنامج ثم يشغّله."
+        },
+        {
+          "title": "أوامر الطرفية",
+          "language": "text",
+          "code": "go version\ngo mod init example/tasks-practice\ngo run main.go",
+          "explanation": "يعرض الأمر الأول نسخة الأدوات. ينشئ الثاني وحدة التدريب مرة واحدة. بعد ذلك يكفي تشغيل الأمر الثالث كلما عدّلت main.go وحفظته."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-basics-01-e1",
+          "type": "choice",
+          "prompt": "أي أمر يشغّل الملف المفتوح في الدرس؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "go version"
+            },
+            {
+              "id": "b",
+              "text": "go run main.go"
+            },
+            {
+              "id": "c",
+              "text": "go fmt"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يترجم go run main.go الكود ويبدأ تنفيذه.",
+          "hints": [
+            "ابحث عن أمر التشغيل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-01-e2",
+          "type": "text",
+          "prompt": "ما اسم الدالة التي يبدأ التنفيذ داخلها؟ اكتب الاسم فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "main"
+          ],
+          "explanation": "ينادي Go الدالة main في الحزمة main.",
+          "hints": [
+            "راجع الكلمة بعد func."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-01-e3",
+          "type": "choice",
+          "prompt": "استبدلت Plan بـ Review وحفظت الملف. ماذا يظهر بعد إعادة التشغيل؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "Review"
+            },
+            {
+              "id": "b",
+              "text": "Plan"
+            },
+            {
+              "id": "c",
+              "text": "main"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "تطبع الدالة النص الجديد داخل علامتي التنصيص.",
+          "hints": [
+            "تتبّع وسيط Println."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب برنامجًا يعرض عنوان مهمة، وغيّر العنوان ثم شغّل الملف من الطرفية."
+    },
+    {
+      "id": "go-basics-02",
+      "title": "عنوان المهمة وعدد الخطوات المتبقية",
+      "summary": "مثّل العنوان بنص، وعدد الخطوات بعدد صحيح، وحالة الإنجاز بقيمة منطقية.",
+      "why": "يساعد فصل الوصف عن العدد على حساب المتبقي وتحديث حالة الإنجاز بعد آخر خطوة.",
+      "objectives": [
+        "اختيار نوع لكل قيمة",
+        "حساب المتبقي",
+        "اشتقاق حالة الإنجاز"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.types"
+      ],
+      "sections": [
+        {
+          "heading": "اختيار نوع لكل قيمة",
+          "body": "يمكن كتابة var title string ثم إسناد عنوان إليه. داخل الدالة تختصر := تعريف متغير جديد وإسناد قيمة إليه، ويستنتج Go نوعه من القيمة. العدد 4 نوعه الافتراضي int."
+        },
+        {
+          "heading": "حساب المتبقي",
+          "body": "يمثل total عدد الخطوات وfinished عدد ما أنجزته. يطرح التعبير total - finished القيمتين ويحفظ الناتج في left. افترض هنا أن المنجز لا يتجاوز الإجمالي."
+        },
+        {
+          "heading": "اشتقاق حالة الإنجاز",
+          "body": "التعبير left == 0 يسأل هل بقي صفر من الخطوات، وينتج bool. غيّر finished إلى 4 وتوقّع آخر قيمتين قبل التشغيل. استخدم = لتحديث متغير موجود."
+        }
+      ],
+      "examples": [
+        {
+          "title": "عداد خطوات المهمة",
+          "language": "go",
+          "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\tvar title string = \"Review\"\n\ttotal := 4\n\tfinished := 1\n\tleft := total - finished\n\tdone := left == 0\n\tfmt.Println(title, left, done)\n}\n",
+          "explanation": "تفصل Println القيم بمسافات. يتبقى ثلاث خطوات، ولذلك تظهر false."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-basics-02-e1",
+          "type": "choice",
+          "prompt": "أي نوع يحتفظ بالرمز \"007\" مع أصفاره؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "int"
+            },
+            {
+              "id": "b",
+              "text": "bool"
+            },
+            {
+              "id": "c",
+              "text": "string"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تظل أصفار النص كما كُتبت.",
+          "hints": [
+            "هل تحتاج إلى إجراء طرح على الرمز؟"
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-02-e2",
+          "type": "text",
+          "prompt": "إذا كان total يساوي 7 وfinished يساوي 5، فما قيمة left؟",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "ناتج 7 ناقص 5 يساوي 2.",
+          "hints": [
+            "اطرح المنجز من الإجمالي."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-02-e3",
+          "type": "choice",
+          "prompt": "عند تساوي total وfinished، ما قيمة done؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "true"
+            },
+            {
+              "id": "b",
+              "text": "false"
+            },
+            {
+              "id": "c",
+              "text": "0"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "ينتج عن تساوي العددين left بقيمة صفر، فتنجح المقارنة.",
+          "hints": [
+            "احسب left ثم قارنه بالصفر."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "مثّل العنوان بنص، وعدد الخطوات بعدد صحيح، وحالة الإنجاز بقيمة منطقية."
+    },
+    {
+      "id": "go-basics-03",
+      "title": "قراءة عدد المهام من الطرفية",
+      "summary": "اقرأ عددًا صحيحًا باستخدام fmt.Fscan وافحص خطأ القراءة قبل استعمال العدد.",
+      "why": "إذا كتب المستخدم كلمة مكان العدد، يحتاج إلى رسالة تشرح له ماذا يدخل في المحاولة التالية.",
+      "objectives": [
+        "تحديد مصدر الإدخال",
+        "تحديد مكان حفظ العدد",
+        "معالجة القراءة غير الناجحة"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.input"
+      ],
+      "sections": [
+        {
+          "heading": "تحديد مصدر الإدخال",
+          "body": "أضف os إلى الاستيراد للوصول إلى os.Stdin، وهو الإدخال القياسي. بعد go run main.go اكتب 3 واضغط Enter. تقرأ Fscan القيم المفصولة بمسافات أو أسطر."
+        },
+        {
+          "heading": "تحديد مكان حفظ العدد",
+          "body": "يُنشئ var count int مكانًا للعدد. تعطي &count للدالة عنوان هذا المتغير لتكتب فيه. تعيد Fscan عدد القيم المقروءة وخطأً. نستخدم _ لتجاهل العدد هنا لأننا طلبنا قيمة واحدة ونفحص الخطأ."
+        },
+        {
+          "heading": "معالجة القراءة غير الناجحة",
+          "body": "تشير nil إلى غياب الخطأ. إذا كان err != nil تطبع الدالة رسالة وتخرج باستخدام return. شغّل مرة أخرى وأدخل three ثم قارن الناتج بالمحاولة الأولى."
+        }
+      ],
+      "examples": [
+        {
+          "title": "انتظار قيمة من لوحة المفاتيح",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"fmt\"\n\t\"os\"\n)\n\nfunc main() {\n\tvar count int\n\t_, err := fmt.Fscan(os.Stdin, &count)\n\tif err != nil {\n\t\tfmt.Println(\"Enter an integer\")\n\t\treturn\n\t}\n\tfmt.Println(\"Tasks:\", count)\n}\n",
+          "explanation": "بعد إدخال 3 يظهر Tasks: 3. عند إدخال كلمة لا تمثّل عددًا صحيحًا يظهر Enter an integer."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-basics-03-e1",
+          "type": "choice",
+          "prompt": "أي وسيط يسمح لـ Fscan بتغيير count؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "count == 0"
+            },
+            {
+              "id": "b",
+              "text": "&count"
+            },
+            {
+              "id": "c",
+              "text": "\"count\""
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تعطي &count عنوان المتغير.",
+          "hints": [
+            "تحتاج الدالة إلى عنوان المتغير."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-03-e2",
+          "type": "text",
+          "prompt": "أدخل المستخدم 8. اكتب السطر الذي سيظهر.",
+          "options": [],
+          "acceptedAnswers": [
+            "Tasks: 8"
+          ],
+          "explanation": "تضع Println مسافة بين البادئة والعدد.",
+          "hints": [
+            "اطبع البادئة ثم مسافة ثم العدد."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-03-e3",
+          "type": "choice",
+          "prompt": "لماذا يوجد return بعد رسالة الخطأ؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "ليطبع عددًا ثانيًا"
+            },
+            {
+              "id": "b",
+              "text": "ليكرر القراءة"
+            },
+            {
+              "id": "c",
+              "text": "لينهي الدالة عند فشل القراءة"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "ينهي return الدالة قبل استخدام نتيجة القراءة.",
+          "hints": [
+            "تتبّع ما يأتي بعد الشرط."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اقرأ عددًا صحيحًا باستخدام fmt.Fscan وافحص خطأ القراءة قبل استعمال العدد."
+    },
+    {
+      "id": "go-basics-04",
+      "title": "اختيار رسالة قائمة المهام",
+      "summary": "استخدم if وelse if وelse للتمييز بين عدد سالب وقائمة فارغة وقائمة فيها عمل.",
+      "why": "الصفر يعبّر عن قائمة فارغة، بينما العدد السالب لا يصلح أصلًا لعدّ المهام.",
+      "objectives": [
+        "فحص العدد السالب",
+        "تمييز القائمة الفارغة",
+        "تجربة الحد الفاصل"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.decisions"
+      ],
+      "sections": [
+        {
+          "heading": "فحص العدد السالب",
+          "body": "بعد نجاح القراءة اختبر n < 0. تظهر Invalid في هذا الفرع لأن العدّ يبدأ من الصفر. تختلف هذه الحالة عن إدخال حرف مكان العدد؛ راجع الرسالة الخاصة بخطأ القراءة."
+        },
+        {
+          "heading": "تمييز القائمة الفارغة",
+          "body": "تُفحص else if n == 0 عندما يفشل الشرط السابق. يختبر == تساوي القيمتين، أما = فتستخدم لإسناد قيمة."
+        },
+        {
+          "heading": "تجربة الحد الفاصل",
+          "body": "تصل الأعداد الموجبة إلى else. جرّب القيم -1 و0 و1 في ثلاث تشغيلات، وسجّل رسالة كل قيمة. اكتب القوس المعقوف الافتتاحي في سطر الشرط نفسه."
+        }
+      ],
+      "examples": [
+        {
+          "title": "تصنيف عدد المهام",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"fmt\"\n\t\"os\"\n)\n\nfunc main() {\n\tvar n int\n\tif _, err := fmt.Fscan(os.Stdin, &n); err != nil {\n\t\tfmt.Println(\"Enter an integer\")\n\t\treturn\n\t}\n\tif n < 0 {\n\t\tfmt.Println(\"Invalid\")\n\t} else if n == 0 {\n\t\tfmt.Println(\"Empty\")\n\t} else {\n\t\tfmt.Println(\"Pending\")\n\t}\n}\n",
+          "explanation": "بعد فحص القراءة، ينفّذ البرنامج أول فرع ينطبق على العدد."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-basics-04-e1",
+          "type": "choice",
+          "prompt": "أي قيمة تصل إلى فرع Empty؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "-1"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "0"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "القيمة 0 وحدها تساوي الصفر.",
+          "hints": [
+            "افحص شرط المساواة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-04-e2",
+          "type": "text",
+          "prompt": "ما الرسالة عند إدخال 7؟",
+          "options": [],
+          "acceptedAnswers": [
+            "Pending"
+          ],
+          "explanation": "العدد 7 موجب فيصل إلى else.",
+          "hints": [
+            "اختبر السالب ثم الصفر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-basics-04-e3",
+          "type": "choice",
+          "prompt": "إذا أصبح الشرط الأول n <= 0، ماذا يحدث عند إدخال صفر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "تظهر Invalid"
+            },
+            {
+              "id": "b",
+              "text": "تظهر Empty"
+            },
+            {
+              "id": "c",
+              "text": "تظهر رسالتان"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "الصفر يحقق الشرط الجديد، فينتهي الاختيار عند أول فرع.",
+          "hints": [
+            "ينفّذ أول فرع يتحقق."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم if وelse if وelse للتمييز بين عدد سالب وقائمة فارغة وقائمة فيها عمل."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "go-basics-01",
+      "title": "أول مهمة في برنامج Go",
+      "why": "قبل بناء قائمة المهام، جرّب تعديل رسالة واحدة وتأكد أن الطرفية تشغّل الملف الذي حفظته.",
+      "skillIds": [
+        "go.setup"
+      ]
+    },
+    {
+      "id": "go-basics-02",
+      "title": "عنوان المهمة وعدد الخطوات المتبقية",
+      "why": "يساعد فصل الوصف عن العدد على حساب المتبقي وتحديث حالة الإنجاز بعد آخر خطوة.",
+      "skillIds": [
+        "go.types"
+      ]
+    },
+    {
+      "id": "go-basics-03",
+      "title": "قراءة عدد المهام من الطرفية",
+      "why": "إذا كتب المستخدم كلمة مكان العدد، يحتاج إلى رسالة تشرح له ماذا يدخل في المحاولة التالية.",
+      "skillIds": [
+        "go.input"
+      ]
+    },
+    {
+      "id": "go-basics-04",
+      "title": "اختيار رسالة قائمة المهام",
+      "why": "الصفر يعبّر عن قائمة فارغة، بينما العدد السالب لا يصلح أصلًا لعدّ المهام.",
+      "skillIds": [
+        "go.decisions"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "go.setup",
+      "title": "أول مهمة في برنامج Go",
+      "description": "اكتب برنامجًا يعرض عنوان مهمة، وغيّر العنوان ثم شغّل الملف من الطرفية.",
+      "required": {
+        "skill": "core.workspace"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.types",
+      "title": "عنوان المهمة وعدد الخطوات المتبقية",
+      "description": "مثّل العنوان بنص، وعدد الخطوات بعدد صحيح، وحالة الإنجاز بقيمة منطقية.",
+      "required": {
+        "skill": "go.setup"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.input",
+      "title": "قراءة عدد المهام من الطرفية",
+      "description": "اقرأ عددًا صحيحًا باستخدام fmt.Fscan وافحص خطأ القراءة قبل استعمال العدد.",
+      "required": {
+        "skill": "go.types"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.decisions",
+      "title": "اختيار رسالة قائمة المهام",
+      "description": "استخدم if وelse if وelse للتمييز بين عدد سالب وقائمة فارغة وقائمة فيها عمل.",
+      "required": {
+        "skill": "go.input"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "go-basics-01",
+      "index": 0,
+      "input": "",
+      "output": "Plan\n"
+    },
+    {
+      "lessonId": "go-basics-02",
+      "index": 0,
+      "input": "",
+      "output": "Review 3 false\n"
+    },
+    {
+      "lessonId": "go-basics-03",
+      "index": 0,
+      "input": "3\n",
+      "output": "Tasks: 3\n"
+    },
+    {
+      "lessonId": "go-basics-03",
+      "index": 0,
+      "input": "three\n",
+      "output": "Enter an integer\n"
+    },
+    {
+      "lessonId": "go-basics-04",
+      "index": 0,
+      "input": "-1\n",
+      "output": "Invalid\n"
+    },
+    {
+      "lessonId": "go-basics-04",
+      "index": 0,
+      "input": "0\n",
+      "output": "Empty\n"
+    },
+    {
+      "lessonId": "go-basics-04",
+      "index": 0,
+      "input": "1\n",
+      "output": "Pending\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "الحزمة",
+      "technical": "Package",
+      "definition": "مجموعة ملفات Go تشترك في اسم حزمة وتُبنى معًا."
+    },
+    {
+      "term": "الإدخال القياسي",
+      "technical": "Standard input",
+      "definition": "مصدر يستطيع البرنامج القراءة منه، مثل لوحة المفاتيح في الطرفية."
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using Masar.Api;
 using Microsoft.AspNetCore.Antiforgery;
@@ -75,6 +76,11 @@ builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     options.SerializerOptions.MaxDepth = 64;
+});
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.MimeTypes = ["application/javascript", "text/javascript", "text/css"];
 });
 
 var dataRoot = Environment.GetEnvironmentVariable("MASAR_DATA_ROOT");
@@ -179,6 +185,24 @@ app.Use(async (ctx, next) =>
         await ctx.Response.WriteAsJsonAsync(new { code = error.Code, message = error.Message });
     }
 });
+// Limit HTTPS compression and immutable caching to Vite's public fingerprinted scripts and styles.
+// Private API responses, HTML and project downloads retain their existing delivery rules.
+var viteAssetPattern = new Regex(@"\A/assets/[A-Za-z0-9_.-]+-[A-Za-z0-9_-]{8}\.(?:js|css)\z", RegexOptions.CultureInvariant);
+app.UseWhen(ctx => (HttpMethods.IsGet(ctx.Request.Method) || HttpMethods.IsHead(ctx.Request.Method)) &&
+                   viteAssetPattern.IsMatch(ctx.Request.Path.Value ?? ""),
+    branch => branch.UseResponseCompression());
+var staticFiles = new StaticFileOptions
+{
+    OnPrepareResponse = file =>
+    {
+        var ctx = file.Context;
+        if (ctx.Response.StatusCode is 200 or 206 or 304 && viteAssetPattern.IsMatch(ctx.Request.Path.Value ?? ""))
+        {
+            ctx.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+            ctx.Response.Headers.AppendCommaSeparatedValues("Vary", "Accept-Encoding");
+        }
+    }
+};
 if (pilotFunnel)
 {
     // The transport peer has already passed the loopback check. Tailscale replaces these headers.
@@ -200,7 +224,7 @@ if (pilotFunnel)
     app.UseWhen(ctx => !ctx.Request.Path.StartsWithSegments("/projects"), branch =>
     {
         branch.UseDefaultFiles();
-        branch.UseStaticFiles();
+        branch.UseStaticFiles(staticFiles);
     });
 }
 if (!development) app.UseHsts();
@@ -220,7 +244,7 @@ app.Use(async (ctx, next) =>
 app.UseAuthorization();
 app.Use(CommercialAccess.Gate);
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(staticFiles);
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 app.MapGet("/api/v1/health", async (Db db, CommercialOptions commercial, CancellationToken ct) =>
 {
@@ -245,6 +269,7 @@ app.MapGet("/api/v1/health", async (Db db, CommercialOptions commercial, Cancell
 });
 app.MapAuth();
 app.MapCommercialAccess();
+app.MapPurchaseRequests();
 app.MapContent();
 app.MapLearning();
 app.MapCodeLab();

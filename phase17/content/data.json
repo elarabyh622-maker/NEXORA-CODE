@@ -1,0 +1,428 @@
+{
+  "lessons": [
+    {
+      "id": "java-data-01",
+      "title": "فحص المدخلات والتعامل مع الاستثناءات",
+      "summary": "اقرأ عدد نسخ من نص وميّز بين كتابة نص غير رقمي وإدخال عدد خارج النطاق.",
+      "why": "لو كتب أمين المكتبة اسم الكتاب في خانة العدد، لازم يعرف إيه اللي يصلحه قبل تسجيل أي تغيير.",
+      "objectives": [
+        "تحويل النص إلى عدد صحيح",
+        "معالجة خطأ التحويل",
+        "فحص القيمة بعد التحويل"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.validation"
+      ],
+      "sections": [
+        {
+          "heading": "تحويل النص إلى عدد صحيح",
+          "body": "اقرأ السطر في String ثم احذف الفراغات الخارجية. يحاول Integer.parseInt تحويله إلى int. عند إدخال abc أو عدد أكبر من سعة int يرمي الاستثناء NumberFormatException."
+        },
+        {
+          "heading": "معالجة خطأ التحويل",
+          "body": "ضع التحويل داخل try واكتب catch للنوع NumberFormatException. عند حدوثه تنتقل السيطرة إلى catch وتظهر رسالة تطلب عددًا صحيحًا. جرّب المدخل seven."
+        },
+        {
+          "heading": "فحص القيمة بعد التحويل",
+          "body": "نجاح التحويل لا يضمن صلاحية الكمية. في هذا المثال تشترط المكتبة إضافة نسخة واحدة على الأقل، لذلك يُرفض الصفر والعدد السالب برسالة مختلفة. قارن الرد عند إدخال 0 و2."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ثلاثة ردود على إدخال عدد النسخ",
+          "language": "java",
+          "code": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        try (Scanner input = new Scanner(System.in)) {\n            String text = input.nextLine().strip();\n            try {\n                int count = Integer.parseInt(text);\n                if (count < 1) {\n                    System.out.println(\"Positive count required\");\n                } else {\n                    System.out.println(\"Accepted \" + count);\n                }\n            } catch (NumberFormatException ex) {\n                System.out.println(\"Whole number required\");\n            }\n        }\n    }\n}\n",
+          "explanation": "شغّل البرنامج ثلاث مرات وجرّب x ثم 0 ثم 4. لاحظ الفرق بين عدم القدرة على التحويل ورفض قيمة عددية مفهومة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-data-01-e1",
+          "type": "choice",
+          "prompt": "أين ينتهي التنفيذ عند محاولة تحويل النص abc في المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "في فرع قبول الكمية"
+            },
+            {
+              "id": "b",
+              "text": "في كتلة catch"
+            },
+            {
+              "id": "c",
+              "text": "في الفرع الخاص بالصفر"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يرمي parseInt استثناء NumberFormatException عند تعذّر التحويل.",
+          "hints": [
+            "هل تكوّن عدد يمكن مقارنته بالواحد؟"
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-data-01-e2",
+          "type": "text",
+          "prompt": "اكتب العدد الصحيح الذي يفصل بين الرفض والقبول ويمثّل أقل كمية مقبولة.",
+          "options": [],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "تُرفض كل قيمة أصغر من 1.",
+          "hints": [
+            "راجع شرط count < 1."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-data-01-e3",
+          "type": "choice",
+          "prompt": "لماذا تُرفض القيمة -2؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "لأن parseInt لا يدعم إشارة السالب"
+            },
+            {
+              "id": "b",
+              "text": "لأن Scanner يحذف الإشارة"
+            },
+            {
+              "id": "c",
+              "text": "لأن القيمة بعد تحويلها أصغر من الحد المطلوب"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "ينجح تحويل -2 ثم يرفضها شرط النطاق.",
+          "hints": [
+            "افصل خطوة التحويل عن التحقق من القيمة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اقرأ عدد نسخ من نص وميّز بين كتابة نص غير رقمي وإدخال عدد خارج النطاق."
+    },
+    {
+      "id": "java-data-02",
+      "title": "حفظ بطاقة عربية في ملف UTF-8",
+      "summary": "اكتب عنوانًا عربيًا في ملف نصي ثم اقرأه بنفس الترميز.",
+      "why": "ملف المكتبة محتاج يحافظ على الحروف لما نقفل البرنامج ونفتحه على جهاز تاني.",
+      "objectives": [
+        "اختيار مسار تدريب",
+        "كتابة النص وقراءته",
+        "التحقق من سلامة الحروف"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.files"
+      ],
+      "sections": [
+        {
+          "heading": "اختيار مسار تدريب",
+          "body": "Path يمثّل مكان الملف. ينشئ المثال ملف تدريب مؤقتًا بامتداد .txt ثم يحتفظ بمساره في card. في مشروع المكتبة هتختار مسار ملف البيانات بنفسك ليبقى بين مرات التشغيل."
+        },
+        {
+          "heading": "كتابة النص وقراءته",
+          "body": "تستقبل Files.writeString المسار والنص والترميز. بعد اكتمال الكتابة تقرأ Files.readString من المسار نفسه. استخدام StandardCharsets.UTF_8 في العمليتين يوضح طريقة تحويل الحروف إلى بايتات واسترجاعها."
+        },
+        {
+          "heading": "التحقق من سلامة الحروف",
+          "body": "يقارن equals النص المقروء بالنص الأصلي بكل حروفه. جرّب عنوانًا من اختيارك. تُحذف نسخة التدريب في finally. عبارة throws IOException تعلن أن مشكلة في الوصول للملف يمكن أن تنتقل إلى المستدعي."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اختبار رحلة عنوان عربي إلى القرص والعودة",
+          "language": "java",
+          "code": "import java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        String title = \"رحلة في البرمجة\";\n        Path card = Files.createTempFile(\"java-book-\", \".txt\");\n        try {\n            Files.writeString(card, title, StandardCharsets.UTF_8);\n            String restored = Files.readString(card, StandardCharsets.UTF_8);\n            System.out.println(title.equals(restored));\n        } finally {\n            Files.deleteIfExists(card);\n        }\n    }\n}\n",
+          "explanation": "يظهر true عند تطابق النص العربي قبل الكتابة وبعد القراءة. الملف المؤقت خاص بهذه التجربة ويُحذف في نهايتها."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-data-02-e1",
+          "type": "choice",
+          "prompt": "أي نوع يمثّل مكان الملف في المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "Scanner"
+            },
+            {
+              "id": "b",
+              "text": "Path"
+            },
+            {
+              "id": "c",
+              "text": "StringBuilder"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يحمل المتغير card قيمة من نوع Path.",
+          "hints": [
+            "شوف النوع المكتوب قبل اسم card."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-data-02-e2",
+          "type": "text",
+          "prompt": "اكتب اسم ثابت الترميز بعد StandardCharsets. في المثال.",
+          "options": [],
+          "acceptedAnswers": [
+            "UTF_8"
+          ],
+          "explanation": "اسم الثابت هو UTF_8 ويعبّر عن ترميز UTF-8.",
+          "hints": [
+            "يتضمن الاسم شرطة سفلية."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-data-02-e3",
+          "type": "choice",
+          "prompt": "كيف تتحقق من استرجاع عنوان عربي كامل بعد حفظه؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "أقارن عدد ملفات المجلد"
+            },
+            {
+              "id": "b",
+              "text": "أبحث عن امتداد txt فقط"
+            },
+            {
+              "id": "c",
+              "text": "أقارن النص المقروء بالأصلي باستخدام equals"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تفحص equals القيمة النصية بما فيها الحروف وترتيبها.",
+          "hints": [
+            "وجود الملف وحده لا يكشف تغيير حرف."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب عنوانًا عربيًا في ملف نصي ثم اقرأه بنفس الترميز."
+    },
+    {
+      "id": "java-data-03",
+      "title": "اختبار قاعدة الإعارة بحالات صغيرة",
+      "summary": "اكتب فحصًا يوقف البرنامج عند اختلاف السلوك الفعلي عن المتوقع.",
+      "why": "لو اتغير الشرط بالغلط، فحص لكتاب متاح وفحص لكتاب مُعار يكشفا تأثير التعديل قبل استخدام ملف المكتبة.",
+      "objectives": [
+        "اختيار حالة متاحة وحالة معارة",
+        "مقارنة الفعلي بالمتوقع",
+        "رؤية الاختبار يكشف خطأ"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.tests"
+      ],
+      "sections": [
+        {
+          "heading": "اختيار حالة متاحة وحالة معارة",
+          "body": "تستقبل الدالة canBorrow اسم المستعير الحالي. النص الفارغ يعني متاحًا، وأي اسم فعلي يعني مُعارًا. اكتب التوقع لكل حالة قبل النظر إلى تنفيذ الدالة."
+        },
+        {
+          "heading": "مقارنة الفعلي بالمتوقع",
+          "body": "تأخذ check اسم الحالة وقيمتين منطقيتين. لو اختلفت actual وexpected ترمي AssertionError يحمل اسم الحالة. أي فشل يوقف المثال قبل الوصول إلى رسالة النجاح."
+        },
+        {
+          "heading": "رؤية الاختبار يكشف خطأ",
+          "body": "شغّل المثال الصحيح ثم بدّل return borrower.isEmpty() إلى return true مؤقتًا. سيظهر اسم الحالة loaned. أعد القاعدة الصحيحة ثم أعد الترجمة والتشغيل حتى يظهر سطر النجاح."
+        }
+      ],
+      "examples": [
+        {
+          "title": "فحصان يمكن تشغيلهما محليًا",
+          "language": "java",
+          "code": "public class Main {\n    static boolean canBorrow(String borrower) {\n        return borrower.isEmpty();\n    }\n\n    static void check(String name, boolean actual, boolean expected) {\n        if (actual != expected) {\n            throw new AssertionError(name);\n        }\n    }\n\n    public static void main(String[] args) {\n        check(\"available\", canBorrow(\"\"), true);\n        check(\"loaned\", canBorrow(\"Sara\"), false);\n        System.out.println(\"2 checks passed\");\n    }\n}\n",
+          "explanation": "إذا رجعت الدالة بالقيمة المتوقعة في الحالتين، يصل التنفيذ إلى الرسالة الأخيرة. الرمي الصريح لـ AssertionError يعمل دون خيارات تشغيل إضافية."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-data-03-e1",
+          "type": "choice",
+          "prompt": "أي توقع يناسب كتابًا يحمل اسم المستعيرة Sara؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "false"
+            },
+            {
+              "id": "b",
+              "text": "true"
+            },
+            {
+              "id": "c",
+              "text": "Sara"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "وجود مستعير يعني أن الكتاب معار حاليًا.",
+          "hints": [
+            "انظر إلى معنى canBorrow."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-data-03-e2",
+          "type": "text",
+          "prompt": "لو أعادت الدالة true دائمًا، اكتب اسم الحالة التي تفشل كما هو مكتوب في الكود.",
+          "options": [],
+          "acceptedAnswers": [
+            "loaned"
+          ],
+          "explanation": "تتوقع loaned قيمة false.",
+          "hints": [
+            "أي فحص يستخدم اسم مستعير فعليًا؟"
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-data-03-e3",
+          "type": "choice",
+          "prompt": "متى تظهر رسالة 2 checks passed؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "عند دخول main مباشرة"
+            },
+            {
+              "id": "b",
+              "text": "بعد إتمام الفحصين دون رمي خطأ"
+            },
+            {
+              "id": "c",
+              "text": "عند أول اختلاف في النتائج"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تقع الطباعة بعد الاستدعاءين وتوقف AssertionError التنفيذ عند الفشل.",
+          "hints": [
+            "تتبّع ترتيب سطور main."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب فحصًا يوقف البرنامج عند اختلاف السلوك الفعلي عن المتوقع."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "java-data-01",
+      "title": "فحص المدخلات والتعامل مع الاستثناءات",
+      "why": "لو كتب أمين المكتبة اسم الكتاب في خانة العدد، لازم يعرف إيه اللي يصلحه قبل تسجيل أي تغيير.",
+      "skillIds": [
+        "java.validation"
+      ]
+    },
+    {
+      "id": "java-data-02",
+      "title": "حفظ بطاقة عربية في ملف UTF-8",
+      "why": "ملف المكتبة محتاج يحافظ على الحروف لما نقفل البرنامج ونفتحه على جهاز تاني.",
+      "skillIds": [
+        "java.files"
+      ]
+    },
+    {
+      "id": "java-data-03",
+      "title": "اختبار قاعدة الإعارة بحالات صغيرة",
+      "why": "لو اتغير الشرط بالغلط، فحص لكتاب متاح وفحص لكتاب مُعار يكشفا تأثير التعديل قبل استخدام ملف المكتبة.",
+      "skillIds": [
+        "java.tests"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "java.validation",
+      "title": "فحص المدخلات والتعامل مع الاستثناءات",
+      "description": "اقرأ عدد نسخ من نص وميّز بين كتابة نص غير رقمي وإدخال عدد خارج النطاق.",
+      "required": {
+        "skill": "java.records"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.files",
+      "title": "حفظ بطاقة عربية في ملف UTF-8",
+      "description": "اكتب عنوانًا عربيًا في ملف نصي ثم اقرأه بنفس الترميز.",
+      "required": {
+        "skill": "java.validation"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.tests",
+      "title": "اختبار قاعدة الإعارة بحالات صغيرة",
+      "description": "اكتب فحصًا يوقف البرنامج عند اختلاف السلوك الفعلي عن المتوقع.",
+      "required": {
+        "skill": "java.files"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "java-data-01",
+      "index": 0,
+      "input": "x\n",
+      "output": "Whole number required\n"
+    },
+    {
+      "lessonId": "java-data-01",
+      "index": 0,
+      "input": "0\n",
+      "output": "Positive count required\n"
+    },
+    {
+      "lessonId": "java-data-01",
+      "index": 0,
+      "input": "4\n",
+      "output": "Accepted 4\n"
+    },
+    {
+      "lessonId": "java-data-02",
+      "index": 0,
+      "input": "",
+      "output": "true\n"
+    },
+    {
+      "lessonId": "java-data-03",
+      "index": 0,
+      "input": "",
+      "output": "2 checks passed\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "استثناء تنسيق العدد",
+      "technical": "NumberFormatException",
+      "definition": "استثناء ترفعه عمليات مثل Integer.parseInt عندما يتعذر تمثيل النص في النوع العددي المطلوب."
+    },
+    {
+      "term": "ترميز UTF-8",
+      "technical": "UTF-8",
+      "definition": "طريقة لتمثيل النص في بايتات تتيح حفظ الحروف العربية وقراءتها."
+    }
+  ]
+}

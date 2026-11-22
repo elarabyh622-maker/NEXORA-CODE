@@ -1,0 +1,163 @@
+{
+  "lesson": {
+    "id": "cpp-project-01",
+    "title": "مشروع ختامي: متتبّع مصروفات محلي",
+    "summary": "ابنِ برنامج مصروفات من سطر الأوامر، وأكمل حساب مجاميع الفئات، وتحقق من الحفظ بين تشغيلين.",
+    "why": "المشروع يجمع قراءة مدخلات حقيقية وحفظها والتحقق من صحة التقرير بقيم قدرت تحسبها بنفسك.",
+    "objectives": [
+      "أبني ملف البداية وأشغّل أوامر add وlist وsummary.",
+      "أكمل دالة summarize لحساب إجماليات الفئات والمجموع العام.",
+      "أثبت صحة الحساب والحفظ في حالات ناجحة وأخرى مرفوضة."
+    ],
+    "minutes": "45–60",
+    "skillIds": [
+      "cpp.project"
+    ],
+    "sections": [
+      {
+        "heading": "ابنِ نسخة البداية في مجلد تدريب جديد",
+        "body": "نزّل ملف ZIP وفكّه، وافتح الطرفية داخل المجلد اللي فيه README.md وsrc وtests. ابنِه بأحد أمرَي البناء الموجودين في الأمثلة. كل أمر بياخد مسار ملف البيانات قبل اسم العملية، زي expenses.exe practice.tsv add food 3250. ابدأ بملف تدريب غائب في مجلدك الجديد، وأضف السجلات الثلاثة من المثال. راجع ظهورها بترتيب الإضافة في list. جرّب summary على ملف صالح. في نسخة البداية هيفشل الأمر برسالة توضح أن التلخيص لسه ناقص."
+      },
+      {
+        "heading": "أكمل الحساب في src/summary.cpp",
+        "body": "افتح موضع TODO في دالة summarize. هي بتستقبل vector من سجلات Expense، وكل سجل فيه category وamount بالقروش. استخدم كائن Summary يبدأ بإجمالي صفر. مرّ على السجلات مرة واحدة وأضف كل amount إلى مجموع فئته في by_category وإلى total. عند قراءة قيمة فئة لأول مرة باستخدام الأقواس المربعة في std::map، تبدأ قيمة العدد من صفر. الخريطة ترتّب مفاتيح النص تلقائيًا عند المرور عليها. أرجع كائن Summary بعد إكمال الحساب. تتعامل بقية الشيفرة مع قراءة الملف والتحقق وطباعة التقرير."
+      },
+      {
+        "heading": "راجع تقريرًا تحسبه بنفسك",
+        "body": "أعد البناء بعد حفظ التعديل. لمصروفات food بقيمتي 3250 و750 وtransport بقيمة 1200، توقّع food ثم علامة تبويب و4000، وtransport ثم علامة تبويب و1200، ثم total بعلامة تبويب و5200. جرّب ملفًا جديدًا بلا مصروفات وتوقّع سطر total بقيمة 0. جرّب في ملف مستقل إضافة transport قبل food وتوقّع أن يبدأ التقرير بـ food رغم اختلاف ترتيب الإضافة."
+      },
+      {
+        "heading": "تحقّق من الحفظ والأخطاء",
+        "body": "شغّل list من أمر مستقل بعد الإضافة للتأكد من الحفظ. احفظ نسخة من البيانات، ثم جرّب مبلغ 0. توقّع رسالة خطأ ورمز خروج غير صفر، وقارن الملف بنسخته. سكربت tests/Test-Project.ps1 يشغّل فحوص المشروع تلقائيًا من PowerShell. شغّله مع -Starter قبل إكمال الدالة لفحص سلوك نسخة البداية، ثم شغّله بدونه بعد إكمال الدالة وإعادة البناء. تقدر تنفّذ فحوص الدرس من الطرفية بنفسك، وتضيف حالة لملف فيه سطر تالف لمراجعة رفضه."
+      }
+    ],
+    "examples": [
+      {
+        "title": "ابنِ وجرّب نسخة البداية في UCRT64",
+        "language": "text",
+        "code": "g++ -std=c++20 -Wall -Wextra -Wpedantic src/main.cpp src/summary.cpp -o expenses.exe\n./expenses.exe practice.tsv add food 3250\n./expenses.exe practice.tsv add transport 1200\n./expenses.exe practice.tsv add food 750\n./expenses.exe practice.tsv list\n./expenses.exe practice.tsv summary\nprintf 'Exit code: %s\\n' \"$?\"\n",
+        "explanation": "انتظر نجاح سطر البناء قبل أي تشغيل. استخدم practice.tsv جديدًا عند الإضافة الأولى. بعد إكمال الدالة، أعد البناء ثم شغّل list وsummary مباشرة على نفس الملف. كده تراجع الحفظ من غير تكرار الإضافة."
+      },
+      {
+        "title": "أمر البناء في Developer PowerShell",
+        "language": "text",
+        "code": "cl /nologo /std:c++20 /EHsc /W4 src\\main.cpp src\\summary.cpp /Fe:expenses.exe\n",
+        "explanation": "نفّذ نفس أوامر add وlist وsummary السابقة في Developer PowerShell باستعمال .\\expenses.exe بدل ./expenses.exe. لرؤية رمز آخر تشغيل اكتب $LASTEXITCODE بعده مباشرة."
+      },
+      {
+        "title": "جرّب ترتيب مفاتيح خريطة الفئات",
+        "language": "cpp",
+        "code": "#include <iostream>\n#include <map>\n#include <string>\n\nint main() {\n    const std::map<std::string, long long> byCategory{\n        {\"transport\", 1200},\n        {\"food\", 4000},\n    };\n\n    for (const auto& [category, amount] : byCategory) {\n        std::cout << category << '\\t' << amount << '\\n';\n    }\n}\n",
+        "explanation": "الأرقام هنا جاهزة لتوضيح ترتيب العرض. for تفصل مفتاح كل صف وقيمته في category وamount. كود المشروع يحسب القيم من المصروفات الفعلية قبل العرض."
+      },
+      {
+        "title": "اختبارات المشروع من PowerShell",
+        "language": "text",
+        "code": ".\\tests\\Test-Project.ps1 -Executable .\\expenses.exe -Starter\n.\\tests\\Test-Project.ps1 -Executable .\\expenses.exe\n",
+        "explanation": "نفّذ السطر الأول مع نسخة البداية، والثاني بعد إكمال الدالة وإعادة البناء. لو بنيت بـ g++ داخل UCRT64، افتح PowerShell من نفس الطرفية بأمر powershell.exe عشان يرث مسارات مكتبات التشغيل، وبعدين نفّذ الأوامر."
+      }
+    ],
+    "exercises": [
+      {
+        "id": "cpp-project-01-e1",
+        "type": "text",
+        "prompt": "سجلت food بمبلغ 900 ثم transport بمبلغ 600 ثم food بمبلغ 200. ما إجمالي food بالقروش؟ اكتب عددًا فقط.",
+        "options": [],
+        "acceptedAnswers": [
+          "1100"
+        ],
+        "explanation": "نجمع مبالغ food فقط، فيكون الناتج 900 + 200 = 1100.",
+        "hints": [
+          "افصل قيم food عن transport قبل الجمع."
+        ],
+        "independent": true
+      },
+      {
+        "id": "cpp-project-01-e2",
+        "type": "choice",
+        "prompt": "في مثال الخريطة، أي فئة تظهر أولًا لما تطبع صفوف summary؟",
+        "options": [
+          {
+            "id": "a",
+            "text": "food لأنها تسبق transport عند ترتيب المفاتيح"
+          },
+          {
+            "id": "b",
+            "text": "transport لأنها انكتبت أولًا في الكود"
+          },
+          {
+            "id": "c",
+            "text": "total لأن البرنامج يطبع الإجمالي العام أولًا"
+          }
+        ],
+        "acceptedAnswers": [
+          "a"
+        ],
+        "explanation": "الخريطة تمر على المفاتيح بالترتيب، ويطبع المشروع total بعد سطور الفئات.",
+        "hints": [
+          "قارن ترتيب إدخال المفتاحين بترتيبهما أبجديًا."
+        ],
+        "independent": true
+      },
+      {
+        "id": "cpp-project-01-e3",
+        "type": "choice",
+        "prompt": "نفذت add بمبلغ 0 على ملف موجود. ما الذي تتوقعه ومعه دليل على سلامة الملف؟",
+        "options": [
+          {
+            "id": "a",
+            "text": "رمز 0 وتغيّر الملف"
+          },
+          {
+            "id": "b",
+            "text": "رمز غير صفر ومطابقة الملف لنسخته قبل الأمر"
+          },
+          {
+            "id": "c",
+            "text": "رمز 0 وإضافة سجل جديد بالمبلغ صفر"
+          }
+        ],
+        "acceptedAnswers": [
+          "b"
+        ],
+        "explanation": "المبلغ خارج المجال، فيتوقف التحقق قبل تعديل الملف. النسخة السابقة تساعدك تثبت ده.",
+        "hints": [
+          "راجع الحد الأدنى للمبلغ، ثم فكّر كيف تقارن الأثر."
+        ],
+        "independent": true
+      }
+    ],
+    "takeaway": "احسب مجاميع العينة قبل تشغيل البرنامج، واستخدم ملفًا تجريبيًا مستقلًا لتثبت الحفظ والتلخيص والرفض."
+  },
+  "skill": {
+    "id": "cpp.project",
+    "title": "أكمل متتبّع مصروفات وأتحقق من حسابه وحفظه",
+    "description": "أجمّع المصروفات حسب الفئة وأثبت صحة التقرير والحفظ ورفض البيانات غير الصالحة في تشغيلات مستقلة.",
+    "required": {
+      "skill": "cpp.testing"
+    },
+    "recommended": []
+  },
+  "exampleChecks": [
+    {
+      "lessonId": "cpp-project-01",
+      "index": 2,
+      "input": "",
+      "output": "food\t4000\ntransport\t1200\n"
+    }
+  ],
+  "project": {
+    "id": "cpp-expenses",
+    "title": "متتبّع مصروفات محلي بـ C++20",
+    "lessonId": "cpp-project-01",
+    "summary": "برنامج طرفية لإضافة مبالغ بالقروش إلى ملف نصي، وعرض المصروفات بالترتيب، وحساب مجموع كل فئة والإجمالي العام.",
+    "criteria": [
+      "ابنِ ملف البداية وأضف مصروفات تجريبية إلى ملف جديد، ثم راجع أوامر list وsummary قبل التعديل.",
+      "أكمل summarize في src/summary.cpp. اجمع كل فئة والمجموع العام، وراجع ترتيب الفئات وسطر total الأخير.",
+      "أعد البناء وقارن مخرجات العينة مع القيم 4000 و1200 و5200. جرّب أيضًا ملفًا فارغًا وعينة بإضافات بترتيب مختلف.",
+      "أثبت الحفظ بأمر list في تشغيل جديد. جرّب إضافة بمبلغ صفر، وسجّل رمز الخطأ وتطابق البيانات مع نسختها.",
+      "سجّل النتيجة المتوقعة والفعلية للفحوص التي نفّذتها يدويًا أو بأداة تحقق المشروع."
+    ],
+    "download": "/projects/cpp-expenses-starter-v1.zip"
+  }
+}

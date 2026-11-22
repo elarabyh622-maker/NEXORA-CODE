@@ -39,8 +39,8 @@ public static JsonObject ExerciseEvaluator.Evaluate(JsonObject exercise, string 
 | `sample` | نصا `title` و`intro` وقائمتا `lessons` و`glossary` |
 | كل درس في `sample.lessons` | نصوص `title` و`summary` و`why` و`minutes` و`takeaway`، وقوائم `objectives` و`sections` و`examples` بالإضافة إلى حقول المهارات والتمارين الموثقة هنا |
 | `objectives[]` | نص لكل هدف |
-| `sections[]` | كائن فيه `heading` و`body`. يقبل `language` عند وجوده `python` أو `javascript`. غياب الحقل يعني قسمًا مشتركًا بين اللغتين |
-| `examples[]` | كائن فيه `title` و`code` و`explanation` و`language`. يقبل `language` القيم `text` و`python` و`javascript` |
+| `sections[]` | كائن فيه `heading` و`body`. يقبل `language` عند وجوده `python` أو `javascript` أو `csharp` أو `cpp` أو `java` أو `go`. غياب الحقل يعني قسمًا مشتركًا بين اللغات |
+| `examples[]` | كائن فيه `title` و`code` و`explanation` و`language`. يقبل `language` القيم `text` و`python` و`javascript` و`csharp` و`cpp` و`java` و`go` |
 | `glossary[]` | كائن فيه `term` و`technical` و`definition` |
 
 تُرفض القوائم المفقودة أو الفارغة، والقيم `null`، وعناصر الأنواع الخاطئة. يشمل ذلك `sections: null`، والهدف المخزن ككائن، و`language: null` في قسم. يستدعي مسار إنشاء الإصدار `Content.Validate` قبل التخزين ويحوّل أخطاء Domain إلى `400 invalid_content` بحسب قراءة الكود. جرى اختبار الرفض مباشرةً في Domain. [Content.cs](../src/Masar.Api/Content.cs#L26)

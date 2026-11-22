@@ -1,18 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
-import { Admin } from './Admin';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { AccessGate, OffersPage, useAccess } from './Access';
-import { errorText, request, segment } from './api';
+import { applicationPath, errorText, request, segment } from './api';
 import { Auth } from './Auth';
-import { BRAND_ASSETS, PRODUCT_DESCRIPTOR, PRODUCT_NAME } from './brand';
-import { CommercialSettings } from './CommercialSettings';
+import { BRAND_ASSETS, BrandWordmark, PRODUCT_DESCRIPTOR, PRODUCT_NAME } from './brand';
+import { exampleLanguageLabels, isLocalExampleLanguage } from './exampleLanguages';
 import { useResource } from './hooks';
-import { Lesson } from './Lesson';
 import { lessonLink, linkedLessonRelease } from './lessonLinks';
-import { GoalCards, PlanPage, ProgressPage } from './Plans';
 import { catalogReleaseOptions } from './releaseSelection';
-import type { Catalog, Content, Lesson as LessonData } from './types';
+import type { Catalog, ContentOverview, ExampleLanguage, Goal, LessonOverview } from './types';
 import { ErrorBox, Heading, Icon, Loading } from './ui';
 import { useSession } from './useSession';
+
+const Admin = lazy(() => import('./Admin').then(module => ({ default: module.Admin })));
+const AccountSettings = lazy(() => import('./AccountSettings').then(module => ({ default: module.AccountSettings })));
+const AccountOperations = lazy(() => import('./AccountOperations').then(module => ({ default: module.AccountOperations })));
+const CommercialSettings = lazy(() => import('./CommercialSettings').then(module => ({ default: module.CommercialSettings })));
+const Lesson = lazy(() => import('./Lesson').then(module => ({ default: module.Lesson })));
+const PlanPage = lazy(() => import('./Plans').then(module => ({ default: module.PlanPage })));
+const ProgressPage = lazy(() => import('./Plans').then(module => ({ default: module.ProgressPage })));
 
 function useRoute() {
   const [hash, setHash] = useState(window.location.hash || '#start');
@@ -20,7 +25,11 @@ function useRoute() {
   return hash.slice(1).split('/');
 }
 
-function LessonCards({ lessons, releaseId }: { lessons: LessonData[]; releaseId: string }) {
+function GoalCards({ goals, curriculum = false }: { goals: Goal[]; curriculum?: boolean }) {
+  return <div className="goals">{goals.map(goal => <a key={goal.id} className="goal" href={`#plan/${segment(goal.id)}`}><div className="goal-top"><Icon name="route" /><span className={`pill ${goal.status === 'planned' ? '' : 'sample'}`}>{goal.status === 'planned' ? 'مخطط' : curriculum ? 'متاح للتعلّم' : 'عينة متاحة'}</span></div><h3>{goal.title}</h3><p>{goal.description}</p><span className="goal-link">استكشف الخطة <Icon name="arrow" /></span></a>)}</div>;
+}
+
+function LessonCards({ lessons, releaseId }: { lessons: LessonOverview[]; releaseId: string }) {
   return <div className="lesson-cards">{lessons.map((lesson, index) => (
     <a className="panel lesson-card" key={lesson.id} href={lessonLink(lesson.id, releaseId)}>
       <span className="step-number">{index + 1}</span><h3>{lesson.title}</h3>
@@ -29,7 +38,7 @@ function LessonCards({ lessons, releaseId }: { lessons: LessonData[]; releaseId:
   ))}</div>;
 }
 
-function UnlockedLessons({ lessons, releaseId }: { lessons: LessonData[]; releaseId: string }) {
+function UnlockedLessons({ lessons, releaseId }: { lessons: LessonOverview[]; releaseId: string }) {
   return <section aria-labelledby="unlocked-lessons"><div className="section-title"><h2 id="unlocked-lessons">دروسك المفعّلة</h2></div>
     {lessons.length ? <LessonCards lessons={lessons} releaseId={releaseId} /> : <p className="muted">لا توجد دروس مفعّلة لحسابك في هذا الإصدار.</p>}
   </section>;
@@ -47,14 +56,15 @@ export default function App() {
   const [sessionNotice, setSessionNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [planReleaseId, setPlanReleaseId] = useState('');
-  const [preferredLanguage, setLanguage] = useState<string>();
-  const language = preferredLanguage ?? (route === 'lesson' && routeLanguage === 'javascript' ? 'javascript' : 'python');
+  const [preferredLanguage, setLanguage] = useState<ExampleLanguage>();
+  const linkedLanguage = route === 'lesson' && (routeLanguage === 'javascript' || isLocalExampleLanguage(routeLanguage)) ? routeLanguage : undefined;
   const [progressRevision, setProgressRevision] = useState(0);
   const [catalogTick, setCatalogTick] = useState(0);
   const refreshOffersOnExit = useRef(false);
   const catalog = useResource<Catalog>('/catalog', catalogTick);
   const commercial = catalog.data?.accessRequired === true;
   const commercialSettings = commercial && Array.isArray(catalog.data?.offers);
+  const reserveOffersLink = catalog.loading && applicationPath('/') === '/nexora-commercial/';
   const access = useAccess(commercial, session?.scope);
   const canReadContent = !!catalog.data && (!commercial || (!checking && access.active));
   const scopedAccess = commercial && (access.goalIds !== undefined || access.lessonIds !== undefined);
@@ -63,12 +73,22 @@ export default function App() {
   const linkedReleaseId = lessonRelease && published.some(item => item.releaseId === lessonRelease) ? lessonRelease : null;
   const releaseId = linkedReleaseId ?? (route === 'plan' && planReleaseId ? planReleaseId : activeId);
   const needsContent = !['auth', 'admin', 'users', 'offers'].includes(route);
-  const content = useResource<Content>(releaseId && canReadContent && needsContent ? `/content/${segment(releaseId)}` : null,
+  const content = useResource<ContentOverview>(releaseId && canReadContent && needsContent ? `/content/${segment(releaseId)}?view=overview` : null,
     catalogTick + (commercial ? (session?.generation ?? 0) + access.version : 0), false, commercial ? session?.scope : undefined);
+  const lesson = route === 'lesson' ? content.data?.sample.lessons.find(item => segment(item.id) === routeParam) : undefined;
+  const exampleLanguages = lesson?.exampleLanguages ?? lesson?.examples?.map(example => example.language);
+  const localLessonLanguage = exampleLanguages?.find(value => isLocalExampleLanguage(value) &&
+    exampleLanguages.every(example => example === value || example === 'text'));
+  const fixedLanguage = isLocalExampleLanguage(localLessonLanguage) && localLessonLanguage !== 'csharp' ? localLessonLanguage : undefined;
+  const language = fixedLanguage ?? preferredLanguage ?? linkedLanguage ??
+    (localLessonLanguage === 'csharp' ? localLessonLanguage : 'python');
   const mainRef = useRef<HTMLElement>(null);
+  const [startupComplete, setStartupComplete] = useState(false);
+  const startupReady = !checking && !catalog.loading && !access.loading && !content.loading;
   const management = !!user && ['Author', 'Reviewer', 'Admin'].includes(user.role);
   const canManageAccess = commercialSettings && user?.role === 'Admin';
   const reloadCatalog = () => setCatalogTick(value => value + 1);
+  useEffect(() => { if (startupReady) setStartupComplete(true); }, [startupReady]);
   useEffect(() => {
     if (route === 'users' || !refreshOffersOnExit.current) return;
     refreshOffersOnExit.current = false;
@@ -99,21 +119,36 @@ export default function App() {
     catch (cause) { if (!session.scope.signal.aborted) setLogoutError(errorText(cause)); }
     finally { setBusy(false); }
   }
+  function passwordUpdated() {
+    setSessionNotice('تم حفظ كلمة المرور الجديدة. سجّل الدخول بها لمتابعة حسابك.');
+    window.location.hash = '#auth';
+    void authenticationChanged();
+  }
   const navigation = [ ['start', 'نقطة البداية', 'home'], ['plan', 'خطتي التعليمية', 'route'], ['progress', 'تقدمي', 'chart'], ['glossary', 'قاموس المصطلحات', 'book'] ] as const;
   const selected = route === 'lesson' ? 'plan' : route;
   function page() {
     if (route === 'auth') {
       if (checking) return <Loading text="جارٍ التحقق من الجلسة…" />;
-      return session && <Auth key={session.generation} commercial={commercial} user={user} scope={session.scope} onIdentity={async id => (await authenticationChanged())?.user?.id === id} />;
+      if (!session) return null;
+      if (user) return <AccountSettings key={session.generation} user={user} scope={session.scope} commercial={commercial}
+        active={access.active && !access.loading} goals={catalog.data?.goals ?? []} onPasswordChanged={passwordUpdated} />;
+      return <Auth key={session.generation} commercial={commercial} scope={session.scope} recovering={routeParam === 'recover'}
+        contactUrl={catalog.data?.contactUrl} onPasswordReset={passwordUpdated} onIdentity={async id => {
+          const matched = (await authenticationChanged())?.user?.id === id;
+          if (matched) setSessionNotice('');
+          return matched;
+        }} />;
     }
     if (route === 'offers') {
       if (catalog.loading) return <Loading text="جارٍ قراءة أسعار المسارات…" />;
       if (catalog.error) return <ErrorBox message={catalog.error} retry={catalog.reload} />;
-      if (commercialSettings && catalog.data) return <OffersPage catalog={catalog.data} user={user} />;
+      if (commercialSettings && catalog.data) return <OffersPage catalog={catalog.data} user={user} scope={session?.scope} />;
       return <><Heading title="أسعار المسارات" /><a className="btn" href="#start">العودة إلى نقطة البداية</a></>;
     }
     if (route === 'users') {
       if (checking || catalog.loading) return <Loading />;
+      if (canManageAccess && session && routeParam === 'requests') return <AccountOperations key={session.generation}
+        scope={session.scope} goals={catalog.data?.goals ?? []} />;
       if (canManageAccess && session) return <CommercialSettings key={session.generation} scope={session.scope} onOffersChanged={() => { refreshOffersOnExit.current = true; }} />;
       return <><Heading title="إعدادات المستخدمين" /><p className="notice">هذه الصفحة متاحة لإدارة المنصة. <a href="#auth">الانتقال إلى الحساب</a></p></>;
     }
@@ -163,7 +198,7 @@ export default function App() {
           <a className="btn primary" href="#plan">{scopedAccess && !goals.length ? 'افتح دروسك' : 'استكشف خطتك'} <Icon name="arrow" /></a>
         </div>
         <div className="hero-art">
-          <img src={BRAND_ASSETS.wordmark} width="1445" height="530" alt={`${PRODUCT_NAME} — Learn to Think. Code to Create.`} lang="en" dir="ltr" />
+          <BrandWordmark />
         </div>
       </section>
       {!!goals.length && <section aria-labelledby="start-goals">
@@ -195,12 +230,17 @@ export default function App() {
     <div className="shell">
       <aside className="sidebar">
         <a href="#start" className="brand" aria-label={`${PRODUCT_NAME} — نقطة البداية`}>
-          <img className="brand-mark" src={BRAND_ASSETS.icon} width="48" height="48" alt="" />
+          <picture className="brand-picture">
+            <source srcSet={BRAND_ASSETS.iconWebp} type="image/webp" />
+            <img className="brand-mark" src={BRAND_ASSETS.icon} width="48" height="48" alt="" />
+          </picture>
           <span><strong dir="ltr" lang="en">{PRODUCT_NAME}</strong><small>{PRODUCT_DESCRIPTOR}</small></span>
         </a>
         <nav className="nav" aria-label="التنقل الرئيسي">
           {navigation.map(([id, title, icon]) => <a key={id} href={`#${id}`} className={selected === id ? 'active' : ''} aria-current={selected === id ? 'page' : undefined}><Icon name={icon} />{title}</a>)}
-          {commercialSettings && <a href="#offers" className={route === 'offers' ? 'active' : ''} aria-current={route === 'offers' ? 'page' : undefined}><Icon name="route" />أسعار المسارات</a>}
+          {(commercialSettings || reserveOffersLink) && <a href={commercialSettings ? '#offers' : undefined}
+            className={route === 'offers' ? 'active' : ''} aria-current={commercialSettings && route === 'offers' ? 'page' : undefined}
+            aria-hidden={reserveOffersLink || undefined}><Icon name="route" />أسعار المسارات</a>}
           {management && <a href="#admin" className={route === 'admin' ? 'active' : ''} aria-current={route === 'admin' ? 'page' : undefined}><Icon name="book" />إصدارات المحتوى</a>}
           {canManageAccess && <a href="#users" className={route === 'users' ? 'active' : ''} aria-current={route === 'users' ? 'page' : undefined}><Icon name="person" />إعدادات المستخدمين</a>}
         </nav>
@@ -219,16 +259,20 @@ export default function App() {
           <ErrorBox message={sessionError || logoutError} retry={refreshProtection} />
           {needsContent && canReadContent && <div className="preferences">
             <label>لغة الأمثلة
-              <select value={language} onChange={event => setLanguage(event.target.value)}><option value="python">Python</option><option value="javascript">JavaScript</option></select>
+              <select value={language} disabled={!!fixedLanguage} onChange={event => setLanguage(event.target.value as ExampleLanguage)}>
+                {Object.entries(exampleLanguageLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
             </label>
             <span className="field-help">لغة القراءة فقط، ولا تغيّر هدفك أو خطتك.</span>
           </div>}
           {sessionNotice && <p className="feedback" role="status">{sessionNotice}</p>}
-          {page()}
-          <footer className="footer">
-            <span><bdi dir="ltr" lang="en">{PRODUCT_NAME}</bdi> · {PRODUCT_DESCRIPTOR}</span>
-            <button className="btn text" disabled={checking} onClick={refreshProtection}>تحديث حماية الجلسة</button>
-          </footer>
+          <Suspense fallback={<Loading />}>
+            {page()}
+            <footer className="footer" aria-hidden={!startupComplete || undefined}>
+              <span><bdi dir="ltr" lang="en">{PRODUCT_NAME}</bdi> · {PRODUCT_DESCRIPTOR}</span>
+              <button className="btn text" disabled={checking} onClick={refreshProtection}>تحديث حماية الجلسة</button>
+            </footer>
+          </Suspense>
         </main>
       </div>
     </div>

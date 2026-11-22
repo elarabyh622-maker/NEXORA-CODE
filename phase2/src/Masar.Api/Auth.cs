@@ -68,6 +68,7 @@ public static class AuthEndpoints
 {
     public static void MapAuth(this WebApplication app)
     {
+        app.MapAccountSecurity();
         app.MapGet("/api/v1/auth/csrf", (HttpContext ctx, IAntiforgery anti) =>
         {
             ctx.Response.Headers.CacheControl = "no-store";
@@ -125,7 +126,7 @@ public static class AuthEndpoints
                 throw LoginFailed();
             }
             var matches = await Db.Query(conn, tx, """
-                SELECT id,user_name,display_name,role,password_hash FROM public.users WHERE normalized_user_name=@name
+                SELECT id,user_name,display_name,role,password_hash FROM public.users WHERE normalized_user_name=@name FOR UPDATE
                 """, r => (User: new Account(r.GetGuid(0), r.GetString(1), r.GetString(2), r.GetString(3)), Hash: r.GetString(4)), ct, ("name", name));
             var match = matches.FirstOrDefault();
             var verified = passwords.Verify(match.User, match.Hash, password);
@@ -183,10 +184,10 @@ public static class AuthEndpoints
             "UPDATE public.sessions SET revoked_at=now() WHERE token_hash=@hash AND revoked_at IS NULL", ct, ("hash", Input.Hash(token)));
     }
 
-    private static string SessionCookie(HttpContext ctx) =>
+    internal static string SessionCookie(HttpContext ctx) =>
         ctx.RequestServices.GetRequiredService<CommercialOptions>().CookieName("Session");
 
-    private static CookieOptions CookieOptions(HttpContext ctx) => new()
+    internal static CookieOptions CookieOptions(HttpContext ctx) => new()
     {
         HttpOnly = true, Secure = ctx.Request.IsHttps, SameSite = SameSiteMode.Strict,
         Path = ctx.Request.PathBase.HasValue ? ctx.Request.PathBase.Value : "/", IsEssential = true

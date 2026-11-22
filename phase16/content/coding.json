@@ -1,0 +1,544 @@
+{
+  "lessons": [
+    {
+      "id": "cpp-code-01",
+      "title": "تكرار الحساب باستخدام الحلقات",
+      "summary": "استخدم for عندما تعرف عدد القيم، واستخدم while عندما يتحدد التوقف بنجاح قراءة القيمة التالية.",
+      "why": "حساب الإجمالي محتاج خطوة واحدة تتكرر لكل مبلغ مهما تغيّر عدد المصروفات.",
+      "objectives": [
+        "أحدد بداية العداد وشرط توقفه.",
+        "أحسب إجماليًا يبدأ من صفر.",
+        "أختار حلقة تعتمد على العدد أو حالة القراءة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.loops"
+      ],
+      "sections": [
+        {
+          "heading": "ابدأ من صفر واجمع كل قيمة مرة",
+          "body": "لو عندك ثلاثة مبالغ، ابدأ total بقيمة 0. في كل دورة اقرأ المبلغ وأضفه بـ total += amount. قيمة total بعد كل دورة تمثل مجموع القيم اللي اتقرأت لحد دلوقتي."
+        },
+        {
+          "heading": "استخدم for عندما تعرف العدد",
+          "body": "في for (int index = 0; index < 3; ++index) يبدأ index عند 0. طالما index أصغر من 3، الجسم يشتغل. بعدها ++index يضيف 1. القيم المستخدمة في الدورات هي 0 و1 و2."
+        },
+        {
+          "heading": "استخدم while عندما يعتمد التكرار على القراءة",
+          "body": "لو العدد غير معروف، جرّب while (std::cin >> amount) لقراءة مبلغ في كل دورة. نهاية الإدخال أو فشل قراءة مبلغ يوقف الحلقة. لما تحتاج تميّز السطر الغلط عن انتهاء البيانات، اقرأ سطرًا كاملًا وافحصه زي ما هنعمل في درس الملفات."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اجمع ثلاث قيم تحت شرط قراءة واضح",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    long long total = 0;\n    for (int index = 0; index < 3; ++index) {\n        long long amount = 0;\n        if (!(std::cin >> amount) || amount < 1 || amount > 1'000'000'000) {\n            std::cerr << \"Expected three valid amounts in piastres.\\n\";\n            return 1;\n        }\n        total += amount;\n    }\n    std::cout << total << '\\n';\n}\n",
+          "explanation": "مع المدخل 3250 1200 750 يطبع 5200. اكتب جدولًا بقيمة index وtotal بعد كل دورة قبل تشغيل المثال."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-code-01-e1",
+          "type": "text",
+          "prompt": "مع for (int index = 0; index < 4; ++index)، الجسم يشتغل كام مرة؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "4"
+          ],
+          "explanation": "يشتغل عند 0 و1 و2 و3، ثم يفشل شرط index < 4.",
+          "hints": [
+            "ابدأ من قيمة العداد قبل أول اختبار."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-01-e2",
+          "type": "text",
+          "prompt": "بدأ total عند صفر. بعد قراءة 100 ثم 50، وقبل قراءة القيمة التالتة، كام total؟",
+          "options": [],
+          "acceptedAnswers": [
+            "150"
+          ],
+          "explanation": "الحلقة تحفظ مجموع اللي قرأته بالفعل. 100 + 50 = 150.",
+          "hints": [
+            "تابع القيمة بعد كل إضافة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-01-e3",
+          "type": "choice",
+          "prompt": "عدد القيم غير معروف، وتريد الاستمرار طالما القراءة نجحت. أي صيغة تُظهر الشرط مباشرة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "while (std::cin >> amount)"
+            },
+            {
+              "id": "b",
+              "text": "if (std::cin >> amount)"
+            },
+            {
+              "id": "c",
+              "text": "for (int i = 0; i < 1; ++i)"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "while تكرر القراءة ما دام شرطها ينجح.",
+          "hints": [
+            "الشرط لازم يتفحص قبل كل دورة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "سواء استخدمت for أو while، حدّد حالة البداية والشرط وأثر دورة واحدة."
+    },
+    {
+      "id": "cpp-code-02",
+      "title": "تقسيم الحساب إلى دوال",
+      "summary": "اكتب دالة باسم يوضح هدفها، وحدد قيم الإدخال ونوع القيمة اللي بترجعها.",
+      "why": "الدالة الصغيرة تفصل قاعدة حساب المبلغ عن طريقة قراءة القيم، وتسهّل اختبار القاعدة وحدها.",
+      "objectives": [
+        "أكتب دالة لها معاملات ونوع قيمة راجعة.",
+        "أستدعي الدالة بقيم مختلفة.",
+        "أفصل الحساب عن الطباعة والإدخال."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.functions"
+      ],
+      "sections": [
+        {
+          "heading": "حدد عقد الدالة",
+          "body": "العقد يوضح ما تتوقعه الدالة من مدخلاتها وما بترجعه. دالة toPiastres تقبل عدد الجنيهات والقروش، وتعيد الناتج بالقروش. في المثال نناديها بقيم صغيرة غير سالبة، والقروش من 0 إلى 99. التحقق من هذه المدخلات مسؤولية الجزء اللي هيستدعي الدالة."
+        },
+        {
+          "heading": "استخدم المعاملات وreturn",
+          "body": "التعريف long long toPiastres(long long pounds, long long piastres) يحدد نوع النتيجة أولًا، ثم الاسم وأسماء ونوع المعاملات. في استدعاء toPiastres(32, 50) تصبح pounds بقيمة 32، وpiastres بقيمة 50. return يسلّم الناتج لمكان الاستدعاء."
+        },
+        {
+          "heading": "خلّي الحساب مستقل",
+          "body": "عرّف الدالة قبل main في المثال. خلي القراءة والطباعة في main، واستعمل return للحساب داخل الدالة. تقدر تستدعيها من اختبار مباشر بقيمة معروفة من غير كتابة أي مدخلات في الطرفية."
+        }
+      ],
+      "examples": [
+        {
+          "title": "حوّل كل مبلغ بدالة واحدة",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nlong long toPiastres(long long pounds, long long piastres) {\n    return pounds * 100 + piastres;\n}\n\nint main() {\n    const long long lunch = toPiastres(32, 50);\n    const long long snack = toPiastres(7, 50);\n    std::cout << lunch + snack << '\\n';\n}\n",
+          "explanation": "يمر كل استدعاء بقيمه لنفس الحساب. main تجمع القيمتين اللي رجعتهم الدالة وتطبع 4000."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-code-02-e1",
+          "type": "text",
+          "prompt": "ما القيمة اللي ترجعها toPiastres(8, 5)؟ اكتب العدد فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "805"
+          ],
+          "explanation": "8 × 100 + 5 يساوي 805.",
+          "hints": [
+            "الوسيط الأول بالجنيه والثاني بالقروش."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-02-e2",
+          "type": "choice",
+          "prompt": "في long long toPiastres(long long pounds, long long piastres)، ما نوع القيمة الراجعة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "pounds"
+            },
+            {
+              "id": "b",
+              "text": "toPiastres"
+            },
+            {
+              "id": "c",
+              "text": "long long"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "النوع المكتوب قبل اسم الدالة هو نوع القيمة الراجعة.",
+          "hints": [
+            "ابدأ بقراءة التعريف من اليسار."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-02-e3",
+          "type": "choice",
+          "prompt": "أي تعديل يخلّي دالة التحويل أسهل في اختبارها بقيم متعددة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "ترجع القيمة وتترك الطباعة للجزء اللي استدعاها"
+            },
+            {
+              "id": "b",
+              "text": "تقرأ المعاملات من الطرفية كل مرة"
+            },
+            {
+              "id": "c",
+              "text": "تطبع الناتج وتحتاج تشغيل البرنامج الكامل لكل حالة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "استدعاء الدالة ومقارنة ما ترجعُه يسهل اختبار الحساب مباشرة.",
+          "hints": [
+            "تخيّل اختبارًا يستدعي الدالة من غير طرفية."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "خلي لكل دالة هدفًا محددًا، واستخدم المعاملات وreturn لنقل القيم."
+    },
+    {
+      "id": "cpp-code-03",
+      "title": "تخزين قائمة مصروفات بـ std::vector",
+      "summary": "استخدم std::vector لقائمة يزيد حجمها وقت التشغيل، ومرّ على عناصرها بأمان.",
+      "why": "البرنامج محتاج يفتكر المصروفات بترتيب إضافتها حتى لو عددها بيتغيّر من تشغيل للتاني.",
+      "objectives": [
+        "أضيف عناصر إلى vector باستخدام push_back.",
+        "أقرأ عدد العناصر بـ size.",
+        "أستخدم حلقة تتعامل مع عناصر vector مباشرة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.vector"
+      ],
+      "sections": [
+        {
+          "heading": "خزّن عناصر من نفس النوع",
+          "body": "اكتب std::vector<long long> amounts; بعد تضمين <vector>. كده تبدأ بقائمة فاضية تستقبل مبالغ صحيحة من نوع long long. amounts.push_back(3250) يضيف العنصر بعد العناصر الموجودة. amounts.size() يرجع عدد العناصر."
+        },
+        {
+          "heading": "مرّ على القيم مباشرة",
+          "body": "الصيغة for (const long long amount : amounts) تمر على القيم بالترتيب. هتشتغل صفر مرات لو القائمة فاضية. استخدمها لما تحتاج القيمة نفسها كحساب المجموع، من غير إدارة عداد يدوي."
+        },
+        {
+          "heading": "استخدم الفهرس عندما تحتاج موضعًا",
+          "body": "أول موضع فهرسه 0. لو القائمة فيها 3 عناصر، آخر موضع فهرسه 2. amounts.at(0) يرجع أول عنصر، ويرمي استثناء إذا القائمة فاضية. استخدم amounts.empty() قبل قراءة أول عنصر. لما تستخدم amounts[index]، مسؤوليتك تتأكد أن الموضع موجود قبل القراءة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "احفظ المبالغ واحسب إجمالي القائمة",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<long long> amounts;\n    amounts.push_back(3250);\n    amounts.push_back(1200);\n    amounts.push_back(750);\n\n    long long total = 0;\n    for (const long long amount : amounts) {\n        total += amount;\n    }\n\n    std::cout << amounts.size() << \" expenses\\n\";\n    std::cout << total << \" piastres\\n\";\n}\n",
+          "explanation": "الإضافة تحفظ ترتيب القيم، والحلقة تجمع العناصر الثلاثة. جرّب إزالة أوامر push_back. القائمة الفاضية تطبع صفر عنصر وصفر إجمالي."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-code-03-e1",
+          "type": "text",
+          "prompt": "بعد عمليتي push_back على vector فارغ، ماذا ترجع size؟ اكتب عددًا.",
+          "options": [],
+          "acceptedAnswers": [
+            "2"
+          ],
+          "explanation": "كل push_back ناجحة تضيف عنصرًا واحدًا.",
+          "hints": [
+            "ابدأ بالحجم صفر وزوّد بعد كل إضافة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-03-e2",
+          "type": "choice",
+          "prompt": "قائمة طولها 3. ما آخر فهرس صالح؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "1"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "3"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الفهارس تبدأ من 0. الثلاثة مواضع هي 0 و1 و2.",
+          "hints": [
+            "رقم العنصر في العد العادي يختلف عن فهرسه."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-03-e3",
+          "type": "choice",
+          "prompt": "ما قيمة total بعد حلقة for على vector فارغ لو بدأ عند صفر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "0"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "يحدث خطأ لمجرد أن القائمة فارغة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "جسم الحلقة لا يشتغل من غير عناصر، فتفضل قيمة البداية.",
+          "hints": [
+            "عدّ الدورات التي يمكن تنفيذها."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم vector لقائمة متغيرة الطول، ومرّ على القيم مباشرة لما الحساب يحتاج كل عنصر."
+    },
+    {
+      "id": "cpp-code-04",
+      "title": "تمثيل المصروف باستخدام struct",
+      "summary": "اجمع الفئة والمبلغ في سجل Expense، وخزّن السجلات معًا داخل vector.",
+      "why": "لما كل مصروف يبقى سجل واحد، تقدر تنقل فئته ومبلغه سوا وتجمع مصروفات الفئة المطلوبة.",
+      "objectives": [
+        "أعرّف struct بحقلي فئة ومبلغ.",
+        "أنشئ قيمًا من النوع Expense.",
+        "أقرأ السجلات في حلقة وأفلترها بحسب الفئة."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.struct"
+      ],
+      "sections": [
+        {
+          "heading": "عرّف شكل السجل",
+          "body": "اكتب struct Expense وحط بداخله std::string category وlong long amountPiastres. كل كائن من النوع Expense عنده القيم الخاصة به. الفاصلة المنقوطة بعد القوس الأخير جزء من تعريف struct."
+        },
+        {
+          "heading": "أنشئ سجلًا واقرأ حقوله",
+          "body": "التهيئة Expense lunch{\"food\", 3250}; تملأ الحقول حسب ترتيب تعريفها. استخدم النقطة للوصول إلى الحقول، مثل lunch.category أو lunch.amountPiastres. خلي وحدة القروش واضحة في اسم الحقل."
+        },
+        {
+          "heading": "خزّن السجلات وفلترها",
+          "body": "استعمل std::vector<Expense> للاحتفاظ بالمصروفات. الصيغة const Expense& expense داخل حلقة for تقرأ السجل من مكانه من غير نسخ، وconst تمنع تعديله من خلال expense. قارن الفئة أولًا، وأضف مبلغ السجل عندما تطابق الفئة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اجمع مصروفات فئة واحدة",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n#include <vector>\n\nstruct Expense {\n    std::string category;\n    long long amountPiastres;\n};\n\nint main() {\n    const std::vector<Expense> expenses{\n        {\"food\", 3250},\n        {\"transport\", 1200},\n        {\"food\", 750},\n    };\n\n    long long foodTotal = 0;\n    for (const Expense& expense : expenses) {\n        if (expense.category == \"food\") {\n            foodTotal += expense.amountPiastres;\n        }\n    }\n    std::cout << foodTotal << '\\n';\n}\n",
+          "explanation": "مصروف النقل يفضل موجود في القائمة. شرط الفئة يدخل مصروفي food فقط في الإجمالي المعروض."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-code-04-e1",
+          "type": "choice",
+          "prompt": "أي تعبير يقرأ مبلغ السجل expense في المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "expense.amountPiastres"
+            },
+            {
+              "id": "b",
+              "text": "Expense.amountPiastres"
+            },
+            {
+              "id": "c",
+              "text": "expense[\"amountPiastres\"]"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "النقطة تصل إلى الحقل في السجل الموجود في المتغير expense.",
+          "hints": [
+            "استخدم اسم المتغير ثم اسم الحقل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-04-e2",
+          "type": "text",
+          "prompt": "لو أضفت {\"transport\", 300} إلى القائمة، ما إجمالي food؟ اكتب عددًا.",
+          "options": [],
+          "acceptedAnswers": [
+            "4000"
+          ],
+          "explanation": "المصروف الجديد فئته transport، وشرط المثال يجمع قيم food فقط.",
+          "hints": [
+            "افحص شرط الفئة قبل الجمع."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-code-04-e3",
+          "type": "choice",
+          "prompt": "أي تعريف يمثّل قائمة تحفظ فئة ومبلغ كل مصروف في عنصر واحد؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "std::vector<std::string>"
+            },
+            {
+              "id": "b",
+              "text": "std::vector<Expense>"
+            },
+            {
+              "id": "c",
+              "text": "std::vector<long long>"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "كل عنصر من النوع Expense يحمل الفئة والمبلغ معًا.",
+          "hints": [
+            "ارجع إلى الحقول الموجودة داخل struct."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "عرّف struct لما تحتاج قيمًا مرتبطة، واستخدم vector من السجلات للحفظ والمرور عليها."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "cpp-code-01",
+      "title": "تكرار الحساب باستخدام الحلقات",
+      "why": "حساب الإجمالي محتاج خطوة واحدة تتكرر لكل مبلغ مهما تغيّر عدد المصروفات.",
+      "skillIds": [
+        "cpp.loops"
+      ]
+    },
+    {
+      "id": "cpp-code-02",
+      "title": "تقسيم الحساب إلى دوال",
+      "why": "الدالة الصغيرة تفصل قاعدة حساب المبلغ عن طريقة قراءة القيم، وتسهّل اختبار القاعدة وحدها.",
+      "skillIds": [
+        "cpp.functions"
+      ]
+    },
+    {
+      "id": "cpp-code-03",
+      "title": "تخزين قائمة مصروفات بـ std::vector",
+      "why": "البرنامج محتاج يفتكر المصروفات بترتيب إضافتها حتى لو عددها بيتغيّر من تشغيل للتاني.",
+      "skillIds": [
+        "cpp.vector"
+      ]
+    },
+    {
+      "id": "cpp-code-04",
+      "title": "تمثيل المصروف باستخدام struct",
+      "why": "لما كل مصروف يبقى سجل واحد، تقدر تنقل فئته ومبلغه سوا وتجمع مصروفات الفئة المطلوبة.",
+      "skillIds": [
+        "cpp.struct"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "cpp.loops",
+      "title": "أكرر قراءة القيم وأحسب مجموعها",
+      "description": "أحدد عدد الدورات أو شرط التوقف وأتتبع ناتج كل تكرار.",
+      "required": {
+        "skill": "cpp.conditions"
+      },
+      "recommended": []
+    },
+    {
+      "id": "cpp.functions",
+      "title": "أفصل الحساب في دالة قابلة للاختبار",
+      "description": "أكتب عقد دالة وأستخدم المعاملات والقيمة الراجعة.",
+      "required": {
+        "skill": "cpp.loops"
+      },
+      "recommended": []
+    },
+    {
+      "id": "cpp.vector",
+      "title": "أخزّن عناصر متغيرة العدد وأمرّ عليها",
+      "description": "أضيف عناصر وأحسب حجم القائمة وأقرأ العناصر في حلقة.",
+      "required": {
+        "skill": "cpp.functions"
+      },
+      "recommended": []
+    },
+    {
+      "id": "cpp.struct",
+      "title": "أمثّل مصروفًا بسجل وأجمع الفئات",
+      "description": "أعرّف حقول المصروف وأخزّن السجلات وأرشّحها بحسب الفئة.",
+      "required": {
+        "skill": "cpp.vector"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "cpp-code-01",
+      "index": 0,
+      "input": "3250 1200 750\n",
+      "output": "5200\n"
+    },
+    {
+      "lessonId": "cpp-code-02",
+      "index": 0,
+      "input": "",
+      "output": "4000\n"
+    },
+    {
+      "lessonId": "cpp-code-03",
+      "index": 0,
+      "input": "",
+      "output": "3 expenses\n5200 piastres\n"
+    },
+    {
+      "lessonId": "cpp-code-04",
+      "index": 0,
+      "input": "",
+      "output": "4000\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "المعامل",
+      "technical": "Parameter",
+      "definition": "اسم لقيمة تستقبلها الدالة وقت الاستدعاء وتستخدمها داخل جسمها."
+    },
+    {
+      "term": "القائمة متغيرة الحجم",
+      "technical": "std::vector",
+      "definition": "حاوية لعناصر من نوع واحد، تحفظ ترتيبهم وتكبر مع الإضافة."
+    },
+    {
+      "term": "السجل المركب",
+      "technical": "struct",
+      "definition": "نوع تجمع فيه حقولًا مترابطة مثل الفئة ومبلغ المصروف."
+    },
+    {
+      "term": "حلقة المرور على العناصر",
+      "technical": "Range-based for",
+      "definition": "صيغة حلقة تمر على عناصر مجموعة بالترتيب."
+    }
+  ]
+}

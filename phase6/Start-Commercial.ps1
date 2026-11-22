@@ -5,7 +5,7 @@ param(
     [switch]$WithoutLab,
     [string]$PublicOrigin,
     [string]$ContactUrl,
-    [ValidateSet('phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1','phase12-ar-v1','phase13-ar-v1')][string]$TargetRelease,
+    [ValidateSet('phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1','phase12-ar-v1','phase13-ar-v1','phase14-ar-v1','phase15-ar-v1','phase16-ar-v1','phase17-ar-v1','phase18-ar-v1')][string]$TargetRelease,
     [ValidateRange(1,10000)][int]$DailyExecutionLimit = 300
 )
 
@@ -35,8 +35,8 @@ $backend = "$origin$mountPath"
 $displayUrl = if ($launch) { "$PublicOrigin$mountPath/#start" } else { "$origin/#start" }
 $assembly = Join-Path $candidate 'Masar.Api.dll'
 $dotnet = (Get-Command dotnet.exe -CommandType Application).Source
-$releases = @('phase4-ar-v1','phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1','phase12-ar-v1','phase13-ar-v1')
-if (-not $TargetRelease) { $TargetRelease = if ($Test) { 'phase7-ar-v1' } else { 'phase13-ar-v1' } }
+$releases = @('phase4-ar-v1','phase7-ar-v1','phase8-ar-v1','phase9-ar-v1','phase10-ar-v1','phase11-ar-v1','phase12-ar-v1','phase13-ar-v1','phase14-ar-v1','phase15-ar-v1','phase16-ar-v1','phase17-ar-v1','phase18-ar-v1')
+if (-not $TargetRelease) { $TargetRelease = if ($Test) { 'phase7-ar-v1' } else { 'phase18-ar-v1' } }
 if ($Initialize -or $PSBoundParameters.ContainsKey('TargetRelease')) { $releases = @($TargetRelease) }
 
 function Test-CommercialReady {

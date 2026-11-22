@@ -62,8 +62,43 @@ public static class Content
         clone.Remove("codeLab");
         ScrubAnswers(clone);
         foreach (var lesson in Lessons(clone))
-            foreach (var exercise in Exercises(lesson)) exercise.Remove("explanation");
+            RemoveExerciseExplanations(lesson);
         return clone;
+    }
+
+    private static JsonObject PublicOverview(JsonObject bundle)
+    {
+        var sample = new JsonObject();
+        foreach (var (key, value) in bundle["sample"]!.AsObject())
+        {
+            if (key != "lessons") sample[key] = value?.DeepClone();
+        }
+        sample["lessons"] = new JsonArray(Lessons(bundle).Select(lesson => (JsonNode)new JsonObject
+        {
+            ["id"] = lesson["id"]?.DeepClone(),
+            ["title"] = lesson["title"]?.DeepClone(),
+            ["summary"] = lesson["summary"]?.DeepClone(),
+            ["minutes"] = lesson["minutes"]?.DeepClone(),
+            ["exampleLanguages"] = new JsonArray((lesson["examples"] as JsonArray ?? []).OfType<JsonObject>()
+                .Select(example => Input.String(example["language"])).Distinct(StringComparer.Ordinal)
+                .Select(language => (JsonNode?)JsonValue.Create(language)).ToArray())
+        }).ToArray());
+        var overview = new JsonObject { ["sample"] = sample, ["graph"] = bundle["graph"]?.DeepClone() };
+        ScrubAnswers(overview);
+        return overview;
+    }
+
+    private static JsonObject PublicLesson(JsonObject lesson)
+    {
+        var clone = lesson.DeepClone().AsObject();
+        ScrubAnswers(clone);
+        RemoveExerciseExplanations(clone);
+        return clone;
+    }
+
+    private static void RemoveExerciseExplanations(JsonObject lesson)
+    {
+        foreach (var exercise in Exercises(lesson)) exercise.Remove("explanation");
     }
     private static void ScrubAnswers(JsonNode? node)
     {
@@ -117,12 +152,13 @@ public static class Content
             return Results.Ok(catalog);
         });
 
-        app.MapGet("/api/v1/content/{releaseId}", async (string releaseId, HttpContext ctx, Db db, CancellationToken ct) =>
+        app.MapGet("/api/v1/content/{releaseId}", async (string releaseId, string? view, HttpContext ctx, Db db, CancellationToken ct) =>
         {
             await using var conn = await db.Open(ct);
             var release = await Find(conn, releaseId, ct);
             var access = await CommercialAccess.ReadEntitlements(ctx, db, ct);
-            var clean = CommercialLearning.ProjectContent(PublicBundle(release.Bundle), access, release);
+            var content = view == "overview" ? PublicOverview(release.Bundle) : PublicBundle(release.Bundle);
+            var clean = CommercialLearning.ProjectContent(content, access, release);
             return Results.Ok(new { release.Id, release.ReleaseId, release.Title, release.Status, sample = clean["sample"], graph = clean["graph"] });
         }).WithMetadata(new ScopedCommercialEndpoint());
         app.MapGet("/api/v1/content/{releaseId}/lessons/{lessonId}", async (string releaseId, string lessonId, HttpContext ctx, Db db, CancellationToken ct) =>
@@ -131,8 +167,7 @@ public static class Content
             var release = await Find(conn, releaseId, ct);
             lessonId = Input.Id(lessonId);
             CommercialLearning.RequireLesson(await CommercialAccess.ReadEntitlements(ctx, db, ct), release, lessonId);
-            var safe = release with { Bundle = PublicBundle(release.Bundle) };
-            return Results.Ok(Lesson(safe, lessonId));
+            return Results.Ok(PublicLesson(Lesson(release, lessonId)));
         }).WithMetadata(new ScopedCommercialEndpoint());
         app.MapGet("/api/v1/admin/releases", async (Db db, CancellationToken ct) =>
         {

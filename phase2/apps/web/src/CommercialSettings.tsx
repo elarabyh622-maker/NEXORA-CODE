@@ -166,6 +166,7 @@ export function CommercialSettings({ scope, onOffersChanged }: { scope: SessionS
   }
 
   return <><Heading title="إعدادات المستخدمين" eyebrow="إدارة الاشتراكات">حدّد ما يقدر كل متعلّم يفتحه بعد مراجعة السداد. أسعار المسارات تظهر للمتعلّمين بعد حفظها.</Heading>
+    <div className="actions"><a className="btn" href="#users/requests">طلبات الحساب والدفع</a></div>
     <ErrorBox message={targets.error} retry={targets.reload} />
     {targets.loading && <Loading text="جارٍ قراءة المسارات والدروس…" />}
     <div className="commercial-settings">

@@ -1,0 +1,602 @@
+{
+  "lessons": [
+    {
+      "id": "csharp-programming-01",
+      "title": "تكرار حركة وجمع الكميات",
+      "summary": "استخدم for لعدد مرات معروف، وwhile لقراءة عدد غير محدد من الحركات. تتبّع المجموع بعد كل دورة.",
+      "why": "تعالج الحلقة أكثر من حركة بالقواعد نفسها، ويساعدك شرط التوقف على قراءة حدودها واختبارها.",
+      "objectives": [
+        "أحدد البداية والشرط وخطوة التحديث في for.",
+        "أختار شرطًا واضحًا للخروج من while.",
+        "أتتبّع متغير المجموع عبر أكثر من دورة."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.loops"
+      ],
+      "sections": [
+        {
+          "heading": "عندما تعرف عدد المرات",
+          "body": "يتكون رأس for من بداية وشرط استمرار وتحديث بعد كل دورة. يبدأ batch من 1 في المثال. يستمر التنفيذ عندما يكون batch <= 3، ثم تزيد batch++ العداد بمقدار واحد. إذا بدأت العد من صفر وأردت ثلاث دورات، استخدم الشرط index < 3."
+        },
+        {
+          "heading": "عندما يحدد الإدخال وقت التوقف",
+          "body": "تستمر while ما دام شرطها صحيحًا. في مثال قراءة الشحنات، تبدأ دورة جديدة عند وصول سطر. يوقف break الحلقة عند السطر الفارغ أو نهاية الإدخال. إذا وصل نص غير صالح، ينتقل continue إلى القراءة التالية من دون زيادة المجموع."
+        },
+        {
+          "heading": "راقب المتغير الذي يجمع القيم",
+          "body": "ابدأ total من الصفر قبل الحلقة، وأضف كل قيمة مقبولة باستخدام total += quantity. إذا أعدت تعريف total داخل كل دورة ستفقد ما جمعته سابقًا. جرّب إدخال 2 ثم -3 ثم 4 ثم سطر فارغ. راقب عدد مرات وصول التنفيذ إلى سطر الجمع."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ثلاث دفعات ثابتة",
+          "language": "csharp",
+          "code": "int total = 0;\nfor (int batch = 1; batch <= 3; batch++)\n{\n    total += 4;\n    Console.WriteLine($\"Batch {batch}: {total}\");\n}\n",
+          "explanation": "تبدأ الدفعة الأولى والرصيد صفر، ثم يزيد المجموع بمقدار 4 في كل دورة."
+        },
+        {
+          "title": "جمع دفعات حتى السطر الفارغ",
+          "language": "csharp",
+          "code": "int total = 0;\nwhile (true)\n{\n    string? input = Console.ReadLine();\n    if (string.IsNullOrWhiteSpace(input))\n    {\n        break;\n    }\n    if (!int.TryParse(input, out int quantity) || quantity < 1)\n    {\n        Console.WriteLine(\"Skipped\");\n        continue;\n    }\n    total += quantity;\n}\nConsole.WriteLine($\"Total: {total}\");\n",
+          "explanation": "أدخل أعدادًا صغيرة في تجربة الجمع. يستبعد البرنامج الحركات غير الموجبة، ويجمع الكميات المقبولة. في مشروع المخزون ستجد فحصًا يمنع تخطي مجال int عند زيادة كمية صنف."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-programming-01-e1",
+          "type": "text",
+          "prompt": "كم مرة ينفذ جسم الحلقة for (int i = 0; i < 4; i++)؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "4"
+          ],
+          "explanation": "قيم i داخل جسم الحلقة هي 0 و1 و2 و3. عند 4 يتوقف التنفيذ.",
+          "hints": [
+            "اكتب قيمة i قبل فحص الشرط كل مرة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-01-e2",
+          "type": "choice",
+          "prompt": "في مثال while جاء السطر \"-7\" وسط مدخلات صحيحة. ماذا يفعل continue؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يوقف البرنامج كله"
+            },
+            {
+              "id": "b",
+              "text": "يتجاوز الجمع لهذه الدورة ويقرأ سطرًا آخر"
+            },
+            {
+              "id": "c",
+              "text": "يعيد محاولة جمع العدد نفسه"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "بعد طباعة Skipped، تنتقل الحلقة إلى بدايتها من دون إضافة -7.",
+          "hints": [
+            "تتبّع موضع سطر الجمع بالنسبة إلى continue."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-01-e3",
+          "type": "choice",
+          "prompt": "أين تضع int total = 0; ليظل المجموع تراكميًا عند جمع عدة دفعات؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "بعد انتهاء الحلقة"
+            },
+            {
+              "id": "b",
+              "text": "داخل الحلقة قبل سطر الجمع"
+            },
+            {
+              "id": "c",
+              "text": "قبل بداية الحلقة"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يتطلب المجموع قيمة واحدة تظل موجودة وتُحدَّث عبر الدورات.",
+          "hints": [
+            "كم مرة يعمل السطر إذا كتبته داخل الجسم؟"
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "عيّن نقطة التوقف قبل بدء الحلقة واجعل المجموع متغيرًا يبقى بين دوراتها."
+    },
+    {
+      "id": "csharp-programming-02",
+      "title": "عزل قاعدة الصرف في دالة",
+      "summary": "عرّف دالة ذات معاملات وقيمة معادة. استدعِ القاعدة ذاتها بأرصدة وطلبات مختلفة.",
+      "why": "الدالة التي تعيد قرارًا يمكن تشغيلها من الطرفية وفحصها في الاختبارات من دون إعادة نسخ الشرط.",
+      "objectives": [
+        "أقرأ اسم الدالة وأنواع معاملاتها ونوع ناتجها.",
+        "أستخدم return لإرجاع قرار إلى من يستدعي الدالة.",
+        "أفصل حساب القرار عن طباعة الرسالة."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.functions"
+      ],
+      "sections": [
+        {
+          "heading": "اقرأ التوقيع قبل الجسم",
+          "body": "الدالة CanIssue تأخذ معاملين من نوع int اسماهما stock وrequested، وتعيد bool. عند الاستدعاء CanIssue(8, 3) يصل 8 إلى stock و3 إلى requested. كتابة أسماء المعاملات مع الوسائط، مثل stock: 8 وrequested: 3، توضح المعنى حين تتشابه الأنواع."
+        },
+        {
+          "heading": "أعد قيمة يستفيد منها المستدعي",
+          "body": "تنتهي الدالة عند return وتسلّم الناتج إلى من استدعاها. يطبع المثال هذه النتيجة خارج الدالة. تستخدم void لدالة تنفّذ عملًا ولا تعيد قيمة، مثل دالة غرضها عرض رسالة. فصل القرار عن العرض يجعل الاختبار يستدعي القاعدة مباشرة."
+        },
+        {
+          "heading": "تدرّب على فصل المهمة",
+          "body": "اكتب دالة TotalUnits تأخذ cartons وunitsPerCarton وتعيد حاصل ضربهما. اطبع نتيجة الاستدعاء في سطر مستقل. جرّب صندوقين وفي كل صندوق 6 وحدات، ثم 0 صناديق. اسأل كيف ستتعامل لاحقًا مع قيم سالبة إذا كان المدخل من المستخدم."
+        }
+      ],
+      "examples": [
+        {
+          "title": "قاعدة قرار تعمل مع أكثر من حالة",
+          "language": "csharp",
+          "code": "Console.WriteLine(CanIssue(stock: 8, requested: 3));\nConsole.WriteLine(CanIssue(stock: 8, requested: 8));\nConsole.WriteLine(CanIssue(stock: 8, requested: 9));\nConsole.WriteLine(CanIssue(stock: 8, requested: 0));\n\nstatic bool CanIssue(int stock, int requested)\n{\n    return requested > 0 && requested <= stock;\n}\n",
+          "explanation": "تعيد CanIssue قرارًا فقط. تشير static هنا إلى أن الدالة المحلية تستخدم ما يصلها في المعاملات من دون التقاط متغيرات من التعليمات المحيطة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-programming-02-e1",
+          "type": "choice",
+          "prompt": "ما نوع القيمة المعادة في static bool CanIssue(int stock, int requested)؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "int"
+            },
+            {
+              "id": "b",
+              "text": "bool"
+            },
+            {
+              "id": "c",
+              "text": "void"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "bool هو نوع النتيجة ويظهر قبل اسم الدالة. int يظهر أمام كل معامل.",
+          "hints": [
+            "ابحث عن النوع بين static واسم الدالة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-02-e2",
+          "type": "choice",
+          "prompt": "الدالة مكتوبة بالترتيب CanIssue(int stock, int requested). أي استدعاء يطلب 4 وحدات من رصيد قدره 10؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "CanIssue(4, 10)"
+            },
+            {
+              "id": "b",
+              "text": "CanIssue(10, 10)"
+            },
+            {
+              "id": "c",
+              "text": "CanIssue(10, 4)"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تُمرر الوسائط بدون أسماء حسب ترتيب تعريف المعاملات.",
+          "hints": [
+            "ابدأ بالرصيد ثم مرِّر الكمية المطلوبة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-02-e3",
+          "type": "choice",
+          "prompt": "تريد اختبار قاعدة القبول باستخدام عشر قيم مختلفة. ما التصميم الذي يسهّل المقارنة آليًا؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "دالة تعيد bool ويقرؤها المستدعي"
+            },
+            {
+              "id": "b",
+              "text": "دالة تقرأ من لوحة المفاتيح وتطبع رسالة فقط"
+            },
+            {
+              "id": "c",
+              "text": "نسخ الشرط عشر مرات من دون دالة"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "ترسل الاختبارات وسائط محددة وتقارن ناتج bool مباشرة بالقيمة المتوقعة.",
+          "hints": [
+            "فكر فيما يمكن للاختبار قياسه بدون قراءة نص الطرفية."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أعطِ الدالة مهمة واحدة ومدخلات صريحة واجعل القيمة المعادة متاحة للاختبار."
+    },
+    {
+      "id": "csharp-programming-03",
+      "title": "مصفوفة وقائمة لأكثر من صنف",
+      "summary": "اعرض عناصر بالترتيب باستخدام foreach. قارن بين مصفوفة ثابتة الطول وقائمة يمكن أن تضيف لها عناصر.",
+      "why": "تحتاج إلى مجموعة لقراءة عدة أصناف، وقد يتغير عددها مع الاستخدام.",
+      "objectives": [
+        "أقرأ عنصرًا بفهرس يبدأ من الصفر.",
+        "أستخدم Length للمصفوفة وCount للقائمة.",
+        "أضيف عنصرًا وأمرّ على المجموعة باستخدام foreach."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.lists"
+      ],
+      "sections": [
+        {
+          "heading": "حجم ثابت أو قابل للزيادة",
+          "body": "المصفوفة string[] تجمع نصوصًا بطول محدد عند إنشائها. يمكنك تعديل عنصر موجود، ويبقى طول المصفوفة كما هو. القائمة List<string> تجمع عناصر النوع نفسه ويتغير عددها عند Add أو Remove. تستخدم المصفوفة Length ويستعمل List<T> الخاصية Count، حيث T اسم عام لنوع العناصر."
+        },
+        {
+          "heading": "اطلب موقعًا صالحًا",
+          "body": "العنصر الأول في الموقع 0 والأخير في الموقع Count - 1 في قائمة غير فارغة. عند العدد 3 تكون المواقع 0 و1 و2. تحقّق من وجود عناصر قبل طلب العنصر الأول. إذا احتجت إلى قيمة كل عنصر فقط فاستعمل foreach، فهي تعطيك القيمة بالتتابع بلا فهرس يدوي."
+        },
+        {
+          "heading": "جرّب تناقص الحجم",
+          "body": "أضف رمزًا رابعًا إلى القائمة في المثال وشغّلها. ثم جرّب RemoveAt(0) قبل foreach. لاحظ أن موقع الرمز الثاني يصبح الأول. عندما تمرّ على قائمة باستخدام foreach، أكمل المرور قبل تعديل عدد عناصرها."
+        }
+      ],
+      "examples": [
+        {
+          "title": "إنشاء قائمة قابلة للإضافة من مصفوفة",
+          "language": "csharp",
+          "code": "string[] initial = { \"P-101\", \"P-102\" };\nList<string> skus = new List<string>(initial);\nskus.Add(\"P-103\");\n\nConsole.WriteLine($\"Initial: {initial.Length}\");\nConsole.WriteLine($\"Current: {skus.Count}\");\nConsole.WriteLine($\"First: {skus[0]}\");\nforeach (string sku in skus)\n{\n    Console.WriteLine(sku);\n}\n",
+          "explanation": "تبدأ القائمة بنسخة من عناصر المصفوفة. الإضافة تزيد عدد عناصر القائمة، وتعرض foreach الرموز حسب ترتيبها داخلها."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-programming-03-e1",
+          "type": "text",
+          "prompt": "في List<int> تحتوي 6 عناصر، ما فهرس العنصر الأخير؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "5"
+          ],
+          "explanation": "يبدأ الفهرس من صفر، فيكون فهرس آخر عنصر أقل من Count بواحد.",
+          "hints": [
+            "اكتب الفهارس بدءًا من 0."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-03-e2",
+          "type": "choice",
+          "prompt": "تضيف رموز أصناف جديدة أثناء تشغيل التطبيق. أي نوع يوفّر Add ويستقبل نصوصًا؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "List<string>"
+            },
+            {
+              "id": "b",
+              "text": "string[]"
+            },
+            {
+              "id": "c",
+              "text": "List<int>"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "القائمة قابلة للتوسّع، وstring يحدد نوع عناصرها.",
+          "hints": [
+            "تحتاج إلى مجموعة يتغير عددها وعنصرها نص."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-03-e3",
+          "type": "choice",
+          "prompt": "تريد طباعة قيمة كل عنصر بترتيبه دون استخدام فهرس. ماذا تختار؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "قراءة skus[skus.Count] مرة واحدة"
+            },
+            {
+              "id": "b",
+              "text": "foreach على skus"
+            },
+            {
+              "id": "c",
+              "text": "طباعة skus.Count فقط"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تمرّ foreach على قيم القائمة بالترتيب وتعطيك كل قيمة داخل الحلقة.",
+          "hints": [
+            "تحتاج إلى الوصول إلى القيم واحدة تلو الأخرى."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم المصفوفة لحجم معلوم والقائمة لحجم يتغير، وابدأ حساب الفهرس من الصفر."
+    },
+    {
+      "id": "csharp-programming-04",
+      "title": "البحث برمز الصنف في قاموس",
+      "summary": "اربط رمزًا بكمية باستخدام Dictionary. تعامل مع رمز غائب أو مكرر من دون تخمين الرصيد.",
+      "why": "رمز الصنف هو هوية ثابتة في مشروع المخزون، بينما موقع الصنف في القائمة قد يتغير.",
+      "objectives": [
+        "أحدد نوع المفتاح ونوع القيمة في Dictionary.",
+        "أقرأ قيمة باستخدام TryGetValue.",
+        "أميّز إضافة مفتاح جديد عن تحديث رصيد موجود."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.dictionaries"
+      ],
+      "sections": [
+        {
+          "heading": "مفتاح لكل صنف",
+          "body": "في Dictionary<string, int> المفتاح نص والقيمة عدد صحيح. لا يستطيع القاموس الاحتفاظ بإدخالين مستقلين بالمفتاح نفسه وفق طريقة المقارنة المختارة. نستخدم StringComparer.OrdinalIgnoreCase في هذا المثال لتطابق الرمزين P-101 وp-101. خذ قرار المقارنة مرة واحدة واتّبعه عند الإضافة والبحث."
+        },
+        {
+          "heading": "تحقّق من وجود المفتاح",
+          "body": "يجيب TryGetValue بنعم ويعطيك القيمة في out إذا وجد الرمز، ويجيب بلا إذا غاب الرمز. قد يكون للصنف الموجود رصيد صفر، ولذلك لا يكفي أن تقارن الكمية بالصفر لتحديد إن كان الرمز موجودًا. قراءة dictionary[sku] مباشرة بمفتاح غائب ترمي استثناء."
+        },
+        {
+          "heading": "فرّق بين الإضافة والتحديث",
+          "body": "يحاول TryAdd إنشاء إدخال جديد. إذا تكرر المفتاح تُعاد false وتبقى القيمة القديمة. الإسناد بـ stock[sku] = value يضيف الرمز إن غاب ويغير قيمته إن وُجد. لذلك تحقّق من وجود الرمز أولًا عندما تعني العملية تحديث صنف معروف. جرّب إضافة p-101 مرة أخرى ثم تغيير قيمة P-101 صراحة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "تمييز صنف بلا رصيد عن رمز غائب",
+          "language": "csharp",
+          "code": "var stock = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);\nstock.Add(\"P-101\", 12);\nstock.Add(\"P-102\", 0);\nConsole.WriteLine(stock.TryAdd(\"p-101\", 2));\n\nstring[] requests = { \"p-101\", \"P-102\", \"P-999\" };\nforeach (string sku in requests)\n{\n    if (stock.TryGetValue(sku, out int quantity))\n    {\n        Console.WriteLine($\"{sku}: {quantity}\");\n    }\n    else\n    {\n        Console.WriteLine($\"{sku}: unknown\");\n    }\n}\n",
+          "explanation": "يُستنتج نوع stock من new رغم كتابة var. يبقى الرصيد الأصلي للرمز المكرر 12. يظهر رصيد P-102 صفرًا، ويظهر P-999 بوصفه غير معروف."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-programming-04-e1",
+          "type": "choice",
+          "prompt": "أضفت A-1 برصيد 0. ماذا تعني نتيجة TryGetValue لهذا الرمز؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "false لأن الرصيد صفر"
+            },
+            {
+              "id": "b",
+              "text": "يُرمى استثناء لأن الصفر غير مقبول"
+            },
+            {
+              "id": "c",
+              "text": "true والقيمة الناتجة 0"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تقيس نتيجة TryGetValue وجود المفتاح. القيمة الخاصة به قد تكون صفرًا.",
+          "hints": [
+            "وجود الصنف ورصيده معلومتان مختلفتان."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-04-e2",
+          "type": "text",
+          "prompt": "القاموس يحوي A-1 برصيد 8. حاولت TryAdd(\"A-1\", 2). ما الرصيد الموجود الآن؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "8"
+          ],
+          "explanation": "ترفض TryAdd المفتاح المكرر وتترك القيمة القديمة كما هي.",
+          "hints": [
+            "تتبّع الإضافة المقترحة عندما يكون المفتاح موجودًا."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-programming-04-e3",
+          "type": "choice",
+          "prompt": "أي زوج من أنواع المفاتيح والقيم يناسب رمز SKU يحتوي حروفًا ورصيدًا بعدد وحدات صحيحة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "Dictionary<int, string>"
+            },
+            {
+              "id": "b",
+              "text": "Dictionary<string, int>"
+            },
+            {
+              "id": "c",
+              "text": "Dictionary<bool, string>"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يأتي نوع المفتاح أولًا ونوع القيمة ثانيًا.",
+          "hints": [
+            "الرمز يستخدم للبحث، والرصيد هو ما تريد استرجاعه."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ابحث بمفتاح واضح وتعامل مع وجود المفتاح مباشرة بدل استنتاجه من القيمة."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "csharp-programming-01",
+      "title": "تكرار حركة وجمع الكميات",
+      "why": "تعالج الحلقة أكثر من حركة بالقواعد نفسها، ويساعدك شرط التوقف على قراءة حدودها واختبارها.",
+      "skillIds": [
+        "csharp.loops"
+      ]
+    },
+    {
+      "id": "csharp-programming-02",
+      "title": "عزل قاعدة الصرف في دالة",
+      "why": "الدالة التي تعيد قرارًا يمكن تشغيلها من الطرفية وفحصها في الاختبارات من دون إعادة نسخ الشرط.",
+      "skillIds": [
+        "csharp.functions"
+      ]
+    },
+    {
+      "id": "csharp-programming-03",
+      "title": "مصفوفة وقائمة لأكثر من صنف",
+      "why": "تحتاج إلى مجموعة لقراءة عدة أصناف، وقد يتغير عددها مع الاستخدام.",
+      "skillIds": [
+        "csharp.lists"
+      ]
+    },
+    {
+      "id": "csharp-programming-04",
+      "title": "البحث برمز الصنف في قاموس",
+      "why": "رمز الصنف هو هوية ثابتة في مشروع المخزون، بينما موقع الصنف في القائمة قد يتغير.",
+      "skillIds": [
+        "csharp.dictionaries"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "csharp.loops",
+      "title": "أكرر العمليات وأجمع القيم باستخدام حلقات C#",
+      "description": "أكتب حلقة بعدد معلوم وأخرى تتوقف عند انتهاء الإدخال، وأتتبع المجموع عبر التكرار.",
+      "required": {
+        "allOf": [
+          {
+            "skill": "csharp.conditions"
+          },
+          {
+            "skill": "core.loops"
+          }
+        ]
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.functions",
+      "title": "أعرّف دالة C# وأستخدم قيمتها المعادة",
+      "description": "أفصل قاعدة عمل إلى دالة ذات مدخلات وأنواع محددة وقيمة ناتجة يمكن اختبارها.",
+      "required": {
+        "allOf": [
+          {
+            "skill": "csharp.loops"
+          },
+          {
+            "skill": "core.functions"
+          }
+        ]
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.lists",
+      "title": "أستخدم المصفوفات والقوائم في C#",
+      "description": "أختار مجموعة مرتبة حسب حاجتها إلى التوسع، وأفهرس عناصرها أو أمرّ عليها.",
+      "required": {
+        "skill": "csharp.functions"
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.dictionaries",
+      "title": "أبحث عن القيم بمفاتيحها في قاموس C#",
+      "description": "أختار نوع المفتاح والقيمة وأتحقق من وجود المفتاح قبل التعامل مع القيمة.",
+      "required": {
+        "skill": "csharp.lists"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "csharp-programming-01",
+      "index": 0,
+      "input": "",
+      "output": "Batch 1: 4\nBatch 2: 8\nBatch 3: 12\n"
+    },
+    {
+      "lessonId": "csharp-programming-01",
+      "index": 1,
+      "input": "2\n-3\n4\n\n",
+      "output": "Skipped\nTotal: 6\n"
+    },
+    {
+      "lessonId": "csharp-programming-01",
+      "index": 1,
+      "input": "",
+      "output": "Total: 0\n"
+    },
+    {
+      "lessonId": "csharp-programming-02",
+      "index": 0,
+      "input": "",
+      "output": "True\nTrue\nFalse\nFalse\n"
+    },
+    {
+      "lessonId": "csharp-programming-03",
+      "index": 0,
+      "input": "",
+      "output": "Initial: 2\nCurrent: 3\nFirst: P-101\nP-101\nP-102\nP-103\n"
+    },
+    {
+      "lessonId": "csharp-programming-04",
+      "index": 0,
+      "input": "",
+      "output": "False\np-101: 12\nP-102: 0\nP-999: unknown\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "التكرار بعدد معلوم",
+      "technical": "for loop",
+      "definition": "حلقة تحدد بداية العداد وشرط استمرار وخطوة تحديث كل دورة."
+    },
+    {
+      "term": "القيمة المعادة",
+      "technical": "Return value",
+      "definition": "الناتج الذي تعيده الدالة إلى موضع استدعائها."
+    },
+    {
+      "term": "الفهرس",
+      "technical": "Index",
+      "definition": "رقم يحدد موقع عنصر في مجموعة مرتبة، ويبدأ من الصفر في مصفوفة أو قائمة C#."
+    },
+    {
+      "term": "القاموس",
+      "technical": "Dictionary<TKey, TValue>",
+      "definition": "مجموعة تربط مفتاحًا فريدًا بقيمة وتتيح البحث بالمفتاح."
+    }
+  ]
+}

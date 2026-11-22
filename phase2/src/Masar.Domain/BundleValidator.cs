@@ -118,8 +118,8 @@ internal static class BundleValidator
     {
         RequiredText(section, "heading", path, errors);
         RequiredText(section, "body", path, errors);
-        if (section.ContainsKey("language") && String(section["language"]) is not ("python" or "javascript"))
-            errors.Add($"{path}.language must be python or javascript when present");
+        if (section.ContainsKey("language") && !IsExampleLanguage(String(section["language"])))
+            errors.Add($"{path}.language must be python, javascript, csharp, cpp, java or go when present");
     }
 
     private static void ValidateExample(JsonObject example, string path, List<string> errors)
@@ -127,9 +127,13 @@ internal static class BundleValidator
         RequiredText(example, "title", path, errors);
         RequiredText(example, "code", path, errors);
         RequiredText(example, "explanation", path, errors);
-        if (String(example["language"]) is not ("text" or "python" or "javascript"))
-            errors.Add($"{path}.language must be text, python or javascript");
+        var language = String(example["language"]);
+        if (language != "text" && !IsExampleLanguage(language))
+            errors.Add($"{path}.language must be text, python, javascript, csharp, cpp, java or go");
     }
+
+    private static bool IsExampleLanguage(string? language) =>
+        language is "python" or "javascript" or "csharp" or "cpp" or "java" or "go";
 
     private static void ValidateGlossaryEntry(JsonObject entry, string path, List<string> errors)
     {

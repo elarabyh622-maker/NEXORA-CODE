@@ -11,6 +11,7 @@ public static class Maintenance
 {
     public const string HistoryTable = "public.masar_schema_migrations";
     private const long MigrationLock = 632793228502L;
+    private const int MaxBundleFileBytes = 2 * 1024 * 1024;
 
     public static async Task<int> Run(string[] args, IConfiguration config, bool development)
     {
@@ -99,9 +100,13 @@ public static class Maintenance
     private static async Task<(string Hash, JsonObject Bundle)> ReadBundle(string path)
     {
         if (!Path.IsPathFullyQualified(path)) throw new MigrationFailure("absolute_bundle_path_required");
-        var file = new FileInfo(path);
-        if (!file.Exists || file.Length > 1_048_576) throw new MigrationFailure("invalid_bundle_file");
-        var payload = await File.ReadAllBytesAsync(path);
+        if (!File.Exists(path)) throw new MigrationFailure("invalid_bundle_file");
+        await using var file = File.OpenRead(path);
+        var length = file.Length;
+        if (length > MaxBundleFileBytes) throw new MigrationFailure("invalid_bundle_file");
+        var payload = new byte[(int)length];
+        await file.ReadExactlyAsync(payload);
+        if (file.ReadByte() != -1) throw new MigrationFailure("invalid_bundle_file");
         var bundle = JsonNode.Parse(payload.AsSpan().StartsWith(new byte[] { 0xef, 0xbb, 0xbf }) ? payload.AsSpan(3) : payload,
             documentOptions: new() { MaxDepth = 64 })?.AsObject()
             ?? throw ApiError.Invalid();
@@ -111,16 +116,17 @@ public static class Maintenance
 
     private static void VerifyCurriculum(JsonObject bundle)
     {
-        var release = Input.String(bundle["sample"]?["releaseId"]);
+        var phase = ReviewedPhase(Input.String(bundle["sample"]?["releaseId"]));
+        if (phase == 0) throw new MigrationFailure("unsupported_reviewed_curriculum");
         var paths = new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
             ["explore"] = LessonRange("core", 12),
             ["python"] = [.. LessonRange("core", 12), .. LessonRange("py", 12)],
             ["web"] = [.. LessonRange("core", 12), .. LessonRange("web", 12)]
         };
-        if (release is "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
+        if (phase >= 7)
             paths.Add("data-analysis", [.. paths["python"], .. LessonRange("data", 8)]);
-        if (release is "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
+        if (phase >= 8)
         {
             paths.Add("sql", LessonRange("sql", 6));
             paths.Add("web-data", [.. paths["web"], .. LessonRange("web-data", 5)]);
@@ -131,10 +137,7 @@ public static class Maintenance
             VerifyPlan(CurriculumEngine.Plan(bundle, "git-workshop", ["web.lesson11"], allowedLessonIds: workshopLessons),
                 paths["git-workshop"]);
         }
-        else if (release is not ("phase4-ar-v1" or "phase7-ar-v1"))
-            throw new MigrationFailure("unsupported_reviewed_curriculum");
-
-        if (release is "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
+        if (phase >= 9)
         {
             paths.Add("python-projects", [.. paths["python"], .. LessonRange("pyproj", 3)]);
             paths.Add("sql-write", [.. paths["sql"], .. LessonRange("sql-write", 4)]);
@@ -148,7 +151,7 @@ public static class Maintenance
                 LessonRange("fullstack", 2));
         }
 
-        if (release is "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
+        if (phase >= 10)
         {
             paths.Add("javascript-projects", [.. paths["web-data"], .. LessonRange("jsproj", 4)]);
             paths.Add("react", [.. paths["javascript-projects"], .. LessonRange("react", 7)]);
@@ -160,7 +163,7 @@ public static class Maintenance
             VerifyPlan(CurriculumEngine.Plan(bundle, "react-fullstack", ["react.project", "backend.tests"]), []);
         }
 
-        if (release is "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1")
+        if (phase >= 11)
         {
             paths.Add("algorithms", [.. paths["explore"], .. LessonRange("alg", 8)]);
             paths.Add("oop", [.. paths["python-projects"], .. LessonRange("oop", 6)]);
@@ -170,7 +173,7 @@ public static class Maintenance
             VerifyPlan(CurriculumEngine.Plan(bundle, "problem-solving", ["alg.recursion"]), LessonRange("solve", 6));
         }
 
-        if (release is "phase12-ar-v1" or "phase13-ar-v1")
+        if (phase >= 12)
         {
             string[] modules = [.. LessonRange("pd", 5), .. LessonRange("stat", 5),
                 .. LessonRange("ana-sql", 5), "applied-01"];
@@ -181,7 +184,7 @@ public static class Maintenance
                 ["applied-01"]);
         }
 
-        if (release == "phase13-ar-v1")
+        if (phase >= 13)
         {
             string[] modules = [.. LessonRange("mlprep", 4), .. LessonRange("mlmod", 4),
                 .. LessonRange("mleval", 4), "mlproject-01"];
@@ -191,7 +194,83 @@ public static class Maintenance
             VerifyPlan(CurriculumEngine.Plan(bundle, "machine-learning", ["mleval.report"]), ["mlproject-01"]);
         }
 
-        var exercises = Content.Lessons(bundle).SelectMany(Content.Exercises).ToArray();
+        if (phase >= 14)
+        {
+            var basics = LessonRange("csharp-basics", 4);
+            var programming = LessonRange("csharp-programming", 4);
+            var application = LessonRange("csharp-application", 4);
+            string[] coreSkills = ["core.workspace", "core.input-output", "core.algorithm", "core.variables",
+                "core.types", "core.expressions", "core.conditions", "core.loops", "core.collections",
+                "core.functions", "core.testing"];
+            paths.Add("csharp", ["core-01", basics[0], "core-02", "core-03", "core-04", "core-05",
+                basics[1], "core-06", basics[2], "core-07", basics[3], "core-08", programming[0],
+                "core-09", "core-10", .. programming.Skip(1), .. application.Take(3), "core-11",
+                application[3], "csproject-01"]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "csharp", coreSkills),
+                [.. basics, .. programming, .. application, "csproject-01"]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "csharp", ["csharp.testing"]), ["csproject-01"]);
+        }
+
+        if (phase >= 15)
+        {
+            string[] modules = [.. LessonRange("codex-local", 4), .. LessonRange("codex-flow", 4), "codex-project-01"];
+            paths.Add("codex-automation", ["core-01", .. modules]);
+            VerifyPlan(CurriculumEngine.Plan(bundle, "codex-automation", ["core.workspace"]), modules);
+        }
+
+        var lessons = Content.Lessons(bundle).ToArray();
+        var exercises = lessons.SelectMany(Content.Exercises).ToArray();
+        if (phase >= 16)
+        {
+            (int Lessons, int Exercises, int Goals, string Failure) expected = phase switch
+            {
+                16 => (173, 493, 23, "curriculum_cpp_inventory_check_failed"),
+                17 => (185, 529, 24, "curriculum_java_inventory_check_failed"),
+                _ => (197, 565, 25, "curriculum_go_inventory_check_failed")
+            };
+            if (lessons.Length != expected.Lessons || exercises.Length != expected.Exercises ||
+                bundle["graph"]?["goals"]?.AsArray().Count != expected.Goals ||
+                bundle["codeLab"] is not JsonArray { Count: 48 } labs)
+                throw new MigrationFailure(expected.Failure);
+
+            AddLocalLanguageTrack("cpp", "curriculum_cpp_inventory_check_failed");
+            if (phase >= 17)
+            {
+                const string failure = "curriculum_java_inventory_check_failed";
+                AddLocalLanguageTrack("java", failure);
+                VerifyLocalProject("java-project-01", "/projects/java-library-starter-v1.zip", failure);
+            }
+            if (phase >= 18)
+            {
+                const string failure = "curriculum_go_inventory_check_failed";
+                AddLocalLanguageTrack("go", failure);
+                VerifyLocalProject("go-project-01", "/projects/go-tasks-api-starter-v1.zip", failure);
+                VerifyPlan(CurriculumEngine.Plan(bundle, "go", ["go.project"]), []);
+            }
+
+            void AddLocalLanguageTrack(string goal, string failure)
+            {
+                string[] modules = [.. LessonRange($"{goal}-basics", 4), .. LessonRange($"{goal}-code", 4),
+                    .. LessonRange($"{goal}-data", 3), $"{goal}-project-01"];
+                paths.Add(goal, ["core-01", .. modules]);
+                VerifyPlan(CurriculumEngine.Plan(bundle, goal, ["core.workspace"]), modules);
+
+                var moduleIds = modules.ToHashSet(StringComparer.Ordinal);
+                if (labs.Any(lab => moduleIds.Contains(Input.String(lab?["lessonId"]))) ||
+                    lessons.Where(lesson => moduleIds.Contains(Input.String(lesson["id"])))
+                        .Any(lesson => Content.Exercises(lesson).Count() != 3))
+                    throw new MigrationFailure(failure);
+            }
+
+            void VerifyLocalProject(string lessonId, string download, string failure)
+            {
+                if (bundle["sample"]?["projects"] is not JsonArray projects ||
+                    !projects.Any(project => Input.String(project?["lessonId"]) == lessonId &&
+                        Input.String(project?["download"]) == download))
+                    throw new MigrationFailure(failure);
+            }
+        }
+
         foreach (var exercise in exercises)
         {
             var answers = exercise["acceptedAnswers"]!.AsArray().Select(Input.String).ToArray();
@@ -205,7 +284,7 @@ public static class Maintenance
         }
         foreach (var (goal, expected) in paths)
             VerifyPlan(CurriculumEngine.Plan(bundle, goal), expected);
-        Console.WriteLine($"Curriculum checked: {Content.Lessons(bundle).Count()} lessons, {exercises.Length} graded exercises, {paths.Count} complete learning paths.");
+        Console.WriteLine($"Curriculum checked: {lessons.Length} lessons, {exercises.Length} graded exercises, {paths.Count} complete learning paths.");
     }
 
     private static void VerifyPlan(JsonObject plan, IEnumerable<string> expected)
@@ -218,13 +297,31 @@ public static class Maintenance
     private static string[] LessonRange(string prefix, int count) =>
         Enumerable.Range(1, count).Select(number => FormattableString.Invariant($"{prefix}-{number:00}")).ToArray();
 
+    private static int ReviewedPhase(string releaseId) => releaseId switch
+    {
+        "phase4-ar-v1" => 4,
+        "phase7-ar-v1" => 7,
+        "phase8-ar-v1" => 8,
+        "phase9-ar-v1" => 9,
+        "phase10-ar-v1" => 10,
+        "phase11-ar-v1" => 11,
+        "phase12-ar-v1" => 12,
+        "phase13-ar-v1" => 13,
+        "phase14-ar-v1" => 14,
+        "phase15-ar-v1" => 15,
+        "phase16-ar-v1" => 16,
+        "phase17-ar-v1" => 17,
+        "phase18-ar-v1" => 18,
+        _ => 0
+    };
+
     private static async Task Import(NpgsqlConnection conn, string path, bool publishInitial, string? reviewedHash = null)
     {
         var (hash, bundle) = await ReadBundle(path);
         var releaseId = Input.String(bundle["sample"]?["releaseId"]);
         if (reviewedHash is not null)
         {
-            if (releaseId is not ("phase4-ar-v1" or "phase7-ar-v1" or "phase8-ar-v1" or "phase9-ar-v1" or "phase10-ar-v1" or "phase11-ar-v1" or "phase12-ar-v1" or "phase13-ar-v1") || hash != reviewedHash.ToLowerInvariant())
+            if (ReviewedPhase(releaseId) == 0 || hash != reviewedHash.ToLowerInvariant())
                 throw new MigrationFailure("reviewed_curriculum_digest_mismatch");
             VerifyCurriculum(bundle);
         }
@@ -270,6 +367,11 @@ public static class Maintenance
         if (active == releaseId && status == "published") return;
         var requiredPredecessor = releaseId switch
         {
+            "phase18-ar-v1" => "phase17-ar-v1",
+            "phase17-ar-v1" => "phase16-ar-v1",
+            "phase16-ar-v1" => "phase15-ar-v1",
+            "phase15-ar-v1" => "phase14-ar-v1",
+            "phase14-ar-v1" => "phase13-ar-v1",
             "phase13-ar-v1" => "phase12-ar-v1",
             "phase12-ar-v1" => "phase11-ar-v1",
             "phase11-ar-v1" => "phase10-ar-v1",

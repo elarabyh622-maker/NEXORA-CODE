@@ -1,0 +1,434 @@
+{
+  "lessons": [
+    {
+      "id": "go-data-01",
+      "title": "فحص عنوان المهمة قبل قبوله",
+      "summary": "ميّز بين JSON تالف وطلب سليم البنية يحمل عنوانًا غير مقبول.",
+      "why": "قد يصل طلب بصيغة JSON صحيحة وعنوان مكوّن من فراغات. يجب فحص محتوى العنوان قبل إنشاء أي مهمة.",
+      "objectives": [
+        "قراءة رسالة JSON",
+        "التحقق من العنوان",
+        "التفريق بين أسباب الرفض"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.validation"
+      ],
+      "sections": [
+        {
+          "heading": "قراءة رسالة JSON",
+          "body": "يقرأ المثال سطرًا واحدًا من الطرفية بواسطة bufio.Scanner ثم يمرّر بايتاته إلى json.Unmarshal. يحتاج فك الترميز إلى عنوان المتغير بواسطة &input. أدخل كائنًا فيه مفتاح title وقيمة نصية."
+        },
+        {
+          "heading": "التحقق من العنوان",
+          "body": "تسأل strings.TrimSpace هل سيغيّر حذف الفراغات الخارجية النص. يرفض المثال العنوان الفارغ أو المحاط بفراغ، ويقبل المسافات الداخلية. يفحص utf8.RuneCountInString الطول بوحدات Unicode حتى 120، ويفحص unicode.IsControl محارف التحكم."
+        },
+        {
+          "heading": "التفريق بين أسباب الرفض",
+          "body": "جرّب سطرًا ينقصه قوس JSON، ثم كائنًا عنوانه فارغ، ثم عنوانًا عربيًا من كلمتين. قارن الرسائل الثلاث. ستتولى طبقة HTTP في المشروع تحويل أخطاء الطلب إلى رموز حالة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "قبول عنوان من رسالة طرفية",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"bufio\"\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"os\"\n\t\"strings\"\n\t\"unicode\"\n\t\"unicode/utf8\"\n)\n\ntype CreateInput struct {\n\tTitle string `json:\"title\"`\n}\n\nfunc main() {\n\tscanner := bufio.NewScanner(os.Stdin)\n\tif !scanner.Scan() {\n\t\tfmt.Println(\"Missing input\")\n\t\treturn\n\t}\n\tvar input CreateInput\n\tif err := json.Unmarshal(scanner.Bytes(), &input); err != nil {\n\t\tfmt.Println(\"Invalid JSON input\")\n\t\treturn\n\t}\n\ttitle := input.Title\n\tif title == \"\" || strings.TrimSpace(title) != title || utf8.RuneCountInString(title) > 120 || strings.IndexFunc(title, unicode.IsControl) >= 0 {\n\t\tfmt.Println(\"Invalid title\")\n\t\treturn\n\t}\n\tfmt.Println(\"Accepted:\", title)\n}\n",
+          "explanation": "أدخل {\"title\":\"Learn Go\"} فيظهر Accepted: Learn Go. أبقِ علامتي التنصيص حول اسم الحقل وحول قيمته."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-data-01-e1",
+          "type": "choice",
+          "prompt": "أي عنوان يقبله المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "\"  Read\""
+            },
+            {
+              "id": "b",
+              "text": "\"Read Go\""
+            },
+            {
+              "id": "c",
+              "text": "\"\""
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الفاصل بين الكلمتين مسموح.",
+          "hints": [
+            "افحص الفراغات الخارجية ثم الداخلية."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-data-01-e2",
+          "type": "text",
+          "prompt": "أدخلت {}. ما الرسالة؟",
+          "options": [],
+          "acceptedAnswers": [
+            "Invalid title"
+          ],
+          "explanation": "ينجح فك الكائن الفارغ ثم يرفض الفحص العنوان الفارغ.",
+          "hints": [
+            "يبقى Title عند قيمته الصفرية."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-data-01-e3",
+          "type": "choice",
+          "prompt": "أي دالة تحسب وحدات Unicode في العنوان؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "len"
+            },
+            {
+              "id": "b",
+              "text": "strings.TrimSpace"
+            },
+            {
+              "id": "c",
+              "text": "utf8.RuneCountInString"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تعد الدالة وحدات Unicode في النص.",
+          "hints": [
+            "يتطلب الحرف العربي عادة أكثر من بايت."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ميّز بين JSON تالف وطلب سليم البنية يحمل عنوانًا غير مقبول."
+    },
+    {
+      "id": "go-data-02",
+      "title": "معالج HTTP يعيد قائمة المهام",
+      "summary": "اربط GET /tasks بدالة تكتب قائمة JSON وتحدد نوع المحتوى.",
+      "why": "يحدد المسار المورد المطلوب، وتوضح طريقة HTTP العملية المطلوبة، ويخبر نوع المحتوى العميل كيف يقرأ الرد.",
+      "objectives": [
+        "تحديد الطريقة والمسار",
+        "كتابة استجابة JSON",
+        "تنفيذ الطلب داخل البرنامج"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.http"
+      ],
+      "sections": [
+        {
+          "heading": "تحديد الطريقة والمسار",
+          "body": "ينشئ http.NewServeMux موجّهًا للطلبات. يربط النمط GET /tasks طلب عرض القائمة بالدالة list. يناسب هذا النمط خط أساس Go 1.26 في الدورة."
+        },
+        {
+          "heading": "كتابة استجابة JSON",
+          "body": "تستقبل الدالة ResponseWriter لكتابة الرد وRequest لقراءة معلومات الطلب. اضبط Content-Type قبل كتابة الجسم. يكتب Encode تمثيل الشريحة الفارغة [] ويضيف سطرًا جديدًا. أول كتابة ناجحة للجسم ترسل الحالة 200 تلقائيًا."
+        },
+        {
+          "heading": "تنفيذ الطلب داخل البرنامج",
+          "body": "يبني httptest.NewRequest طلبًا موجّهًا إلى /tasks، ويسجل NewRecorder الرد في الذاكرة. يمرّر ServeHTTP الطلب إلى الموجّه. بذلك يمكن رؤية نتيجة الاستدعاء على جهازك دون بدء خادم مستمر."
+        }
+      ],
+      "examples": [
+        {
+          "title": "عرض قائمة فارغة عبر معالج HTTP",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"net/http\"\n\t\"net/http/httptest\"\n)\n\nfunc list(w http.ResponseWriter, r *http.Request) {\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\tif err := json.NewEncoder(w).Encode([]string{}); err != nil {\n\t\treturn\n\t}\n}\n\nfunc main() {\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"GET /tasks\", list)\n\treq := httptest.NewRequest(\"GET\", \"/tasks\", nil)\n\tres := httptest.NewRecorder()\n\tmux.ServeHTTP(res, req)\n\tfmt.Println(res.Code)\n\tfmt.Print(res.Body.String())\n}\n",
+          "explanation": "يظهر 200 ثم [] في السطر التالي. يمر الطلب عبر الموجّه نفسه الذي يختار المعالج حسب الطريقة والمسار."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-data-02-e1",
+          "type": "choice",
+          "prompt": "أي طلب يصل إلى دالة list في المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "GET /tasks"
+            },
+            {
+              "id": "b",
+              "text": "POST /tasks"
+            },
+            {
+              "id": "c",
+              "text": "GET /task"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يتطابق الطلب مع طريقة GET ومسار /tasks.",
+          "hints": [
+            "راجع النمط المسجل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-data-02-e2",
+          "type": "text",
+          "prompt": "ما جسم الاستجابة لعرض القائمة الفارغة؟ اكتب JSON فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "[]"
+          ],
+          "explanation": "تُرمّز الشريحة الفارغة إلى [].",
+          "hints": [
+            "تُمثّل القائمة بمصفوفة JSON."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-data-02-e3",
+          "type": "choice",
+          "prompt": "متى يضبط المعالج Content-Type؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "بعد خروج main"
+            },
+            {
+              "id": "b",
+              "text": "قبل إرسال الجسم"
+            },
+            {
+              "id": "c",
+              "text": "بعد قراءة العميل للجسم"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يجب ضبط الترويسات قبل بدء كتابة الاستجابة.",
+          "hints": [
+            "تبدأ أول كتابة للجسم بإرسال الترويسات."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اربط GET /tasks بدالة تكتب قائمة JSON وتحدد نوع المحتوى."
+    },
+    {
+      "id": "go-data-03",
+      "title": "اختبار عقد HTTP دون فتح منفذ",
+      "summary": "قارن الرد الفعلي بالمتوقع لطلب صحيح وطريقة غير مسموحة باستخدام httptest.",
+      "why": "يمكن لاختبار صغير كشف خطأ في الطريقة أو المسار حتى إذا كانت دالة العرض ترجع بيانات صحيحة وحدها.",
+      "objectives": [
+        "تحديد حالتي الاختبار",
+        "عزل استجابة كل حالة",
+        "تجربة فحص يفشل"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.tests"
+      ],
+      "sections": [
+        {
+          "heading": "تحديد حالتي الاختبار",
+          "body": "سجّل مسار GET /tasks ثم اكتب جدولًا فيه طريقة الطلب والحالة المتوقعة لكل صف. نتوقع 200 عند العرض و405 عند إرسال POST إلى مسار يدعم GET. في المشروع النهائي يتوفر معالج مستقل لعملية الإنشاء."
+        },
+        {
+          "heading": "عزل استجابة كل حالة",
+          "body": "أنشئ طلبًا ومسجلًا جديدين داخل كل دورة حتى لا تختلط أجسام الاستجابات. استدعِ ServeHTTP وقارن res.Code بالقيمة المتوقعة من الصف. يطبع المثال اسم الحالة والرمز الفعلي ونتيجة المقارنة."
+        },
+        {
+          "heading": "تجربة فحص يفشل",
+          "body": "غيّر الحالة المتوقعة لطلب POST إلى 200. ستعرض المقارنة false لأن الموجّه ما زال يعيد 405. في مشروع Go تُحفظ الاختبارات داخل ملفات تنتهي بـ _test.go، وتستعمل t.Errorf أو t.Fatalf لتسجيل الفشل عند تشغيل go test."
+        }
+      ],
+      "examples": [
+        {
+          "title": "جدول طلبات ونتائج متوقعة",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"fmt\"\n\t\"net/http\"\n\t\"net/http/httptest\"\n)\n\nfunc main() {\n\tmux := http.NewServeMux()\n\tmux.HandleFunc(\"GET /tasks\", func(w http.ResponseWriter, r *http.Request) {\n\t\tw.Header().Set(\"Content-Type\", \"application/json\")\n\t\tfmt.Fprintln(w, \"[]\")\n\t})\n\tcases := []struct {\n\t\tmethod string\n\t\twant int\n\t}{\n\t\t{\"GET\", 200},\n\t\t{\"POST\", 405},\n\t}\n\tfor _, tc := range cases {\n\t\treq := httptest.NewRequest(tc.method, \"/tasks\", nil)\n\t\tres := httptest.NewRecorder()\n\t\tmux.ServeHTTP(res, req)\n\t\tfmt.Println(tc.method, res.Code, res.Code == tc.want)\n\t}\n}\n",
+          "explanation": "تعني true أن الحالة الفعلية طابقت التوقع. جرّب كذلك تغيير المسار في الطلب إلى /missing وتتبّع حالتي الجدول."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-data-03-e1",
+          "type": "choice",
+          "prompt": "أي كائن يحتفظ برمز الرد وجسمه؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "الطلب req"
+            },
+            {
+              "id": "b",
+              "text": "الموجّه mux"
+            },
+            {
+              "id": "c",
+              "text": "المسجل res"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يخزّن ResponseRecorder تفاصيل الاستجابة.",
+          "hints": [
+            "راجع الكائن الذي قرأت منه Code."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-data-03-e2",
+          "type": "text",
+          "prompt": "ما الرمز الفعلي لطلب POST في المثال؟",
+          "options": [],
+          "acceptedAnswers": [
+            "405"
+          ],
+          "explanation": "يعيد الموجّه 405 عند تطابق المسار فقط مع طريقة أخرى.",
+          "hints": [
+            "المسار موجود لكن الطريقة غير مسجلة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-data-03-e3",
+          "type": "choice",
+          "prompt": "ما الفحص الذي يكشف أن الخادم أعاد قائمة خاطئة رغم نجاح 200؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "فحص رمز الحالة وحده"
+            },
+            {
+              "id": "b",
+              "text": "فك جسم JSON ومقارنة عناصره بالمتوقع"
+            },
+            {
+              "id": "c",
+              "text": "فحص طريقة الطلب وحدها"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الرمز يصف نجاح الاستجابة، ومقارنة الجسم تختبر البيانات المعروضة.",
+          "hints": [
+            "ماذا يقرأ مستخدم القائمة؟"
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "قارن الرد الفعلي بالمتوقع لطلب صحيح وطريقة غير مسموحة باستخدام httptest."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "go-data-01",
+      "title": "فحص عنوان المهمة قبل قبوله",
+      "why": "قد يصل طلب بصيغة JSON صحيحة وعنوان مكوّن من فراغات. يجب فحص محتوى العنوان قبل إنشاء أي مهمة.",
+      "skillIds": [
+        "go.validation"
+      ]
+    },
+    {
+      "id": "go-data-02",
+      "title": "معالج HTTP يعيد قائمة المهام",
+      "why": "يحدد المسار المورد المطلوب، وتوضح طريقة HTTP العملية المطلوبة، ويخبر نوع المحتوى العميل كيف يقرأ الرد.",
+      "skillIds": [
+        "go.http"
+      ]
+    },
+    {
+      "id": "go-data-03",
+      "title": "اختبار عقد HTTP دون فتح منفذ",
+      "why": "يمكن لاختبار صغير كشف خطأ في الطريقة أو المسار حتى إذا كانت دالة العرض ترجع بيانات صحيحة وحدها.",
+      "skillIds": [
+        "go.tests"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "go.validation",
+      "title": "فحص عنوان المهمة قبل قبوله",
+      "description": "ميّز بين JSON تالف وطلب سليم البنية يحمل عنوانًا غير مقبول.",
+      "required": {
+        "skill": "go.structs"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.http",
+      "title": "معالج HTTP يعيد قائمة المهام",
+      "description": "اربط GET /tasks بدالة تكتب قائمة JSON وتحدد نوع المحتوى.",
+      "required": {
+        "skill": "go.validation"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.tests",
+      "title": "اختبار عقد HTTP دون فتح منفذ",
+      "description": "قارن الرد الفعلي بالمتوقع لطلب صحيح وطريقة غير مسموحة باستخدام httptest.",
+      "required": {
+        "skill": "go.http"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "go-data-01",
+      "index": 0,
+      "input": "{\"title\":\"Learn Go\"}\n",
+      "output": "Accepted: Learn Go\n"
+    },
+    {
+      "lessonId": "go-data-01",
+      "index": 0,
+      "input": "{\"title\":\" تعلم\"}\n",
+      "output": "Invalid title\n"
+    },
+    {
+      "lessonId": "go-data-01",
+      "index": 0,
+      "input": "{\"title\":\"تعلم البرمجة\"}\n",
+      "output": "Accepted: تعلم البرمجة\n"
+    },
+    {
+      "lessonId": "go-data-01",
+      "index": 0,
+      "input": "{\n",
+      "output": "Invalid JSON input\n"
+    },
+    {
+      "lessonId": "go-data-02",
+      "index": 0,
+      "input": "",
+      "output": "200\n[]\n"
+    },
+    {
+      "lessonId": "go-data-03",
+      "index": 0,
+      "input": "",
+      "output": "GET 200 true\nPOST 405 true\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "معالج الطلب",
+      "technical": "HTTP handler",
+      "definition": "دالة أو كائن يستقبل طلب HTTP ويكتب الرد."
+    },
+    {
+      "term": "مسجّل الاستجابة",
+      "technical": "ResponseRecorder",
+      "definition": "أداة من httptest تسجل الحالة والترويسات والجسم أثناء تجربة معالج HTTP."
+    }
+  ]
+}

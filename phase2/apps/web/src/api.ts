@@ -125,8 +125,8 @@ export async function verifySession(signal: AbortSignal): Promise<User | null> {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET';
   const scope = options.scope;
-  const credentialSubmission = path === '/auth/login' || path === '/auth/register';
-  const identityEndpoint = credentialSubmission || path === '/auth/logout';
+  const credentialSubmission = path === '/auth/login' || path === '/auth/register' || path === '/auth/reset-password';
+  const identityEndpoint = credentialSubmission || path === '/auth/logout' || path === '/auth/change-password';
   const protectedRead = path.startsWith('/me/') || path.startsWith('/learning-plans/') || path.startsWith('/admin/')
     || path.startsWith('/lab/drafts/') || path.startsWith('/lab/runs/') || path.startsWith('/lab/evidence?');
   if (!scope) {

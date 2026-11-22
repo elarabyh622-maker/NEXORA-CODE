@@ -1,0 +1,602 @@
+{
+  "lessons": [
+    {
+      "id": "csharp-application-01",
+      "title": "نمذجة الصنف بكائن",
+      "summary": "اجمع بيانات الصنف في كائن، واستخدم خصائص وأنواعًا تعبّر عن الحقول واستخدامها.",
+      "why": "تنتقل بيانات الصنف كوحدة واحدة بين عمليات العرض والبحث والحفظ بدل إبقاء أسماء وكميات في مجموعات منفصلة.",
+      "objectives": [
+        "أفرّق بين تعريف النوع وإنشاء كائن باستخدام new.",
+        "أبني خصائص وأفهم دور المنشئ في تهيئة القيم.",
+        "أقرأ تعريف record المستخدم في مشروع المخزون وأفهم تحديث النسخة باستخدام with."
+      ],
+      "minutes": "30–35",
+      "skillIds": [
+        "csharp.objects"
+      ],
+      "sections": [
+        {
+          "heading": "من الحقول المتفرقة إلى النوع",
+          "body": "تجمع class خصائص كيان وعملياته. يحدد تعريف StockItem شكل بيانات الصنف، وتنشئ new نسخة تحمل قيمًا معينة. يمكن إنشاء كائنَين من النوع نفسه بأسماء مختلفة. يستقبل المنشئ معاملات عند إنشاء الكائن، ويحمل اسم النوع ذاته."
+        },
+        {
+          "heading": "حدّد من يقرأ ومن يغيّر",
+          "body": "تعطي صيغة get; فقط حق قراءة الخاصية للمستدعي، ويمكن تهيئتها في المنشئ. الخاصية التي تعلن private set يمكن تغييرها من داخل النوع عبر عملية تضبط قواعد التحديث. نستخدم نوعًا بخصائص للقراءة فقط في المثال الأول لأن الاسم والرمز يظلان ثابتين خلال هذه التجربة."
+        },
+        {
+          "heading": "اقرأ شكل Product في المشروع",
+          "body": "يستخدم مشروع المخزون record صغيرًا لصنف له Sku وName وQuantity. كل قيمة تحددها عند الإنشاء، ويعطي with كائنًا جديدًا بالحقول القديمة باستثناء الحقول المذكورة. يحتفظ المثال بالنسختين لتلاحظ الفرق. في المشروع، تستبدل قواعد المخزون نسخة الصنف في القاموس بالنسخة الجديدة بعد قبول الحركة. غيّر قيمة Quantity في مثال with وأعد التشغيل."
+        }
+      ],
+      "examples": [
+        {
+          "title": "نوع صنف بخصائص تقرأ بعد الإنشاء",
+          "language": "csharp",
+          "code": "StockItem notebook = new StockItem(\"P-101\", \"Notebook\");\nStockItem pen = new StockItem(\"P-102\", \"Pen\");\nConsole.WriteLine($\"{notebook.Sku}: {notebook.Name}\");\nConsole.WriteLine($\"{pen.Sku}: {pen.Name}\");\n\nclass StockItem\n{\n    public string Sku { get; }\n    public string Name { get; }\n\n    public StockItem(string sku, string name)\n    {\n        Sku = sku;\n        Name = name;\n    }\n}\n",
+          "explanation": "يسند المنشئ معاملات كل استدعاء إلى خصائص كائنه. public تتيح قراءة الخاصية من التعليمات المحيطة، وتتيح استدعاء المنشئ لإنشاء كائن جديد."
+        },
+        {
+          "title": "إنشاء نسخة من الصنف بكمية جديدة",
+          "language": "csharp",
+          "code": "Product before = new Product(\"P-101\", \"Notebook\", 12);\nProduct after = before with { Quantity = 15 };\nConsole.WriteLine($\"Before: {before.Sku} {before.Quantity}\");\nConsole.WriteLine($\"After: {after.Sku} {after.Quantity}\");\n\nrecord Product(string Sku, string Name, int Quantity);\n",
+          "explanation": "يولّد تعريف record خصائص تحمل الأسماء والأنواع المعطاة. تغيّر الخاصية Quantity في النسخة الجديدة وتبقى قيمتها في before مستقلة عنها هنا."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-application-01-e1",
+          "type": "choice",
+          "prompt": "لدينا class StockItem مع public string Sku { get; }. من أين تأتي القيمة التي يقرأها التطبيق بعد إنشاء الكائن في المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "من اسم ملف المشروع"
+            },
+            {
+              "id": "b",
+              "text": "من القيمة التي وضعها المنشئ في الخاصية"
+            },
+            {
+              "id": "c",
+              "text": "من رقم ترتيب الكائن في قائمة"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تصل القيمة إلى المنشئ كوسيط، ويهيئ بها خاصية Sku للكائن الجديد.",
+          "hints": [
+            "تتبّع الوسيط الأول في استدعاء new."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-01-e2",
+          "type": "text",
+          "prompt": "كانت before.Quantity تساوي 4. نفذنا Product after = before with { Quantity = 7 }; ما قيمة before.Quantity الآن؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "4"
+          ],
+          "explanation": "تحمل النسخة الجديدة 7 ويبقى الكائن الأول بقيمته السابقة.",
+          "hints": [
+            "حدد أي متغير يستقبل نتيجة with."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-01-e3",
+          "type": "choice",
+          "prompt": "تريد عرض كود الصنف واسمه ورصيده معًا بعد البحث بالرمز. أي شكل يقلل احتمال جمع اسم ورصيد من صنفين مختلفين؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "قائمتان مستقلتان للأسماء والكميات"
+            },
+            {
+              "id": "b",
+              "text": "متغير كمية واحد لجميع الرموز"
+            },
+            {
+              "id": "c",
+              "text": "قاموس يربط الرمز بكائن الصنف الذي يحمل البيانات معًا"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يرجع البحث كائنًا واحدًا بخصائص الصنف نفسه.",
+          "hints": [
+            "فكر في شكل النتيجة التي يعيدها البحث."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اجمع بيانات الصنف في نوع واضح، وحدّث النسخة التي يحتفظ بها المخزون بعد التحقق من الحركة."
+    },
+    {
+      "id": "csharp-application-02",
+      "title": "قراءة الخطأ واختيار مكان معالجته",
+      "summary": "ميّز الخطأ وقت البناء عن المشكلة أثناء التشغيل. استخدم throw وtry وcatch لجعل الفشل واضحًا.",
+      "why": "قاعدة المخزون تحتاج إلى إيقاف عملية غير سليمة، وتحتاج واجهة الطرفية إلى تحويل سبب الإيقاف إلى رسالة مفهومة.",
+      "objectives": [
+        "أفرّق بين رسالة بناء واستثناء أثناء التشغيل.",
+        "أرفع استثناء محددًا لحالة غير صالحة.",
+        "ألتقط الاستثناء في مكان يعرف كيف يتعامل معه."
+      ],
+      "minutes": "25–30",
+      "skillIds": [
+        "csharp.errors"
+      ],
+      "sections": [
+        {
+          "heading": "حدّد متى حدث الخطأ",
+          "body": "يمنع الخطأ وقت البناء إنتاج نسخة قابلة للتشغيل، مثل إسناد نص إلى int. يحدث استثناء وقت التشغيل بعد بدء البرنامج، مثل طلب حركة غير مسموحة أو تعذّر قراءة ملف. اقرأ نوع الاستثناء ورسالته ومكانه لتفرق بين السبب وأثره."
+        },
+        {
+          "heading": "أوقف العملية عند تجاوز العقد",
+          "body": "تستخدم طبقة المخزون ArgumentOutOfRangeException عند تمرير كمية خارج المجال المسموح. وتستخدم InvalidOperationException لحركة لا يمكن تنفيذها بالرصيد الحالي. يوقف throw الدالة قبل وصولها إلى عملية الحساب أو التعديل. تستطيع واجهة الطرفية استخدام TryParse قبل استدعاء قاعدة العمل عندما يأتيها نص المستخدم."
+        },
+        {
+          "heading": "عالج الخطأ حيث يمكنك الإبلاغ عنه",
+          "body": "جرّب تحديد جزء صغير داخل try، ثم التقط في catch الأنواع التي تعرف كيف تعرض مشكلتها. بعد رصد حركة مرفوضة، احتفظ بالبيانات السابقة. الالتقاط العام والتجاهل قد يخفيان عيبًا أو يجعلانه يبدو نجاحًا. غيّر قيم الطلبات في المثال ولاحظ الموضع الذي ينتقل عنده التنفيذ إلى catch."
+        }
+      ],
+      "examples": [
+        {
+          "title": "حساب المتبقي مع رفض محدد السبب",
+          "language": "csharp",
+          "code": "foreach (int requested in new[] { 2, 0, 7, 5 })\n{\n    try\n    {\n        int remaining = Remaining(stock: 5, requested: requested);\n        Console.WriteLine($\"Remaining: {remaining}\");\n    }\n    catch (ArgumentOutOfRangeException)\n    {\n        Console.WriteLine(\"Quantity must be positive.\");\n    }\n    catch (InvalidOperationException)\n    {\n        Console.WriteLine(\"Insufficient stock.\");\n    }\n}\n\nstatic int Remaining(int stock, int requested)\n{\n    if (requested <= 0)\n    {\n        throw new ArgumentOutOfRangeException(nameof(requested));\n    }\n    if (requested > stock)\n    {\n        throw new InvalidOperationException(\"Insufficient stock.\");\n    }\n    return stock - requested;\n}\n",
+          "explanation": "يأخذ كل طلب رصيدًا ابتدائيًا موحدًا قدره 5 لتختبر كل حالة باستقلال. nameof يعيد اسم المعامل ليظهر في تشخيص الاستثناء."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-application-02-e1",
+          "type": "choice",
+          "prompt": "أي حالة تظهر في العادة في وقت بناء البرنامج قبل تشغيله؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "كتابة int count = \"three\"; في الشيفرة"
+            },
+            {
+              "id": "b",
+              "text": "محاولة قراءة ملف مساره غير موجود أثناء تشغيل البرنامج"
+            },
+            {
+              "id": "c",
+              "text": "استدعاء دالة بقيمة int صحيحة النوع لكن غير مسموحة للمخزون"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يمكن للمترجم كشف عدم مطابقة النوع في الإسناد قبل أن يبدأ البرنامج.",
+          "hints": [
+            "اسأل أي حالة يعرفها المترجم دون معرفة مدخلات التشغيل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-02-e2",
+          "type": "choice",
+          "prompt": "أين تعرض رسالة للمستخدم عن صرف مرفوض في تطبيق له طبقة قواعد وواجهة طرفية؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "في ملف البيانات كأنه صنف جديد"
+            },
+            {
+              "id": "b",
+              "text": "في واجهة الطرفية التي تستدعي العملية وتتعامل مع فشلها"
+            },
+            {
+              "id": "c",
+              "text": "بعد حفظ التعديل المرفوض"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "ترفض طبقة القواعد التغيير وتعرض واجهة الطرفية السبب وتملك سياق الأمر.",
+          "hints": [
+            "حدد الجزء المسؤول عن قراءة أوامر المستخدم وعرض النتائج."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-02-e3",
+          "type": "choice",
+          "prompt": "كمية موجبة تساوي 8 والرصيد 5. أي نتيجة تلائم المثال عند استدعاء Remaining؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "Quantity must be positive."
+            },
+            {
+              "id": "b",
+              "text": "Remaining: -3"
+            },
+            {
+              "id": "c",
+              "text": "Insufficient stock."
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تنجح الكمية في فحص الإيجابية، ثم يرمي الفحص الثاني استثناء عدم كفاية الرصيد.",
+          "hints": [
+            "افحص الإيجابية أولًا ثم قارن الكمية بالرصيد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "ارفض الحركة قبل تعديل البيانات، وبلّغ عن السبب في الموضع الذي يملك سياق الطلب."
+    },
+    {
+      "id": "csharp-application-03",
+      "title": "حفظ الأصناف في JSON وإعادة قراءتها",
+      "summary": "حوّل قائمة الأصناف إلى JSON واحفظها في ملف تجريبي. افتح الملف من جديد وحوّله إلى كائنات C#.",
+      "why": "المتغيرات تنتهي بانتهاء العملية. يستبقي الملف بيانات المخزون لكي يستعيدها الأمر التالي.",
+      "objectives": [
+        "أستخدم JsonSerializer لكتابة كائنات وقراءتها.",
+        "أستخدم Path.Combine لإنشاء مسار وFile لأداء القراءة والكتابة.",
+        "أفرّق بين ملف جديد وملف موجود به بيانات تالفة."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "csharp.json"
+      ],
+      "sections": [
+        {
+          "heading": "بيانات في الذاكرة وتمثيلها على القرص",
+          "body": "ينشئ JsonSerializer.Serialize نص JSON من الكائنات. تحفظ File.WriteAllText النص في المسار المعطى. تسترجع File.ReadAllText النص، ثم يحوله JsonSerializer.Deserialize<List<Product>> إلى قائمة من النوع المطلوب. تجلب عبارة using System.Text.Json الأسماء التي يستخدمها المثال من مكتبة .NET."
+        },
+        {
+          "heading": "ابدأ بملف جديد تعرف مكانه",
+          "body": "يؤلف Path.Combine مسارًا من مجلد واسم ملف. ينشئ المثال مجلدًا مؤقتًا جديدًا خاصًا بالتشغيل ويزيله في finally سواء نجحت التجربة أو حدث خطأ. بيانات المشروع تُحفظ في ملف عمل مستمر، ويكتب الحفظ إلى ملف مؤقت قبل استبدال الملف القديم، حتى تبقى النسخة السابقة متاحة إذا تعطلت خطوة الكتابة قبل الاستبدال."
+        },
+        {
+          "heading": "افصل فشل القراءة عن البدء من الصفر",
+          "body": "يمكن لمشروع صغير أن يبدأ فارغًا عند غياب ملف العمل. إذا وُجد الملف ولم يمكن تفسير JSON أو لم تحقق بياناته قواعد المخزون، أظهر خطأ وأوقف العملية مع إبقاء الملف الأصلي. جرّب في المثال أن تكتب نصًا تجريبيًا غير صالح داخل المجلد المؤقت قبل القراءة، وراقب أن JSON غير الصالح يؤدي إلى JsonException."
+        }
+      ],
+      "examples": [
+        {
+          "title": "حفظ قائمة الأصناف واستعادتها",
+          "language": "csharp",
+          "code": "using System.Text.Json;\n\nstring directory = Directory.CreateTempSubdirectory(\"nexora-json-\").FullName;\ntry\n{\n    string path = Path.Combine(directory, \"inventory.json\");\n    var original = new List<Product>\n    {\n        new Product(\"P-101\", \"Notebook\", 12),\n        new Product(\"P-102\", \"Pen\", 4)\n    };\n\n    string json = JsonSerializer.Serialize(original);\n    File.WriteAllText(path, json);\n    string stored = File.ReadAllText(path);\n    List<Product> restored = JsonSerializer.Deserialize<List<Product>>(stored)\n        ?? throw new InvalidDataException(\"Inventory data is missing.\");\n    foreach (Product item in restored)\n    {\n        Console.WriteLine($\"{item.Sku}: {item.Quantity}\");\n    }\n}\nfinally\n{\n    Directory.Delete(directory, recursive: true);\n}\n\nrecord Product(string Sku, string Name, int Quantity);\n",
+          "explanation": "تذهب القراءة إلى الملف الذي كتبناه، وتعرض الأرصدة من الكائنات المعاد إنشاؤها. تعالج ?? حالة القيمة null بعد التحويل. يقتصر الحذف في finally على المجلد المؤقت الذي أنشأه هذا المثال."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-application-03-e1",
+          "type": "choice",
+          "prompt": "لديك تطبيق يراد له فتح قائمة الأصناف التي حفظتها بالأمس. ما ترتيب العمليات المناسب؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "تحويل كائنات جديدة إلى JSON ثم قراءة الأرصدة القديمة منها"
+            },
+            {
+              "id": "b",
+              "text": "قراءة نص الملف ثم تحويله إلى قائمة أصناف"
+            },
+            {
+              "id": "c",
+              "text": "كتابة ملف فارغ ثم قراءته"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يستجيب File.ReadAllText بالتمثيل المخزن ثم يعيد Deserialize بناء الكائنات منه.",
+          "hints": [
+            "فكر متى تصبح البيانات نصًا ومتى تعود كائنات."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-03-e2",
+          "type": "choice",
+          "prompt": "تطبيق المخزون وجد ملف عمله، لكنه لا يحتوي JSON صالحًا. ما القرار الذي يحمي البيانات الموجودة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "افترض أن المخزون فارغ واحفظ فوق الملف"
+            },
+            {
+              "id": "b",
+              "text": "أنشئ أرصدة عشوائية من أسماء الأصناف"
+            },
+            {
+              "id": "c",
+              "text": "أظهر خطأ القراءة واترك الملف دون تعديل"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "رفض العملية يبقي الملف الأصلي متاحًا للفحص أو الاستعادة.",
+          "hints": [
+            "فرّق بين غياب الملف ووجود ملف تعذّر فهمه."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-03-e3",
+          "type": "text",
+          "prompt": "ما اسم الدالة التي تحول كائنات C# إلى نص JSON في المثال؟ اكتب اسم الدالة فقط مع مراعاة حالة الأحرف.",
+          "options": [],
+          "acceptedAnswers": [
+            "Serialize"
+          ],
+          "explanation": "تنتج JsonSerializer.Serialize نص JSON من الكائن المعطى.",
+          "hints": [
+            "بدأنا بقائمة كائنات؛ ابحث عن الدالة التي سبقت كتابة الملف."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب تمثيلًا واضحًا للبيانات واقرأه إلى نوع معلوم، وتوقف عند مشكلة قراءة بدل البدء فوق الملف القديم."
+    },
+    {
+      "id": "csharp-application-04",
+      "title": "اختبار القاعدة قبل الاعتماد عليها",
+      "summary": "شغّل اختبارات قصيرة بقيم معلومة وتوقعات مكتوبة. جرّب تغيير الشرط ورؤية الاختبار الذي يلتقط الخلل.",
+      "why": "يظهر الفحص الآلي خللًا قد لا تلاحظه في تجربة ناجحة واحدة، خاصة عند الرصيد صفر أو صرف كامل الكمية.",
+      "objectives": [
+        "أجهز مدخلًا وأشغّل الدالة وأقارن النتيجة بما توقعته.",
+        "أفرّق بين الحالة المعتادة والحد والمدخل المرفوض.",
+        "أقرأ نتيجة اختبار وأربطها بالقاعدة المتأثرة."
+      ],
+      "minutes": "30–35",
+      "skillIds": [
+        "csharp.testing"
+      ],
+      "sections": [
+        {
+          "heading": "اجعل الاختبار قابلًا للتكرار",
+          "body": "ابدأ من حالة معروفة، ثم شغّل العملية، ثم قارن النتيجة بتوقع معلوم مسبقًا. التوقع في اختبار صرف 3 من 5 معلوم من القاعدة. عندما يفشل الاختبار، اجعل الرسالة تذكر اسم الحالة وتوقعك والقيمة التي ظهرت."
+        },
+        {
+          "heading": "اختر مدخلات تكشف أخطاء مختلفة",
+          "body": "أضف حالة صرف معتادة وحالة صرف كامل الرصيد وحالة طلب أكبر منه وصفر. قد ينجح شرط يستخدم < بدل <= في الحالة المعتادة ويفشل فقط عند التساوي. في تطبيق يغيّر الحالة، اختبر أيضًا الرصيد بعد طلب مرفوض، وبعد إعادة فتح ملف الحفظ."
+        },
+        {
+          "heading": "شغّل اختبارًا ثم غيّر القاعدة عمدًا",
+          "body": "شغّل المثال كما هو. بعد ذلك عدّل <= إلى < في CanIssue وأعد التشغيل. اقرأ اسم أول اختبار فاشل وما توقعه. أعِد الشرط الصحيح وشغّل الاختبارات مرة أخرى. يستخدم المشروع برنامج اختبارات Console مستقلًا يُشغّل بـ dotnet run ويطبع PASS أو FAIL."
+        }
+      ],
+      "examples": [
+        {
+          "title": "فحص أربعة قرارات بدون حزم إضافية",
+          "language": "csharp",
+          "code": "Check(\"partial issue\", expected: true, actual: CanIssue(5, 3));\nCheck(\"exact balance\", expected: true, actual: CanIssue(5, 5));\nCheck(\"insufficient\", expected: false, actual: CanIssue(5, 6));\nCheck(\"zero quantity\", expected: false, actual: CanIssue(5, 0));\n\nstatic bool CanIssue(int stock, int requested)\n{\n    return requested > 0 && requested <= stock;\n}\n\nstatic void Check(string name, bool expected, bool actual)\n{\n    if (actual != expected)\n    {\n        throw new InvalidOperationException($\"{name}: expected {expected}, got {actual}\");\n    }\n    Console.WriteLine($\"PASS: {name}\");\n}\n",
+          "explanation": "ترمي Check استثناء عند اختلاف النتيجة، فينتهي البرنامج عند أول إخفاق. يعرض مشروع المخزون نتيجة كل اختبار ثم يعيد رمز خروج يدل على النجاح أو الفشل."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "csharp-application-04-e1",
+          "type": "choice",
+          "prompt": "وقع خطأ جعل القاعدة تستخدم requested < stock بدل requested <= stock. أي اختبار يكشفه؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "صرف 2 من 8"
+            },
+            {
+              "id": "b",
+              "text": "صرف 9 من 8"
+            },
+            {
+              "id": "c",
+              "text": "صرف 8 من 8"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "تقبل القاعدة الأصلية صرف كامل الرصيد، بينما يرفضه <.",
+          "hints": [
+            "اختر حالة يغيّر التساوي نتيجتها."
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-04-e2",
+          "type": "choice",
+          "prompt": "بدأت بكمية 6 وأرسلت طلب صرف 7. ماذا تتحقق منه علاوةً على أن العملية أعادت رفضًا؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "بقاء كمية الصنف 6"
+            },
+            {
+              "id": "b",
+              "text": "تحول الكمية إلى -1"
+            },
+            {
+              "id": "c",
+              "text": "حذف الصنف من الملف"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يحمي الفحص الرصيد من تعديل سبق ظهور رسالة الرفض.",
+          "hints": [
+            "ما التغيير الذي يجب أن تسمح به عملية لم تُقبل؟"
+          ],
+          "independent": true
+        },
+        {
+          "id": "csharp-application-04-e3",
+          "type": "choice",
+          "prompt": "أي طريقة تختبر استمرار البيانات بعد أن ينتهي برنامج الطرفية؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "طباعة الرصيد من المتغير قبل خروج الأمر نفسه"
+            },
+            {
+              "id": "b",
+              "text": "إنهاء أمر ناجح ثم فتح المخزون مجددًا في تشغيل مستقل ومقارنة الرصيد"
+            },
+            {
+              "id": "c",
+              "text": "فحص اسم ملف Program.cs"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "يعتمد التشغيل المستقل على البيانات التي قرأها من الملف ويفحص أثر الحفظ فعلًا.",
+          "hints": [
+            "افصل تشغيل الكتابة عن تشغيل القراءة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اختبر القيم المعتادة والحدود وحالة الرفض، وتحقق من البيانات الناتجة بجانب رسالة البرنامج."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "csharp-application-01",
+      "title": "نمذجة الصنف بكائن",
+      "why": "تنتقل بيانات الصنف كوحدة واحدة بين عمليات العرض والبحث والحفظ بدل إبقاء أسماء وكميات في مجموعات منفصلة.",
+      "skillIds": [
+        "csharp.objects"
+      ]
+    },
+    {
+      "id": "csharp-application-02",
+      "title": "قراءة الخطأ واختيار مكان معالجته",
+      "why": "قاعدة المخزون تحتاج إلى إيقاف عملية غير سليمة، وتحتاج واجهة الطرفية إلى تحويل سبب الإيقاف إلى رسالة مفهومة.",
+      "skillIds": [
+        "csharp.errors"
+      ]
+    },
+    {
+      "id": "csharp-application-03",
+      "title": "حفظ الأصناف في JSON وإعادة قراءتها",
+      "why": "المتغيرات تنتهي بانتهاء العملية. يستبقي الملف بيانات المخزون لكي يستعيدها الأمر التالي.",
+      "skillIds": [
+        "csharp.json"
+      ]
+    },
+    {
+      "id": "csharp-application-04",
+      "title": "اختبار القاعدة قبل الاعتماد عليها",
+      "why": "يظهر الفحص الآلي خللًا قد لا تلاحظه في تجربة ناجحة واحدة، خاصة عند الرصيد صفر أو صرف كامل الكمية.",
+      "skillIds": [
+        "csharp.testing"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "csharp.objects",
+      "title": "أنمذج الأصناف بكائنات C#",
+      "description": "أضم خصائص الصنف معًا في نوع واضح، وأستخدم الخصائص والمنشئ والنسخ المحدثة بحسب الحاجة.",
+      "required": {
+        "skill": "csharp.dictionaries"
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.errors",
+      "title": "أتعامل مع الاستثناءات وحدود عمليات C#",
+      "description": "أختار رفضًا واضحًا للمدخل أو استثناءً محددًا، وأتعامل مع الخطأ عند حد العملية المناسب.",
+      "required": {
+        "skill": "csharp.objects"
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.json",
+      "title": "أحفظ بيانات C# في ملف JSON وأستعيدها",
+      "description": "أكتب JSON محليًا وأقرأه إلى النوع المعروف وأميز بين ملف غائب ومدخل تالف.",
+      "required": {
+        "skill": "csharp.errors"
+      },
+      "recommended": []
+    },
+    {
+      "id": "csharp.testing",
+      "title": "أختبر قواعد المخزون وحالاتها الحدية",
+      "description": "أكتب اختبارًا بتوقع مستقل وأشغله بحالات نجاح عند الحد ورفض، وأتحقق من أثر الرفض في البيانات.",
+      "required": {
+        "allOf": [
+          {
+            "skill": "csharp.json"
+          },
+          {
+            "skill": "core.testing"
+          }
+        ]
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "csharp-application-01",
+      "index": 0,
+      "input": "",
+      "output": "P-101: Notebook\nP-102: Pen\n"
+    },
+    {
+      "lessonId": "csharp-application-01",
+      "index": 1,
+      "input": "",
+      "output": "Before: P-101 12\nAfter: P-101 15\n"
+    },
+    {
+      "lessonId": "csharp-application-02",
+      "index": 0,
+      "input": "",
+      "output": "Remaining: 3\nQuantity must be positive.\nInsufficient stock.\nRemaining: 0\n"
+    },
+    {
+      "lessonId": "csharp-application-03",
+      "index": 0,
+      "input": "",
+      "output": "P-101: 12\nP-102: 4\n"
+    },
+    {
+      "lessonId": "csharp-application-04",
+      "index": 0,
+      "input": "",
+      "output": "PASS: partial issue\nPASS: exact balance\nPASS: insufficient\nPASS: zero quantity\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "صنف برمجي",
+      "technical": "Class",
+      "definition": "تعريف لنوع يمكن إنشاء كائنات منه ويحدد خصائصها وعملياتها."
+    },
+    {
+      "term": "نوع سجل",
+      "technical": "Record",
+      "definition": "نوع في C# مناسب لبيانات مترابطة. يمكن استخدام with لإنشاء نسخة مع قيم مختلفة."
+    },
+    {
+      "term": "استثناء",
+      "technical": "Exception",
+      "definition": "إشارة إلى خطأ وقت التشغيل يمكن رفعها ومعالجتها بنوع وسبب محددين."
+    },
+    {
+      "term": "تسلسل الكائنات إلى JSON",
+      "technical": "Serialization",
+      "definition": "تحويل قيمة أو كائن إلى تمثيل قابل للحفظ مثل نص JSON، والعكس يُسمى فك التسلسل."
+    }
+  ]
+}

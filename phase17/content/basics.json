@@ -1,0 +1,565 @@
+{
+  "lessons": [
+    {
+      "id": "java-basics-01",
+      "title": "أول برنامج Java على جهازك",
+      "summary": "اكتب رسالة افتتاح المكتبة في Main.java، ثم ترجم الملف وشغّله من الطرفية.",
+      "why": "لما تغيّر الرسالة وتعيد التشغيل، هتعرف أي ملف بتعدّله وأي نسخة بيشغّلها Java.",
+      "objectives": [
+        "تجهيز أدوات JDK 21",
+        "ترجمة ملف المصدر وتشغيله",
+        "تغيير رسالة المكتبة"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.setup"
+      ],
+      "sections": [
+        {
+          "heading": "تجهيز أدوات JDK 21",
+          "body": "ثبّت حزمة تطوير Java بإصدار 21 من موزّع JDK، ثم افتح طرفية جديدة. نفّذ java -version وjavac -version. المفروض تلاقي الإصدار 21 في الاثنين. لو الطرفية مش لاقية javac، راجع تثبيت حزمة التطوير وإضافة مجلد bin الخاص بها إلى PATH."
+        },
+        {
+          "heading": "ترجمة ملف المصدر وتشغيله",
+          "body": "افتح مجلد تدريب فارغ. احفظ المثال فيه بترميز UTF-8 واسم Main.java بنفس حالة الحروف. السطر public class Main يحدد اسم الصنف، والدالة main نقطة بداية التشغيل. نفّذ أوامر الطرفية في المثال الثاني من نفس المجلد."
+        },
+        {
+          "heading": "تغيير رسالة المكتبة",
+          "body": "غيّر Open إلى Closed داخل علامتي التنصيص، احفظ الملف ثم ترجم وشغّل من جديد. لو حذفت الفاصلة المنقوطة بعد println هتظهر رسالة من المترجم. رجّعها قبل التشغيل علشان تشوف التعديل الجديد."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ملف Main.java",
+          "language": "java",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Open\");\n    }\n}\n",
+          "explanation": "ينفّذ Java سطر الطباعة مرة واحدة، فتظهر كلمة Open."
+        },
+        {
+          "title": "أوامر الترجمة والتشغيل",
+          "code": "javac --release 21 -encoding UTF-8 Main.java\njava -cp . Main",
+          "language": "text",
+          "explanation": "انتظر نجاح السطر الأول ثم شغّل الثاني. النقطة في -cp . تعني البحث في المجلد الحالي عن الصنف Main."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-basics-01-e1",
+          "type": "choice",
+          "prompt": "أي ملف تعدّله لتغيير كلمة Open؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "Main.class"
+            },
+            {
+              "id": "b",
+              "text": "Main.java"
+            },
+            {
+              "id": "c",
+              "text": "javac.exe"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "Main.java هو ملف المصدر المكتوب في المحرر.",
+          "hints": [
+            "راجع اسم الملف الذي حفظته."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-01-e2",
+          "type": "choice",
+          "prompt": "ترجمت البرنامج ثم غيّرت الرسالة وحفظتها. ما الخطوة التالية؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "أعد ترجمة الملف ثم شغّله"
+            },
+            {
+              "id": "b",
+              "text": "شغّل Main.class من المحرر كنص"
+            },
+            {
+              "id": "c",
+              "text": "غيّر اسم الدالة main"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "إعادة الترجمة تنتج نسخة Main.class تشمل الرسالة الجديدة.",
+          "hints": [
+            "اسأل نفسك متى يُنشأ Main.class."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-01-e3",
+          "type": "text",
+          "prompt": "اكتب اسم أداة JDK التي تترجم Main.java إلى Main.class.",
+          "options": [],
+          "acceptedAnswers": [
+            "javac"
+          ],
+          "explanation": "الأمر javac يستدعي المترجم.",
+          "hints": [
+            "راجع أول أمر في مثال الترجمة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اكتب رسالة افتتاح المكتبة في Main.java، ثم ترجم الملف وشغّله من الطرفية."
+    },
+    {
+      "id": "java-basics-02",
+      "title": "أنواع البيانات وعدد النسخ المتاحة",
+      "summary": "احتفظ بعنوان الكتاب وعدد نسخه وحالة توافره في متغيرات لها أنواع مختلفة.",
+      "why": "رقم الكتاب المكتوب على الملصق ممكن يبدأ بصفر. اختيار النوع المناسب يحافظ على شكل الرقم ويسمح بالحساب على عدد النسخ.",
+      "objectives": [
+        "تمثيل العنوان والكميات",
+        "حساب عدد النسخ المتاحة",
+        "توقّع أثر التعديل"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.types"
+      ],
+      "sections": [
+        {
+          "heading": "تمثيل العنوان والكميات",
+          "body": "استخدم String للنص مثل \"B001\" وint لعدد صحيح مثل 5. اكتب النوع ثم اسم المتغير ثم = والقيمة الابتدائية. ضع النص بين علامتي تنصيص مزدوجتين."
+        },
+        {
+          "heading": "حساب عدد النسخ المتاحة",
+          "body": "اطرح عدد النسخ المعارة من إجمالي النسخ ثم احفظ الناتج في available. التعبير available > 0 يُنتج قيمة من النوع boolean، إما true أو false."
+        },
+        {
+          "heading": "توقّع أثر التعديل",
+          "body": "قبل التشغيل غيّر borrowed إلى 5. اكتب العدد والحالة اللي تتوقع تشوفهم، ثم شغّل وقارن. الأقواس حول عملية الطرح مهمة لو هتكتب العملية مباشرة وسط جملة نصية."
+        }
+      ],
+      "examples": [
+        {
+          "title": "بطاقة توافر الكتاب",
+          "language": "java",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        String id = \"B001\";\n        int copies = 5;\n        int borrowed = 2;\n        int available = copies - borrowed;\n        boolean inStock = available > 0;\n        System.out.println(id + \" \" + available + \" \" + inStock);\n    }\n}\n",
+          "explanation": "بعد إعارة نسختين يتبقى ثلاث نسخ. تربط علامة + هنا بين النص والقيم لتكوين سطر العرض."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-basics-02-e1",
+          "type": "choice",
+          "prompt": "ما النوع المناسب لحفظ الرمز النصي 0017 مع الحفاظ على الصفرين؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "int"
+            },
+            {
+              "id": "b",
+              "text": "String"
+            },
+            {
+              "id": "c",
+              "text": "boolean"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الرمز نص وتُحفظ أصفاره كما كتبتها.",
+          "hints": [
+            "هل تحتاج إجراء طرح على الرمز؟"
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-02-e2",
+          "type": "text",
+          "prompt": "لو copies يساوي 8 وborrowed يساوي 3، ما قيمة available؟",
+          "options": [],
+          "acceptedAnswers": [
+            "5"
+          ],
+          "explanation": "نحسب 8 ناقص 3 فيكون المتاح 5.",
+          "hints": [
+            "اطرح المعار من الإجمالي."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-02-e3",
+          "type": "choice",
+          "prompt": "ما ناتج التعبير available > 0 عندما يكون available صفرًا؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "true"
+            },
+            {
+              "id": "b",
+              "text": "0"
+            },
+            {
+              "id": "c",
+              "text": "false"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "الصفر لا يزيد عن الصفر.",
+          "hints": [
+            "انتبه إلى الفرق بين > و >=."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "احتفظ بعنوان الكتاب وعدد نسخه وحالة توافره في متغيرات لها أنواع مختلفة."
+    },
+    {
+      "id": "java-basics-03",
+      "title": "قراءة اسم القارئ من الطرفية",
+      "summary": "اقرأ سطرًا كاملًا من لوحة المفاتيح واطبعه في تأكيد الإعارة.",
+      "why": "قد يكتب القارئ اسمًا مركبًا فيه مسافة. قراءة السطر كله تحافظ على الكلمتين.",
+      "objectives": [
+        "توصيل Scanner بلوحة المفاتيح",
+        "استقبال الاسم كاملًا",
+        "تجربة اسم مختلف"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.input"
+      ],
+      "sections": [
+        {
+          "heading": "توصيل Scanner بلوحة المفاتيح",
+          "body": "تتيح import java.util.Scanner استخدام Scanner باسمه القصير. عند إنشاء Scanner وتمرير System.in له، يصبح مصدر القراءة هو الإدخال القياسي، وعادة يأتي من لوحة المفاتيح."
+        },
+        {
+          "heading": "استقبال الاسم كاملًا",
+          "body": "بعد تشغيل المثال اكتب Mona Ali واضغط Enter. ينتظر nextLine() نهاية السطر ويعيد محتواه بما فيه المسافة بين الكلمتين. استُخدم strip() لإزالة الفراغات من طرفي الاسم."
+        },
+        {
+          "heading": "تجربة اسم مختلف",
+          "body": "أعد التشغيل واكتب اسمًا فيه مسافتان بين الكلمتين. راقب أي المسافات بقيت. كتلة try هنا تغلق القارئ تلقائيًا بعد انتهاء البرنامج من القراءة."
+        }
+      ],
+      "examples": [
+        {
+          "title": "بطاقة باسم القارئ",
+          "language": "java",
+          "code": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        try (Scanner input = new Scanner(System.in)) {\n            String name = input.nextLine().strip();\n            System.out.println(\"Reader: \" + name);\n        }\n    }\n}\n",
+          "explanation": "لو أدخلت Mona Ali هتشوف Reader: Mona Ali. البرنامج ينتظر سطر إدخال قبل طباعة النتيجة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-basics-03-e1",
+          "type": "choice",
+          "prompt": "أي استدعاء يقرأ اسمًا مركبًا حتى نهاية السطر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "nextLine()"
+            },
+            {
+              "id": "b",
+              "text": "nextInt()"
+            },
+            {
+              "id": "c",
+              "text": "println()"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "nextLine() يقرأ السطر كله بما فيه المسافات الداخلية.",
+          "hints": [
+            "اسم الدالة يشير إلى السطر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-03-e2",
+          "type": "text",
+          "prompt": "بعد إدخال «  Mona Ali  »، ما النص المحفوظ في name؟",
+          "options": [],
+          "acceptedAnswers": [
+            "Mona Ali"
+          ],
+          "explanation": "strip() تحذف المسافات من الطرفين وتترك الداخلية.",
+          "hints": [
+            "احذف الفراغات الخارجية فقط."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-03-e3",
+          "type": "choice",
+          "prompt": "البرنامج منتظر بعد التشغيل. إزاي تكمّل تجربة القراءة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "احذف import"
+            },
+            {
+              "id": "b",
+              "text": "اكتب الاسم واضغط Enter"
+            },
+            {
+              "id": "c",
+              "text": "اكتب الاسم في Main.class"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الضغط على Enter يرسل نهاية السطر الذي ينتظره Scanner.",
+          "hints": [
+            "راجع مصدر System.in."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اقرأ سطرًا كاملًا من لوحة المفاتيح واطبعه في تأكيد الإعارة."
+    },
+    {
+      "id": "java-basics-04",
+      "title": "قرار الإعارة باستخدام if وelse",
+      "summary": "اختر رسالة الإعارة بناءً على عدد النسخ المتاحة.",
+      "why": "طلب إعارة آخر نسخة يحتاج قرارًا واضحًا عند الحد الفاصل بين نسخة واحدة وصفر.",
+      "objectives": [
+        "كتابة شرط منطقي",
+        "تتبّع فرعي القرار",
+        "تجربة الحد بين الحالتين"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.decisions"
+      ],
+      "sections": [
+        {
+          "heading": "كتابة شرط منطقي",
+          "body": "يحسب copies > 0 هل فيه نسخة واحدة على الأقل. ضع التعبير بين قوسي if وضع التعليمات التابعة للفرع بين قوسين معقوفين."
+        },
+        {
+          "heading": "تتبّع فرعي القرار",
+          "body": "عندما تكون قيمة الشرط true ينفّذ البرنامج كتلة if. عند false ينتقل إلى else. في المثال تُطبع رسالة واحدة لكل تشغيل."
+        },
+        {
+          "heading": "تجربة الحد بين الحالتين",
+          "body": "جرّب 1 ثم 0 عند طلب عدد النسخ. توقّع الرسالة لكل قيمة قبل الضغط على Enter. يفترض المثال إدخال عدد صحيح غير سالب. هنتعامل مع الإدخال غير الصالح في درس التحقق."
+        }
+      ],
+      "examples": [
+        {
+          "title": "هل يمكن إعارة نسخة؟",
+          "language": "java",
+          "code": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        try (Scanner input = new Scanner(System.in)) {\n            int copies = input.nextInt();\n            if (copies > 0) {\n                System.out.println(\"Available\");\n            } else {\n                System.out.println(\"Wait\");\n            }\n        }\n    }\n}\n",
+          "explanation": "جرّب إدخال 2 لعرض Available، ثم شغّل مرة أخرى وأدخل 0 لعرض Wait."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-basics-04-e1",
+          "type": "choice",
+          "prompt": "أي شرط يسمح بإعارة آخر نسخة ويمنع الإعارة عند الصفر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "copies > 1"
+            },
+            {
+              "id": "b",
+              "text": "copies >= 0"
+            },
+            {
+              "id": "c",
+              "text": "copies > 0"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "العدد 1 أكبر من صفر والصفر نفسه لا يحقق الشرط.",
+          "hints": [
+            "جرّب التعويض بالقيمتين 0 و1."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-04-e2",
+          "type": "text",
+          "prompt": "عند إدخال 0 في المثال، ما الرسالة المطبوعة؟",
+          "options": [],
+          "acceptedAnswers": [
+            "Wait"
+          ],
+          "explanation": "الشرط false فتُطبع رسالة كتلة else.",
+          "hints": [
+            "اتبع الفرع الخاص بعدم توافر نسخة."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-basics-04-e3",
+          "type": "choice",
+          "prompt": "لو غيّرنا الشرط إلى copies >= 2، أي عدد ينتقل من فرع Available إلى Wait؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "0"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "2"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "النسخة الواحدة كانت تكفي في الشرط الأول، والشرط الجديد يتطلب نسختين.",
+          "hints": [
+            "قارن ناتج الشرطين لكل اختيار."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اختر رسالة الإعارة بناءً على عدد النسخ المتاحة."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "java-basics-01",
+      "title": "أول برنامج Java على جهازك",
+      "why": "لما تغيّر الرسالة وتعيد التشغيل، هتعرف أي ملف بتعدّله وأي نسخة بيشغّلها Java.",
+      "skillIds": [
+        "java.setup"
+      ]
+    },
+    {
+      "id": "java-basics-02",
+      "title": "أنواع البيانات وعدد النسخ المتاحة",
+      "why": "رقم الكتاب المكتوب على الملصق ممكن يبدأ بصفر. اختيار النوع المناسب يحافظ على شكل الرقم ويسمح بالحساب على عدد النسخ.",
+      "skillIds": [
+        "java.types"
+      ]
+    },
+    {
+      "id": "java-basics-03",
+      "title": "قراءة اسم القارئ من الطرفية",
+      "why": "قد يكتب القارئ اسمًا مركبًا فيه مسافة. قراءة السطر كله تحافظ على الكلمتين.",
+      "skillIds": [
+        "java.input"
+      ]
+    },
+    {
+      "id": "java-basics-04",
+      "title": "قرار الإعارة باستخدام if وelse",
+      "why": "طلب إعارة آخر نسخة يحتاج قرارًا واضحًا عند الحد الفاصل بين نسخة واحدة وصفر.",
+      "skillIds": [
+        "java.decisions"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "java.setup",
+      "title": "أول برنامج Java على جهازك",
+      "description": "اكتب رسالة افتتاح المكتبة في Main.java، ثم ترجم الملف وشغّله من الطرفية.",
+      "required": {
+        "skill": "core.workspace"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.types",
+      "title": "أنواع البيانات وعدد النسخ المتاحة",
+      "description": "احتفظ بعنوان الكتاب وعدد نسخه وحالة توافره في متغيرات لها أنواع مختلفة.",
+      "required": {
+        "skill": "java.setup"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.input",
+      "title": "قراءة اسم القارئ من الطرفية",
+      "description": "اقرأ سطرًا كاملًا من لوحة المفاتيح واطبعه في تأكيد الإعارة.",
+      "required": {
+        "skill": "java.types"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.decisions",
+      "title": "قرار الإعارة باستخدام if وelse",
+      "description": "اختر رسالة الإعارة بناءً على عدد النسخ المتاحة.",
+      "required": {
+        "skill": "java.input"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "java-basics-01",
+      "index": 0,
+      "input": "",
+      "output": "Open\n"
+    },
+    {
+      "lessonId": "java-basics-02",
+      "index": 0,
+      "input": "",
+      "output": "B001 3 true\n"
+    },
+    {
+      "lessonId": "java-basics-03",
+      "index": 0,
+      "input": "Mona Ali\n",
+      "output": "Reader: Mona Ali\n"
+    },
+    {
+      "lessonId": "java-basics-03",
+      "index": 0,
+      "input": "  Ali  \n",
+      "output": "Reader: Ali\n"
+    },
+    {
+      "lessonId": "java-basics-04",
+      "index": 0,
+      "input": "2\n",
+      "output": "Available\n"
+    },
+    {
+      "lessonId": "java-basics-04",
+      "index": 0,
+      "input": "0\n",
+      "output": "Wait\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "حزمة تطوير Java",
+      "technical": "Java Development Kit (JDK)",
+      "definition": "أدوات تطوير Java وتشغيلها، ومنها مترجم javac وأداة التشغيل java."
+    },
+    {
+      "term": "ملف الصنف",
+      "technical": "Class file",
+      "definition": "ملف بامتداد .class يحوي تعليمات Java الوسيطة الناتجة عن الترجمة."
+    }
+  ]
+}

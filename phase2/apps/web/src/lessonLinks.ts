@@ -1,8 +1,9 @@
 import { segment } from './api';
+import type { ExampleLanguage } from './types';
 
 const sampleLessonIds = new Set(['what-is-a-program', 'step-by-step', 'first-variable']);
 
-export function lessonLink(lessonId: string, releaseId: string, exampleLanguage?: 'python' | 'javascript', goalId?: string) {
+export function lessonLink(lessonId: string, releaseId: string, exampleLanguage?: ExampleLanguage, goalId?: string) {
   const link = `#lesson/${segment(lessonId)}/${segment(releaseId)}`;
   return goalId ? `${link}/${exampleLanguage ?? ''}/${segment(goalId)}` : exampleLanguage ? `${link}/${exampleLanguage}` : link;
 }

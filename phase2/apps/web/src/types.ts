@@ -6,15 +6,22 @@ export type CommercialEntitlement = { required: boolean; active: boolean; goalId
 export type CommercialTarget = { id: string; title: string };
 export type CommercialTargets = { goals: CommercialTarget[]; lessons: CommercialTarget[] };
 export type CommercialAccount = { userName: string; displayName: string; fullAccess: boolean; goalIds: string[]; lessonIds: string[] };
+export type AccessCancellation = { id: string; status: 'pending' | 'approved' | 'declined'; requestedAt: string };
+export type Purchase = CommercialOffer & { id: string; status: 'pending' | 'link-ready' | 'confirmed' | 'closed'; checkoutUrl: string | null; requestedAt: string };
 export type Catalog = { releases: Release[]; goals: Goal[]; activeReleaseId: string | null; accessRequired?: boolean; contactUrl?: string | null; offers?: CommercialOffer[] };
 export type Exercise = { id: string; type: 'choice' | 'text'; prompt: string; options: { id: string; text: string }[]; hints: string[]; independent: boolean };
+export type ExampleLanguage = 'python' | 'javascript' | 'csharp' | 'cpp' | 'java' | 'go';
 export type Lesson = { id: string; title: string; summary: string; why: string; minutes: string; skillIds: string[]; objectives: string[];
-  sections: { heading: string; body: string; language?: string }[];
-  examples: { title: string; language: string; code: string; explanation: string }[];
+  sections: { heading: string; body: string; language?: ExampleLanguage }[];
+  examples: { title: string; language: 'text' | ExampleLanguage; code: string; explanation: string }[];
   exercises: Exercise[]; takeaway: string };
 export type CurriculumProject = { id: string; title: string; lessonId: string; summary: string; criteria: string[]; download?: string };
 export type CurriculumTrack = { id: string; title: string; lessonIds: string[] };
-export type Content = Release & { sample: { title: string; intro: string; lessons: Lesson[];
+export type LessonOverview = Pick<Lesson, 'id' | 'title' | 'summary' | 'minutes'> & (
+  { exampleLanguages: ('text' | ExampleLanguage)[]; examples?: never } |
+  { exampleLanguages?: never; examples: Lesson['examples'] }
+);
+export type ContentOverview = Release & { sample: { title: string; intro: string; lessons: LessonOverview[];
   glossary: { term: string; technical: string; definition: string }[];
   tracks?: CurriculumTrack[]; projects?: CurriculumProject[];
 }; graph: { goals: Goal[]; skills: { id: string; title: string }[] } };

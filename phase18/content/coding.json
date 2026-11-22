@@ -1,0 +1,547 @@
+{
+  "lessons": [
+    {
+      "id": "go-code-01",
+      "title": "ترقيم المهام بحلقة for",
+      "summary": "حدّد بداية العداد وشرط الاستمرار وخطوة الزيادة لطباعة أرقام المهام.",
+      "why": "عند تغيير عدد المهام، يكفي تعديل الحد الأعلى حتى تتغير كل أرقام القائمة.",
+      "objectives": [
+        "تتبع عداد الحلقة",
+        "زيادة العداد",
+        "مراجعة آخر رقم"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.loops"
+      ],
+      "sections": [
+        {
+          "heading": "تتبع عداد الحلقة",
+          "body": "تبدأ i := 1 العداد عند واحد. تختبر for التعبير i <= total قبل كل دورة، وتنفذ الكود داخل القوسين إذا كان الشرط صحيحًا."
+        },
+        {
+          "heading": "زيادة العداد",
+          "body": "بعد طباعة الرقم تنفّذ i++ فتزيد i بمقدار واحد. دوّن قيم i على ورقة حتى تصل إلى أول قيمة يفشل معها الشرط."
+        },
+        {
+          "heading": "مراجعة آخر رقم",
+          "body": "غيّر <= إلى < وشغّل ثانية. ستفقد المهمة الأخيرة لأن الرقم المساوي للحد لم يعد مقبولًا. أعد الشرط ثم غيّر total إلى صفر وراقب عدد السطور."
+        }
+      ],
+      "examples": [
+        {
+          "title": "ترقيم ثلاث مهام",
+          "language": "go",
+          "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\ttotal := 3\n\tfor i := 1; i <= total; i++ {\n\t\tfmt.Println(\"Task\", i)\n\t}\n}\n",
+          "explanation": "تعرض الحلقة Task 1 ثم Task 2 ثم Task 3، كل مهمة في سطر."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-code-01-e1",
+          "type": "text",
+          "prompt": "ما قيمة العداد في أول طباعة؟",
+          "options": [],
+          "acceptedAnswers": [
+            "1"
+          ],
+          "explanation": "يبدأ العداد من 1 قبل أول اختبار.",
+          "hints": [
+            "راجع تعليمة البداية."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-01-e2",
+          "type": "choice",
+          "prompt": "كم سطرًا يطبع المثال إذا أصبح total = 0؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "0"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "3"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يفشل الشرط قبل أول دورة.",
+          "hints": [
+            "قارن أول قيمة للعداد بالصفر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-01-e3",
+          "type": "choice",
+          "prompt": "أي شرط يشمل المهمة رقم 5 عندما يكون total = 5؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "i < total"
+            },
+            {
+              "id": "b",
+              "text": "i <= total"
+            },
+            {
+              "id": "c",
+              "text": "i > total"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "المقارنة <= تشمل المساواة.",
+          "hints": [
+            "جرّب التعويض بالقيمة 5."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "حدّد بداية العداد وشرط الاستمرار وخطوة الزيادة لطباعة أرقام المهام."
+    },
+    {
+      "id": "go-code-02",
+      "title": "حساب المتبقي بدالة تعيد خطأً",
+      "summary": "اجمع قاعدة عدّ المهام داخل دالة تعيد قيمة من النوع int وخطأً من النوع error.",
+      "why": "تستطيع شاشة الطرفية ومعالج طلب HTTP استعمال قاعدة العدّ نفسها واختيار طريقة عرض الخطأ.",
+      "objectives": [
+        "تعريف مدخلات الدالة",
+        "رفض القيم المتناقضة",
+        "التصرف حسب الخطأ"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.functions"
+      ],
+      "sections": [
+        {
+          "heading": "تعريف مدخلات الدالة",
+          "body": "يحدد remaining(total, done int) اسمين من النوع int. ما بين القوسين بعدهما هو نوعا النتيجة بالترتيب. عند نجاح الحساب تعيد الدالة العدد ثم nil."
+        },
+        {
+          "heading": "رفض القيم المتناقضة",
+          "body": "يرفض الشرط الإجمالي أو المنجز السالب، ويرفض أن يكون المنجز أكبر من الإجمالي. تعني || أن تحقق أي جزء يكفي. تبني errors.New قيمة خطأ تشرح سبب الرفض."
+        },
+        {
+          "heading": "التصرف حسب الخطأ",
+          "body": "يستقبل left, err القيمتين. افحص err أولًا ثم استخدم left عندما ينجح الحساب. جرّب remaining(3, 4) وسجّل الرسالة التي يعرضها المستدعي."
+        }
+      ],
+      "examples": [
+        {
+          "title": "قاعدة مشتركة لحساب المتبقي",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"errors\"\n\t\"fmt\"\n)\n\nfunc remaining(total, done int) (int, error) {\n\tif total < 0 || done < 0 || done > total {\n\t\treturn 0, errors.New(\"invalid count\")\n\t}\n\treturn total - done, nil\n}\n\nfunc main() {\n\tleft, err := remaining(6, 2)\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn\n\t}\n\tfmt.Println(left)\n}\n",
+          "explanation": "تُرجع الدالة 4 وnil. يطبع المستدعي العدد 4 بعدما يفحص الخطأ."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-code-02-e1",
+          "type": "choice",
+          "prompt": "إذا استدعيت remaining(2, 3)، أي نتيجة تصف الاستدعاء؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "-1 وnil"
+            },
+            {
+              "id": "b",
+              "text": "0 وخطأ"
+            },
+            {
+              "id": "c",
+              "text": "1 وnil"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "المنجز أكبر من الإجمالي فينفذ فرع الرفض.",
+          "hints": [
+            "قارن المنجز بالإجمالي."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-02-e2",
+          "type": "text",
+          "prompt": "اكتب قيمة left الناتجة عن remaining(8, 8) عند النجاح.",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "العدّان صحيحان ومتساويان.",
+          "hints": [
+            "احسب الإجمالي ناقص المنجز."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-02-e3",
+          "type": "choice",
+          "prompt": "كيف تميز بين صفر صحيح وصفر صاحب فشل؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "افحص err"
+            },
+            {
+              "id": "b",
+              "text": "اطبع total فقط"
+            },
+            {
+              "id": "c",
+              "text": "احذف نتيجة الخطأ"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "يأتي الصفر الصحيح مع nil، بينما يأتي الرفض مع قيمة خطأ.",
+          "hints": [
+            "كلتا الحالتين قد تعيد صفرًا."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اجمع قاعدة عدّ المهام داخل دالة تعيد قيمة من النوع int وخطأً من النوع error."
+    },
+    {
+      "id": "go-code-03",
+      "title": "ترتيب المهام والبحث عن حالتها",
+      "summary": "احتفظ بالترتيب في slice وابحث عن حالة كل رقم باستخدام map.",
+      "why": "عرض المهام يحتاج ترتيبًا واضحًا، والبحث عن حالة مهمة محددة يحتاج مفتاحًا يمكن الرجوع إليه.",
+      "objectives": [
+        "بناء قائمة مرتبة",
+        "قراءة قيمة بمفتاح",
+        "الجمع بين الترتيب والبحث"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.collections"
+      ],
+      "sections": [
+        {
+          "heading": "بناء قائمة مرتبة",
+          "body": "تكتب []int{7, 4} شريحة أعداد لها ترتيب. تعيد append شريحة تشمل العناصر السابقة والعنصر المضاف؛ أسند النتيجة إلى order. تعطي len(order) طولها."
+        },
+        {
+          "heading": "قراءة قيمة بمفتاح",
+          "body": "تربط map[int]bool رقم المهمة بحالة إنجازها. يعيد التعبير value, ok := done[id] الحالة ومؤشر وجود المفتاح. عند غياب المفتاح تكون القيمة الافتراضية false وok تساوي false."
+        },
+        {
+          "heading": "الجمع بين الترتيب والبحث",
+          "body": "تمر for _, id := range order على الأرقام بترتيب القائمة وتتجاهل موضع العنصر بواسطة _. ابحث عن كل رقم في الخريطة. لاحظ الفرق في عمود ok بين المهمة المفتوحة والرقم الذي لا سجل له."
+        }
+      ],
+      "examples": [
+        {
+          "title": "قائمة مرتبة مع حالة كل رقم",
+          "language": "go",
+          "code": "package main\n\nimport \"fmt\"\n\nfunc main() {\n\torder := []int{7, 4}\n\torder = append(order, 9)\n\tdone := map[int]bool{7: true, 4: false}\n\tfor _, id := range order {\n\t\tvalue, ok := done[id]\n\t\tfmt.Println(id, value, ok)\n\t}\n}\n",
+          "explanation": "في السطرين الأخيرين القيمة false. توضّح القيمة الثالثة أن 4 موجود و9 غائب."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-code-03-e1",
+          "type": "text",
+          "prompt": "ما طول order بعد إضافة 9؟",
+          "options": [],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "تحتوي الشريحة بعد الإضافة على 7 و4 و9.",
+          "hints": [
+            "عدّ العنصرين الأصليين والعنصر المضاف."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-03-e2",
+          "type": "choice",
+          "prompt": "أي قيمة تثبت أن المفتاح 4 موجود رغم أن المهمة مفتوحة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "value == true"
+            },
+            {
+              "id": "b",
+              "text": "ok == true"
+            },
+            {
+              "id": "c",
+              "text": "len(order) == 4"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "تعبر ok عن وجود المفتاح بصرف النظر عن حالة الإنجاز.",
+          "hints": [
+            "راجع القيمة الثانية من عملية البحث."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-03-e3",
+          "type": "choice",
+          "prompt": "كيف يعرض المثال المهام بالترتيب 7 ثم 4 ثم 9؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يمر على الخريطة"
+            },
+            {
+              "id": "b",
+              "text": "يرتب الأرقام تصاعديًا"
+            },
+            {
+              "id": "c",
+              "text": "يمر على الشريحة order"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يحافظ المرور على الشريحة على ترتيب عناصرها.",
+          "hints": [
+            "راجع ما يأتي بعد range."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "احتفظ بالترتيب في slice وابحث عن حالة كل رقم باستخدام map."
+    },
+    {
+      "id": "go-code-04",
+      "title": "تحويل سجل مهمة إلى JSON",
+      "summary": "صمّم struct يجمع رقم المهمة وعنوانها وحالتها ثم حوّله إلى JSON.",
+      "why": "يحتاج عميل HTTP إلى أسماء حقول ثابتة حتى يقرأ رقم كل مهمة وحالتها.",
+      "objectives": [
+        "تعريف سجل Task",
+        "اختيار أسماء JSON",
+        "ترميز السجل"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "go.structs"
+      ],
+      "sections": [
+        {
+          "heading": "تعريف سجل Task",
+          "body": "يجمع struct حقولًا بأنواع مختلفة في قيمة واحدة. تبدأ أسماء ID وTitle وCompleted بحرف كبير حتى تتمكن حزمة encoding/json من الوصول إليها. استخدم أسماء الحقول عند إنشاء Task."
+        },
+        {
+          "heading": "اختيار أسماء JSON",
+          "body": "النص المحصور بين علامتي backtick بعد كل حقل هو وسم. يخبر الوسم json:\"title\" المكتبة أن تسمي الحقل title في الرسالة. غياب قيمة Completed عند إنشاء المهمة يعطيها القيمة الافتراضية false."
+        },
+        {
+          "heading": "ترميز السجل",
+          "body": "تعيد json.Marshal بايتات وخطأ. بعد فحص الخطأ حوّل البايتات إلى string لطباعتها. أضف Completed: true إلى المهمة وشغّل ثانية لترى التغيير في نص JSON."
+        }
+      ],
+      "examples": [
+        {
+          "title": "السجل كما يراه عميل الخدمة",
+          "language": "go",
+          "code": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n)\n\ntype Task struct {\n\tID int `json:\"id\"`\n\tTitle string `json:\"title\"`\n\tCompleted bool `json:\"completed\"`\n}\n\nfunc main() {\n\ttask := Task{ID: 1, Title: \"Read\"}\n\tdata, err := json.Marshal(task)\n\tif err != nil {\n\t\tfmt.Println(err)\n\t\treturn\n\t}\n\tfmt.Println(string(data))\n}\n",
+          "explanation": "يظهر كائن JSON برقم 1 وعنوان Read وحالة completed تساوي false."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "go-code-04-e1",
+          "type": "choice",
+          "prompt": "لماذا يبدأ Title بحرف كبير؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "ليكون متاحًا لحزمة encoding/json"
+            },
+            {
+              "id": "b",
+              "text": "لجعل كل النص أحرفًا كبيرة"
+            },
+            {
+              "id": "c",
+              "text": "ليقبل الأرقام وحدها"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "الحقل ذو الاسم المصدّر متاح لحزمة الترميز.",
+          "hints": [
+            "فكر في الحزمة التي تقرأ الحقل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-04-e2",
+          "type": "text",
+          "prompt": "ما اسم المفتاح الناتج عن الحقل Completed في المثال؟",
+          "options": [],
+          "acceptedAnswers": [
+            "completed"
+          ],
+          "explanation": "يعطي الوسم الحقل اسم completed داخل JSON.",
+          "hints": [
+            "اقرأ القيمة بين علامتي التنصيص في الوسم."
+          ],
+          "independent": true
+        },
+        {
+          "id": "go-code-04-e3",
+          "type": "choice",
+          "prompt": "ما قيمة Completed في Task{ID: 2, Title: \"Write\"}؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "true"
+            },
+            {
+              "id": "b",
+              "text": "nil"
+            },
+            {
+              "id": "c",
+              "text": "false"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "يأخذ الحقل المنطقي القيمة false عند تركه دون إسناد.",
+          "hints": [
+            "تذكر القيمة الصفرية للنوع bool."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "صمّم struct يجمع رقم المهمة وعنوانها وحالتها ثم حوّله إلى JSON."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "go-code-01",
+      "title": "ترقيم المهام بحلقة for",
+      "why": "عند تغيير عدد المهام، يكفي تعديل الحد الأعلى حتى تتغير كل أرقام القائمة.",
+      "skillIds": [
+        "go.loops"
+      ]
+    },
+    {
+      "id": "go-code-02",
+      "title": "حساب المتبقي بدالة تعيد خطأً",
+      "why": "تستطيع شاشة الطرفية ومعالج طلب HTTP استعمال قاعدة العدّ نفسها واختيار طريقة عرض الخطأ.",
+      "skillIds": [
+        "go.functions"
+      ]
+    },
+    {
+      "id": "go-code-03",
+      "title": "ترتيب المهام والبحث عن حالتها",
+      "why": "عرض المهام يحتاج ترتيبًا واضحًا، والبحث عن حالة مهمة محددة يحتاج مفتاحًا يمكن الرجوع إليه.",
+      "skillIds": [
+        "go.collections"
+      ]
+    },
+    {
+      "id": "go-code-04",
+      "title": "تحويل سجل مهمة إلى JSON",
+      "why": "يحتاج عميل HTTP إلى أسماء حقول ثابتة حتى يقرأ رقم كل مهمة وحالتها.",
+      "skillIds": [
+        "go.structs"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "go.loops",
+      "title": "ترقيم المهام بحلقة for",
+      "description": "حدّد بداية العداد وشرط الاستمرار وخطوة الزيادة لطباعة أرقام المهام.",
+      "required": {
+        "skill": "go.decisions"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.functions",
+      "title": "حساب المتبقي بدالة تعيد خطأً",
+      "description": "اجمع قاعدة عدّ المهام داخل دالة تعيد قيمة من النوع int وخطأً من النوع error.",
+      "required": {
+        "skill": "go.loops"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.collections",
+      "title": "ترتيب المهام والبحث عن حالتها",
+      "description": "احتفظ بالترتيب في slice وابحث عن حالة كل رقم باستخدام map.",
+      "required": {
+        "skill": "go.functions"
+      },
+      "recommended": []
+    },
+    {
+      "id": "go.structs",
+      "title": "تحويل سجل مهمة إلى JSON",
+      "description": "صمّم struct يجمع رقم المهمة وعنوانها وحالتها ثم حوّله إلى JSON.",
+      "required": {
+        "skill": "go.collections"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "go-code-01",
+      "index": 0,
+      "input": "",
+      "output": "Task 1\nTask 2\nTask 3\n"
+    },
+    {
+      "lessonId": "go-code-02",
+      "index": 0,
+      "input": "",
+      "output": "4\n"
+    },
+    {
+      "lessonId": "go-code-03",
+      "index": 0,
+      "input": "",
+      "output": "7 true true\n4 false true\n9 false false\n"
+    },
+    {
+      "lessonId": "go-code-04",
+      "index": 0,
+      "input": "",
+      "output": "{\"id\":1,\"title\":\"Read\",\"completed\":false}\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "الشريحة",
+      "technical": "Slice",
+      "definition": "تسلسل من العناصر يمكن الوصول إليها بفهرس وتوسيعه باستخدام append."
+    },
+    {
+      "term": "وسم الحقل",
+      "technical": "Struct tag",
+      "definition": "نص اختياري يرافق حقل struct، ويمكن لحزمة مثل encoding/json أن تقرأه."
+    }
+  ]
+}

@@ -91,5 +91,3 @@
 }
 .lab-result .btn { justify-self: start; }
 .lab-stale { font-weight: 600; }
-.lab-evidence { margin-block: 22px 0; }
-.lab-evidence time { color: var(--muted); font-size: .85rem; }

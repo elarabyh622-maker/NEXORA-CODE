@@ -7,6 +7,11 @@
 /phase11/dist/curriculum.json -text
 /phase12/dist/curriculum.json -text
 /phase13/dist/curriculum.json -text
+/phase14/dist/curriculum.json -text
+/phase15/dist/curriculum.json -text
+/phase16/dist/curriculum.json -text
+/phase17/dist/curriculum.json -text
+/phase18/dist/curriculum.json -text
 /phase2/database/migrations/*.sql -text
 
 # Project archive checks compare source members byte for byte.
@@ -16,6 +21,9 @@
 /phase11/project/*/starter/** -text whitespace=cr-at-eol
 /phase12/project/reference/** -text whitespace=cr-at-eol
 /phase13/project/reference/** -text whitespace=cr-at-eol
+
+# The final tab represents an empty borrower field in the sample TSV.
+/phase17/project/reference/data/books.tsv text eol=lf whitespace=-blank-at-eol
 
 # These files are used directly inside the Linux lab host.
 *.sh text eol=lf

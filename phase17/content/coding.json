@@ -1,0 +1,547 @@
+{
+  "lessons": [
+    {
+      "id": "java-code-01",
+      "title": "تتبّع الرفوف بحلقة for",
+      "summary": "استخدم عدّادًا لطباعة أرقام الرفوف من 1 إلى 3.",
+      "why": "عند إضافة رف جديد يكفي تغيير الحد، وتظل تعليمات طباعة الملصق في مكان واحد.",
+      "objectives": [
+        "اختيار بداية العد",
+        "تتبّع دورة كاملة",
+        "تعديل آخر رف"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.loops"
+      ],
+      "sections": [
+        {
+          "heading": "اختيار بداية العد",
+          "body": "في for (int shelf = 1; shelf <= 3; shelf++) يبدأ العدّاد من 1 مرة واحدة. قبل كل دورة يختبر البرنامج shelf <= 3."
+        },
+        {
+          "heading": "تتبّع دورة كاملة",
+          "body": "عندما يتحقق الشرط ينفّذ البرنامج جسم الحلقة ثم يزيد shelf بمقدار واحد. بعد طباعة الرف 3 يصبح العدّاد 4، وينتهي التكرار عند فحص الشرط."
+        },
+        {
+          "heading": "تعديل آخر رف",
+          "body": "غيّر <= إلى < وتوقّع آخر ملصق يظهر. أعد الشرط كما كان ثم غيّر البداية إلى 4. لن يدخل البرنامج جسم الحلقة لأن أول فحص يفشل."
+        }
+      ],
+      "examples": [
+        {
+          "title": "طباعة ملصقات الرفوف",
+          "language": "java",
+          "code": "public class Main {\n    public static void main(String[] args) {\n        for (int shelf = 1; shelf <= 3; shelf++) {\n            System.out.println(\"Shelf \" + shelf);\n        }\n    }\n}\n",
+          "explanation": "يظهر ملصق مستقل لكل قيمة حققت الشرط، بترتيب 1 ثم 2 ثم 3."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-code-01-e1",
+          "type": "text",
+          "prompt": "كم مرة تنفّذ الحلقة جسمها إذا بدأت من 2 واستمرت ما دام shelf <= 4 وزادت واحدًا كل مرة؟",
+          "options": [],
+          "acceptedAnswers": [
+            "3"
+          ],
+          "explanation": "القيم التي تدخل الجسم هي 2 و3 و4.",
+          "hints": [
+            "اكتب القيم التي تحقق الشرط."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-01-e2",
+          "type": "choice",
+          "prompt": "متى يُفحص شرط حلقة for في المثال؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "بعد التوقف عن الطباعة نهائيًا"
+            },
+            {
+              "id": "b",
+              "text": "قبل كل تنفيذ لجسم الحلقة"
+            },
+            {
+              "id": "c",
+              "text": "مرة واحدة عند نهاية البرنامج"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الفحص يحدد هل يبدأ تنفيذ جسم الحلقة في هذه الدورة.",
+          "hints": [
+            "فكّر في حالة البداية من 4."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-01-e3",
+          "type": "choice",
+          "prompt": "أي تعديل يجعل الناتج Shelf 1 ثم Shelf 2 فقط؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "تغيير الشرط إلى shelf < 3"
+            },
+            {
+              "id": "b",
+              "text": "تغيير البداية إلى 0"
+            },
+            {
+              "id": "c",
+              "text": "تغيير الحد إلى 4"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "الشرط الأصغر من 3 يستبعد القيمة 3.",
+          "hints": [
+            "قارن < و <=."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "استخدم عدّادًا لطباعة أرقام الرفوف من 1 إلى 3."
+    },
+    {
+      "id": "java-code-02",
+      "title": "فصل قاعدة الإعارة في دالة",
+      "summary": "عرّف دالة ترجع عدد النسخ المتبقية ثم استدعها من main.",
+      "why": "لما تكون قاعدة الحساب في مكان واحد، تقدر تشغّلها على بيانات كتب مختلفة وتختبر نتيجتها مباشرة.",
+      "objectives": [
+        "تحديد المدخلات والناتج",
+        "إرجاع قيمة باستخدام return",
+        "تجربة استدعاء جديد"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.methods"
+      ],
+      "sections": [
+        {
+          "heading": "تحديد المدخلات والناتج",
+          "body": "الدالة remaining تحتاج عدد النسخ الكلي وعدد النسخ المعارة. النوع int قبل اسم الدالة يحدد نوع القيمة المرجعة. اكتب لكل معامل نوعه واسمه داخل القوسين."
+        },
+        {
+          "heading": "إرجاع قيمة باستخدام return",
+          "body": "تنهي return تنفيذ الدالة وتعيد قيمة التعبير إلى موضع الاستدعاء. في المثال لا تطبع الدالة شيئًا بنفسها. main تستقبل النتيجة وتطبعها."
+        },
+        {
+          "heading": "تجربة استدعاء جديد",
+          "body": "استدعِ remaining(3, 3) بعد الاستدعاء الأول واطبع النتيجة. تتغير قيم المعاملات مع كل استدعاء. يفترض هذا الحساب أن المعار من صفر حتى إجمالي النسخ."
+        }
+      ],
+      "examples": [
+        {
+          "title": "حساب المتبقي لكتاب",
+          "language": "java",
+          "code": "public class Main {\n    static int remaining(int total, int borrowed) {\n        return total - borrowed;\n    }\n\n    public static void main(String[] args) {\n        int available = remaining(7, 2);\n        System.out.println(available);\n    }\n}\n",
+          "explanation": "تمر القيمة 7 إلى total والقيمة 2 إلى borrowed، وتعود 5 إلى main."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-code-02-e1",
+          "type": "text",
+          "prompt": "ما قيمة remaining(9, 4)؟",
+          "options": [],
+          "acceptedAnswers": [
+            "5"
+          ],
+          "explanation": "ترجع الدالة 9 ناقص 4.",
+          "hints": [
+            "اتبع ترتيب المعاملين."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-02-e2",
+          "type": "choice",
+          "prompt": "أي تعليمة تسلّم ناتج الدالة إلى المستدعي؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "import"
+            },
+            {
+              "id": "b",
+              "text": "return"
+            },
+            {
+              "id": "c",
+              "text": "class"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "return تعيد قيمة بالحساب الذي كتبته.",
+          "hints": [
+            "راجع آخر سطر في remaining."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-02-e3",
+          "type": "choice",
+          "prompt": "أي استدعاء يمثّل 8 نسخ منها 3 معارة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "remaining(3, 8)"
+            },
+            {
+              "id": "b",
+              "text": "remaining(8, 8)"
+            },
+            {
+              "id": "c",
+              "text": "remaining(8, 3)"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "المعامل الأول للإجمالي والثاني للمعار.",
+          "hints": [
+            "اقرأ أسماء المعاملات من اليسار."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "عرّف دالة ترجع عدد النسخ المتبقية ثم استدعها من main."
+    },
+    {
+      "id": "java-code-03",
+      "title": "بناء فهرس متغير باستخدام ArrayList",
+      "summary": "أضف عناوين كتب واعرضها حسب ترتيب الإضافة.",
+      "why": "عدد الكتب بيتغير مع الوقت. القائمة تسمح بإضافة عنصر جديد من غير ما تحدد العدد النهائي من البداية.",
+      "objectives": [
+        "إنشاء قائمة عناوين",
+        "إضافة العناصر وقراءتها",
+        "المرور على العناوين"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.lists"
+      ],
+      "sections": [
+        {
+          "heading": "إنشاء قائمة عناوين",
+          "body": "بعد استيراد java.util.ArrayList اكتب ArrayList<String> لتحديد أن عناصر القائمة نصوص. تنشئ new ArrayList<>() قائمة فارغة."
+        },
+        {
+          "heading": "إضافة العناصر وقراءتها",
+          "body": "تضيف add عنوانًا في نهاية القائمة. تبدأ فهارس العناصر من الصفر، فبعد إضافة عنوانين تعيد get(1) العنوان الثاني. تُرجع size() عدد العناصر."
+        },
+        {
+          "heading": "المرور على العناوين",
+          "body": "في حلقة for (String title : titles) يأخذ title قيمة العنوان التالي في كل دورة. أضف عنوانًا ثالثًا قبل الحلقة، ثم راقب تغيّر العدد وبقاء ترتيب العرض."
+        }
+      ],
+      "examples": [
+        {
+          "title": "فهرس من عنوانين",
+          "language": "java",
+          "code": "import java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        ArrayList<String> titles = new ArrayList<>();\n        titles.add(\"Java Basics\");\n        titles.add(\"Clean Code\");\n        System.out.println(titles.size());\n        for (String title : titles) {\n            System.out.println(title);\n        }\n    }\n}\n",
+          "explanation": "يظهر عدد العناصر أولًا، وبعده يظهر كل عنوان في سطر بالترتيب الذي أُضيف به."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-code-03-e1",
+          "type": "text",
+          "prompt": "ما فهرس أول عنصر في ArrayList؟",
+          "options": [],
+          "acceptedAnswers": [
+            "0"
+          ],
+          "explanation": "تبدأ الفهارس من الصفر.",
+          "hints": [
+            "لو حجم القائمة 1، فالرقم 1 خارج حدودها."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-03-e2",
+          "type": "choice",
+          "prompt": "بعد إضافة Java Basics ثم Clean Code، ماذا تعيد titles.get(1)؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "Java Basics"
+            },
+            {
+              "id": "b",
+              "text": "Clean Code"
+            },
+            {
+              "id": "c",
+              "text": "2"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "الفهرس 1 يشير إلى ثاني عنصر.",
+          "hints": [
+            "عدّ من الصفر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-03-e3",
+          "type": "choice",
+          "prompt": "أي استدعاء يضيف عنوانًا في نهاية القائمة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "titles.add(\"Maps\")"
+            },
+            {
+              "id": "b",
+              "text": "titles.get(2)"
+            },
+            {
+              "id": "c",
+              "text": "titles.size()"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "تضيف add عنصرًا بينما تقرأ get وsize بيانات القائمة.",
+          "hints": [
+            "تحتاج إلى تمرير العنوان الجديد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "أضف عناوين كتب واعرضها حسب ترتيب الإضافة."
+    },
+    {
+      "id": "java-code-04",
+      "title": "تمثيل الكتاب بصنف بيانات record",
+      "summary": "اجمع رمز الكتاب وعنوانه واسم المستعير في سجل Book واحد.",
+      "why": "ربط هذه القيم في كائن واحد يحافظ على ارتباط العنوان بصاحبه عند المرور على الفهرس.",
+      "objectives": [
+        "تعريف نوع خاص بالكتاب",
+        "إنشاء كتاب وقراءة مكوّناته",
+        "تمثيل حالة جديدة"
+      ],
+      "minutes": "20–30",
+      "skillIds": [
+        "java.records"
+      ],
+      "sections": [
+        {
+          "heading": "تعريف نوع خاص بالكتاب",
+          "body": "الصنف class يجمع بيانات وسلوكًا تحت اسم واحد. عندما تكون مهمتك تمثيل مجموعة قيم مترابطة، يمكن كتابة record داخل Main. في تعريف Book نكتب نوع واسم كل مكوّن بالترتيب."
+        },
+        {
+          "heading": "إنشاء كتاب وقراءة مكوّناته",
+          "body": "يستقبل new Book(...) القيم بالترتيب المعلن. اقرأ الرمز باستدعاء id() والعنوان باستدعاء title(). يمثّل النص الفارغ في borrower() كتابًا متاحًا."
+        },
+        {
+          "heading": "تمثيل حالة جديدة",
+          "body": "مكوّنات هذا السجل النصية ثابتة بعد الإنشاء. لتمثيل الإعارة أنشئ Book آخر بنفس الرمز والعنوان واسم القارئ الجديد. يظل السجل الأول بقيمه الأصلية."
+        }
+      ],
+      "examples": [
+        {
+          "title": "بطاقتان للكتاب قبل الإعارة وبعدها",
+          "language": "java",
+          "code": "public class Main {\n    record Book(String id, String title, String borrower) {}\n\n    public static void main(String[] args) {\n        Book before = new Book(\"B001\", \"Java Basics\", \"\");\n        Book after = new Book(before.id(), before.title(), \"Mona\");\n        System.out.println(before.borrower().isEmpty());\n        System.out.println(after.id() + \" \" + after.borrower());\n    }\n}\n",
+          "explanation": "تؤكد true أن البطاقة الأصلية متاحة، ثم يعرض السطر الثاني الرمز والمستعير في البطاقة الجديدة."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "java-code-04-e1",
+          "type": "choice",
+          "prompt": "أي استدعاء يقرأ العنوان من سجل اسمه book؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "book.id()"
+            },
+            {
+              "id": "b",
+              "text": "book.title()"
+            },
+            {
+              "id": "c",
+              "text": "book.borrower()"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "اسم دالة القراءة يطابق اسم مكوّن السجل.",
+          "hints": [
+            "راجع مكوّنات Book."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-04-e2",
+          "type": "text",
+          "prompt": "ما النص الموجود في after.borrower() في المثال؟",
+          "options": [],
+          "acceptedAnswers": [
+            "Mona"
+          ],
+          "explanation": "المعامل الثالث عند إنشاء after هو اسم المستعير.",
+          "hints": [
+            "اقرأ آخر قيمة داخل new Book."
+          ],
+          "independent": true
+        },
+        {
+          "id": "java-code-04-e3",
+          "type": "choice",
+          "prompt": "أنشأت سجلًا جديدًا للمستعير. ماذا يحدث تلقائيًا للسجل القديم؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يتغير مستعيره الجديد"
+            },
+            {
+              "id": "b",
+              "text": "يحذف Java عنوانه"
+            },
+            {
+              "id": "c",
+              "text": "تبقى قيم مكوّناته كما كانت"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "إنشاء كائن جديد لا يكتب في مكونات الكائن القديم.",
+          "hints": [
+            "راجع قيمة before بعد إنشاء after."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اجمع رمز الكتاب وعنوانه واسم المستعير في سجل Book واحد."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "java-code-01",
+      "title": "تتبّع الرفوف بحلقة for",
+      "why": "عند إضافة رف جديد يكفي تغيير الحد، وتظل تعليمات طباعة الملصق في مكان واحد.",
+      "skillIds": [
+        "java.loops"
+      ]
+    },
+    {
+      "id": "java-code-02",
+      "title": "فصل قاعدة الإعارة في دالة",
+      "why": "لما تكون قاعدة الحساب في مكان واحد، تقدر تشغّلها على بيانات كتب مختلفة وتختبر نتيجتها مباشرة.",
+      "skillIds": [
+        "java.methods"
+      ]
+    },
+    {
+      "id": "java-code-03",
+      "title": "بناء فهرس متغير باستخدام ArrayList",
+      "why": "عدد الكتب بيتغير مع الوقت. القائمة تسمح بإضافة عنصر جديد من غير ما تحدد العدد النهائي من البداية.",
+      "skillIds": [
+        "java.lists"
+      ]
+    },
+    {
+      "id": "java-code-04",
+      "title": "تمثيل الكتاب بصنف بيانات record",
+      "why": "ربط هذه القيم في كائن واحد يحافظ على ارتباط العنوان بصاحبه عند المرور على الفهرس.",
+      "skillIds": [
+        "java.records"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "java.loops",
+      "title": "تتبّع الرفوف بحلقة for",
+      "description": "استخدم عدّادًا لطباعة أرقام الرفوف من 1 إلى 3.",
+      "required": {
+        "skill": "java.decisions"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.methods",
+      "title": "فصل قاعدة الإعارة في دالة",
+      "description": "عرّف دالة ترجع عدد النسخ المتبقية ثم استدعها من main.",
+      "required": {
+        "skill": "java.loops"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.lists",
+      "title": "بناء فهرس متغير باستخدام ArrayList",
+      "description": "أضف عناوين كتب واعرضها حسب ترتيب الإضافة.",
+      "required": {
+        "skill": "java.methods"
+      },
+      "recommended": []
+    },
+    {
+      "id": "java.records",
+      "title": "تمثيل الكتاب بصنف بيانات record",
+      "description": "اجمع رمز الكتاب وعنوانه واسم المستعير في سجل Book واحد.",
+      "required": {
+        "skill": "java.lists"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "java-code-01",
+      "index": 0,
+      "input": "",
+      "output": "Shelf 1\nShelf 2\nShelf 3\n"
+    },
+    {
+      "lessonId": "java-code-02",
+      "index": 0,
+      "input": "",
+      "output": "5\n"
+    },
+    {
+      "lessonId": "java-code-03",
+      "index": 0,
+      "input": "",
+      "output": "2\nJava Basics\nClean Code\n"
+    },
+    {
+      "lessonId": "java-code-04",
+      "index": 0,
+      "input": "",
+      "output": "true\nB001 Mona\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "سجل Java",
+      "technical": "record",
+      "definition": "تعريف موجز لصنف بيانات بمكوّنات مسماة ودوال لقراءتها."
+    },
+    {
+      "term": "قائمة قابلة للنمو",
+      "technical": "ArrayList",
+      "definition": "قائمة مرتبة في Java يمكن زيادة عدد عناصرها أثناء التشغيل."
+    }
+  ]
+}

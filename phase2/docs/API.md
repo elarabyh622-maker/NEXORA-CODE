@@ -25,6 +25,8 @@ dotnet Masar.Api.dll --promote-admin <existing-userName>
 
 الاستيراد مطابق JSONB لا يغيّر إصدارًا موجودًا. اختلاف payload بنفس releaseId يعطي فشلًا. نشر البداية المحلي مقيد بعينة `phase1-ar-v1` ذات3دروس، قبل وجود أي نشر سابق؛ إعادة الأمر للعينة المنشورة نفسها آمنة. بعد ذلك الانتقالات عبر مراجعات API. CLI لا يطبع exception message أو connection string، ويخرج1 عند فشل و0 عند نجاح.
 
+حد ملفات حزم المحتوى في أوامر CLI هو 2 MiB. حد جسم طلب HTTP هو 1 MiB.
+
 ## قرارات السلوك والأمن
 
 - الحسابات تستخدم `PasswordHasher<Account>` القياسي. اسم المستخدم NFKC/lowercase invariant؛ حروف وأرقام Unicode و`._-` فقط، دون أخذ role من المتصفح. الدور المعاد `Learner/Author/Reviewer/Admin`.
@@ -45,6 +47,8 @@ dotnet Masar.Api.dll --promote-admin <existing-userName>
 - يستخدم Reviewer أو Admin المسار `POST /api/v1/admin/releases/{id}/activate` بجسم `{expectedVersion}` لتعيين إصدار منشور افتراضيًا. يستخدم `{id}` قيمة UUID. يعيد نجاح الطلب 200 مع `{id,releaseId,status,version,activeReleaseId}` ويزيد نسخة الإصدار. يعود بـ409 عند تعارض النسخة، وبـ400 عند محاولة تفعيل إصدار غير منشور. يسجل `release.activate` الإصدار السابق والمختار في المعاملة نفسها.
 - اختيار إصدار البداية إجراء مستقل عن النشر. يحدد أمر `--publish-initial` إصدار العينة الافتراضي أثناء التهيئة الأولى. عند تقاعد الإصدار الافتراضي يحذف الخادم تعيينه ويسجل `release.deactivate`، وتعود `activeReleaseId` بقيمة `null` حتى يختار المراجع إصدارًا منشورًا. يمكن تفعيل البديل قبل تقاعد الإصدار السابق لتستمر نقطة البداية.
 - يعيد `GET /api/v1/catalog` الإصدارات المنشورة والأهداف التابعة للإصدار الافتراضي من قراءة واحدة. حقول الهدف هي `id,title,description,status,skillIds`. عند غياب الافتراضي تكون `goals` فارغة وتبقى الإصدارات المنشورة في `releases`.
+- يخضع `GET /api/v1/content/{releaseId}?view=overview` لصلاحيات مسار المحتوى الكامل ويستخدم `Cache-Control: no-store`. يعيد بيانات الفهرس والخريطة، ويقتصر كل درس في `sample.lessons` على `id,title,summary,minutes,exampleLanguages`. تُقرأ نصوص الدرس وتمارينه عبر `GET /api/v1/content/{releaseId}/lessons/{lessonId}`.
+- تُشغّل أمثلة Go محليًا. في الوضع التجاري يُتاح تنزيل `/projects/go-tasks-api-starter-v1.zip` لأصحاب صلاحية الوصول الكامل أو صلاحية مسار `go` أو درس `go-project-01`.
 - تُقرأ الخطط المحفوظة ومراجعاتها والتقدم من إصدارها الأصلي بعد التفعيل أو التقاعد. تتطلب قراءة المحتوى العامة والكتابات الجديدة إصدارًا منشورًا.
 
 ## المصادر الرسمية

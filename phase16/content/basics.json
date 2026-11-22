@@ -1,0 +1,588 @@
+{
+  "lessons": [
+    {
+      "id": "cpp-basics-01",
+      "title": "أول برنامج بـ C++20 على Windows",
+      "summary": "جهّز مترجم C++20، واحفظ ملف main.cpp، ثم ابنِ برنامجك وشغّله من الطرفية.",
+      "why": "دورة الكتابة والبناء والتشغيل هتساعدك تعرف هل المشكلة في الكود وقت البناء أو في السلوك وقت تشغيل ملف البرنامج.",
+      "objectives": [
+        "أميّز ملف الشيفرة عن ملف التشغيل.",
+        "أبني برنامج C++20 من طرفية مناسبة للمترجم.",
+        "أعدّل رسالة وأعيد البناء لأرى التغيير."
+      ],
+      "minutes": "30–40",
+      "skillIds": [
+        "cpp.setup"
+      ],
+      "sections": [
+        {
+          "heading": "جهّز مترجم C++20",
+          "body": "على Windows x64 افتح موقع MSYS2 الرسمي (www.msys2.org)، نزّل المثبّت، وبعد اكتماله افتح طرفية MSYS2 UCRT64. حدّث الحزم بالأمر في المثال. لو طلب إغلاق الطرفية، افتح UCRT64 مرة ثانية وأعد أمر التحديث، وبعدها ثبّت حزمة GCC اللي فيها g++. لو عندك Visual Studio أو Build Tools حديث وفيه Desktop development with C++، استخدم سطور MSVC من Developer PowerShell. يكفيك مترجم واحد."
+        },
+        {
+          "heading": "احفظ ملف المصدر داخل مجلد تدريب",
+          "body": "اعمل مجلد تدريب جديد. افتح فيه ملف main.cpp من محرر نصوص، وانسخ الكود واحفظه بامتداد .cpp. في الطرفية انتقل لنفس المجلد قبل البناء. مثلًا لو المجلد C:\\nexora-cpp، استخدم cd /c/nexora-cpp في UCRT64 أو Set-Location C:\\nexora-cpp في Developer PowerShell. الدالة main هي بداية تشغيل البرنامج، وiostream تتيح الكتابة إلى الطرفية عبر std::cout."
+        },
+        {
+          "heading": "ابنِ وشغّل ثم عدّل",
+          "body": "أمر البناء يقرأ ملف المصدر ويولّد hello.exe. شغّل الملف الناتج بعد نجاح البناء. غيّر Ready إلى Start في الكود، احفظ الملف، وأعد البناء والتشغيل. لو ظهر خطأ بعد حذف الفاصلة المنقوطة في آخر سطر الطباعة، اقرأ أول رسالة من المترجم، رجّعها وأعد البناء."
+        }
+      ],
+      "examples": [
+        {
+          "title": "تجهيز g++ داخل MSYS2 UCRT64",
+          "language": "text",
+          "code": "pacman -Syu\npacman -S mingw-w64-ucrt-x86_64-gcc\ng++ --version",
+          "explanation": "اكتب الأمر الثاني بعد اكتمال التحديث. لو طلب الأمر الأول إعادة فتح الطرفية، كرّره في UCRT64 قبل تثبيت الحزمة."
+        },
+        {
+          "title": "ملف main.cpp",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    std::cout << \"Ready\\n\";\n    return 0;\n}\n",
+          "explanation": "يطبع Ready ثم ينهي البرنامج برمز خروج 0. الأحرف \\n تبدأ سطرًا جديدًا."
+        },
+        {
+          "title": "البناء والتشغيل داخل MSYS2 UCRT64",
+          "language": "text",
+          "code": "g++ -std=c++20 -Wall -Wextra -Wpedantic main.cpp -o hello.exe && ./hello.exe",
+          "explanation": "يُشغَّل hello.exe فقط بعد نجاح البناء. اكتب الأمر في المجلد الذي حفظت فيه main.cpp."
+        },
+        {
+          "title": "البناء والتشغيل داخل Developer PowerShell",
+          "language": "text",
+          "code": "cl /nologo /std:c++20 /EHsc /W4 main.cpp /Fe:hello.exe\nif ($LASTEXITCODE -eq 0) { .\\hello.exe }",
+          "explanation": "نفّذ السطرين في نفس طرفية Visual Studio بعد الانتقال لمجلد المصدر. شرط PowerShell يربط التشغيل بنجاح المترجم."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-basics-01-e1",
+          "type": "choice",
+          "prompt": "أي ملف تفتحه وتعدّله لتغيير رسالة البرنامج؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "main.cpp"
+            },
+            {
+              "id": "b",
+              "text": "hello.exe"
+            },
+            {
+              "id": "c",
+              "text": "ملف تثبيت MSYS2"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "ملف المصدر main.cpp يحتوي السطر اللي بيطبع الرسالة.",
+          "hints": [
+            "ابحث عن ملف الكود اللي حفظته من المحرر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-01-e2",
+          "type": "choice",
+          "prompt": "عدّلت Ready وحفظت main.cpp. كيف تظهر الرسالة الجديدة؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "شغّل hello.exe الموجود فورًا"
+            },
+            {
+              "id": "b",
+              "text": "أعد بناء main.cpp ثم شغّل hello.exe"
+            },
+            {
+              "id": "c",
+              "text": "غيّر اسم hello.exe ثم شغّله"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "المترجم يبني نسخة تنفيذية جديدة تحتوي التعديل المحفوظ.",
+          "hints": [
+            "تذكّر ترتيب التعديل والبناء والتشغيل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-01-e3",
+          "type": "text",
+          "prompt": "في أمر g++، ما اسم الخيار الذي يختار معيار C++20؟",
+          "options": [],
+          "acceptedAnswers": [
+            "-std=c++20"
+          ],
+          "explanation": "الخيار -std=c++20 يحدد معيار اللغة عند البناء.",
+          "hints": [
+            "شوف أمر البناء في مثال UCRT64."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "احتفظ بملف المصدر. بعد كل تعديل احفظه وابنِ البرنامج، وبعد نجاح البناء جرّب ناتج التشغيل."
+    },
+    {
+      "id": "cpp-basics-02",
+      "title": "الأنواع والمتغيرات وحساب القروش",
+      "summary": "استخدم int وlong long وbool وstd::string، وخزّن المبالغ بعدد صحيح من القروش.",
+      "why": "اختيار النوع يوضّح معنى القيمة، وحساب المصروف بالقروش يدينا إجمالي دقيق بالمقدار اللي بنخزّنه.",
+      "objectives": [
+        "أختار نوعًا مناسبًا لنص أو قيمة منطقية أو عدد صحيح.",
+        "أحوّل مبلغًا من جنيهات وقروش إلى قروش صحيحة.",
+        "أستخدم ثابتًا لعدد القروش في الجنيه."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.types"
+      ],
+      "sections": [
+        {
+          "heading": "اختَر النوع حسب البيانات",
+          "body": "int مناسب لأعداد صحيحة صغيرة مثل عدد المصروفات في مثال. long long مجالُه أكبر، فهنستخدمه للمبالغ والإجماليات. bool له قيمتان true وfalse، مثل هل تمت المراجعة. std::string يحمل نصًا مثل اسم الفئة، ويحتاج تضمين <string>. اكتب قيمة ابتدائية لكل متغير قبل استخدامه."
+        },
+        {
+          "heading": "خزّن المبلغ بالقروش",
+          "body": "الجنيه فيه 100 قرش. مثّل 32 جنيهًا و50 قرشًا بعدد صحيح هو 3250. كده الجمع يحصل بنفس الوحدة، ونتجنب تقريب الكسور العشرية في أعداد الفاصلة العائمة. استخدم const لقيمة ثابتة زي عدد القروش في الجنيه."
+        },
+        {
+          "heading": "ارجع للجنيهات عند الحاجة",
+          "body": "لعدد صحيح غير سالب، القسمة الصحيحة على 100 تعطي عدد الجنيهات، وباقي القسمة % يعطي القروش المتبقية. المبلغ 4007 قرش يتفك إلى 40 جنيهًا و7 قروش. لو هتعرضه كرقم عشري بتنسيق جنيه.قرش، القروش تحتاج خانتين مثل 07."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اجمع مصروفين في نفس الوحدة",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nint main() {\n    const long long piastresPerPound = 100;\n    const std::string category = \"food\";\n    const long long lunch = 32 * piastresPerPound + 50;\n    const long long snack = 7 * piastresPerPound + 50;\n    const long long total = lunch + snack;\n\n    std::cout << category << \": \" << total << '\\n';\n    std::cout << total / piastresPerPound << \" EGP and \"\n              << total % piastresPerPound << \" piastres\\n\";\n}\n",
+          "explanation": "اتخزن 3250 و750 كأعداد صحيحة. المجموع 4000 قرش، يعني 40 جنيهًا و0 قرش."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-basics-02-e1",
+          "type": "text",
+          "prompt": "مبلغ 13 جنيهًا و5 قروش. تكتبه كام قرش؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "1305"
+          ],
+          "explanation": "13 × 100 + 5 يساوي 1305.",
+          "hints": [
+            "حوّل الجنيهات إلى قروش وبعدين أضف الباقي."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-02-e2",
+          "type": "choice",
+          "prompt": "أي نوع يناسب متغير معناه هل المصروف اتراجع؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "std::string"
+            },
+            {
+              "id": "b",
+              "text": "bool"
+            },
+            {
+              "id": "c",
+              "text": "long long"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "bool بيمثّل true أو false.",
+          "hints": [
+            "عدد الحالات في الاختيار هنا اثنتان."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-02-e3",
+          "type": "text",
+          "prompt": "لو القيمة 1875 قرش، ما ناتج 1875 % 100؟ اكتب عددًا فقط.",
+          "options": [],
+          "acceptedAnswers": [
+            "75"
+          ],
+          "explanation": "باقي القسمة بعد 18 مجموعة من 100 هو 75.",
+          "hints": [
+            "فكّر في القروش المتبقية بعد فصل الجنيهات الكاملة."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "اختار النوع من معنى البيانات، ووحّد مبالغ المشروع كلها على القروش الصحيحة."
+    },
+    {
+      "id": "cpp-basics-03",
+      "title": "قراءة مدخلات الطرفية",
+      "summary": "اقرأ كلمة وعددًا بـ std::cin، واقرأ سطرًا كاملًا بـ std::getline، وتحقق من نجاح القراءة.",
+      "why": "البرنامج يحتاج يتصرف بوضوح لما المستخدم يكتب قيمة مختلفة عن اللي الكود متوقعه.",
+      "objectives": [
+        "أقرأ فئة ومبلغًا من الطرفية.",
+        "أفرّق بين قراءة كلمة وقراءة سطر كامل.",
+        "أتعامل مع فشل القراءة قبل استخدام القيم."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.input"
+      ],
+      "sections": [
+        {
+          "heading": "اقرأ قيمًا منفصلة",
+          "body": "اقرأ الفئة في std::string والمبلغ في long long باستخدام std::cin >> category >> amount. القراءة بـ >> للنص تقف عند الفراغ التالي، والقراءة العددية تحاول استخراج عدد. هنا هنجرّب فئة من كلمة واحدة مثل transport."
+        },
+        {
+          "heading": "راجع نجاح القراءة",
+          "body": "ضع استخراج القيم في شرط. لو كتب المستخدم transport bus، تفشل قراءة العدد وتدخل فرع الخطأ. اطبع السبب عبر std::cerr وارجع برمز 1 في فرع الخطأ. نجاح قراءة العدد بأي قيمة لا يضمن أن المبلغ موجب أو أن باقي السطر صالح. هتتعلم فحصهم في الدروس الجاية."
+        },
+        {
+          "heading": "اقرأ سطرًا كاملًا عند الحاجة",
+          "body": "لو محتاج عبارة زي bus to work، استخدم std::getline(std::cin, description) من أول السطر. لو قرأت بـ >> قبل getline، فممكن يفضل رمز نهاية السطر في المجرى. استعمل std::getline(std::cin >> std::ws, description) عندما تريد تخطي الفراغات الأولى والأسطر الفارغة قبل الوصف."
+        }
+      ],
+      "examples": [
+        {
+          "title": "اقرأ فئة ومبلغًا ثم اطبعهما",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <string>\n\nint main() {\n    std::string category;\n    long long amount = 0;\n    if (!(std::cin >> category >> amount)) {\n        std::cerr << \"Expected a category and a whole number.\\n\";\n        return 1;\n    }\n\n    std::cout << category << '\\t' << amount << '\\n';\n    return 0;\n}\n",
+          "explanation": "جرّب كتابة transport 1250 ثم Enter. يطبع البرنامج الفئة والمبلغ وبينهما علامة تبويب."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-basics-03-e1",
+          "type": "choice",
+          "prompt": "عند استخدام std::cin >> category لقيمة من نوع std::string، ماذا يُقرأ من bus ticket؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "bus ticket"
+            },
+            {
+              "id": "b",
+              "text": "ticket"
+            },
+            {
+              "id": "c",
+              "text": "bus"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "الاستخراج بـ >> يقرأ الكلمة الأولى حتى الفراغ.",
+          "hints": [
+            "قارن قراءة كلمة بقراءة سطر."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-03-e2",
+          "type": "choice",
+          "prompt": "أي طريقة تقرأ وصفًا فيه مسافتان من أول السطر؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "std::getline(std::cin, description)"
+            },
+            {
+              "id": "b",
+              "text": "std::cin >> description"
+            },
+            {
+              "id": "c",
+              "text": "std::cout << description"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "getline تقرأ النص حتى نهاية السطر وتشمل المسافات الموجودة فيه.",
+          "hints": [
+            "ابحث عن الدالة اللي تتعامل مع سطر كامل."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-03-e3",
+          "type": "choice",
+          "prompt": "ما سلوك المثال لو كتبت food bus؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يطبع food ثم 0"
+            },
+            {
+              "id": "b",
+              "text": "يطبع رسالة على std::cerr ويخرج برمز 1"
+            },
+            {
+              "id": "c",
+              "text": "يطبع food ثم bus كعدد"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "bus لا تبدأ بعدد، لذلك شرط فشل القراءة يتحقق.",
+          "hints": [
+            "ابدأ بالتحقق من نوع المتغير amount."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "تحقّق من نجاح القراءة، وبعدها افحص هل القيم توافق قواعد البرنامج."
+    },
+    {
+      "id": "cpp-basics-04",
+      "title": "اتخاذ قرار باستخدام if",
+      "summary": "طبّق شرطًا لقبول مبلغ صحيح أو رفضه، وجرّب القيم اللي تقع على حدود الشرط.",
+      "why": "كل مصروف هيدخل في الحساب، ففحص المبلغ عند الإدخال يحمي الإجمالي من قيم غير صالحة.",
+      "objectives": [
+        "أكتب فرعين باستخدام if وelse.",
+        "أجمع مقارنتين باستخدام &&.",
+        "أتتبع سلوك الشرط عند الحد الأدنى والحد الأقصى."
+      ],
+      "minutes": "25–35",
+      "skillIds": [
+        "cpp.conditions"
+      ],
+      "sections": [
+        {
+          "heading": "حوّل شروط القبول لمقارنات",
+          "body": "مشروع المصروفات يقبل من 1 إلى 1000000000 قرش شاملًا الطرفين. اكتب amount >= 1 وamount <= 1'000'000'000. علامة الاقتباس داخل الرقم في C++ هنا بتفصل الخانات بصريًا. القيمة المكتوبة للمستخدم تظل أرقامًا عادية."
+        },
+        {
+          "heading": "اجمع الشروط",
+          "body": "التعبير A && B يصدق لما الشرطان يصدقوا معًا. التعبير A || B يصدق لما واحد على الأقل يصدق. اختر فرع if للقبول لما القيمة داخل المدى، وفرع else للرفض لما تكون خارجه."
+        },
+        {
+          "heading": "جرّب القيم حوالين كل حد",
+          "body": "اكتب حالتين عند كل حد وجنبه. جرّب 0 و1، ثم 1000000000 و1000000001. لو استبدلت >= بـ > في أول مقارنة، التجربة عند 1 هتكشف الخطأ."
+        }
+      ],
+      "examples": [
+        {
+          "title": "قبول قيمة على الحد الأدنى",
+          "language": "cpp",
+          "code": "#include <iostream>\n\nint main() {\n    long long amount = 0;\n    if (!(std::cin >> amount)) {\n        std::cerr << \"Expected a whole number.\\n\";\n        return 1;\n    }\n\n    if (amount >= 1 && amount <= 1'000'000'000) {\n        std::cout << \"Accepted\\n\";\n    } else {\n        std::cout << \"Rejected\\n\";\n    }\n}\n",
+          "explanation": "لو المدخل 1 يطبع Accepted. غيّر المدخل إلى 0، ثم اختبر الحد الأعلى والعدد اللي بعده."
+        }
+      ],
+      "exercises": [
+        {
+          "id": "cpp-basics-04-e1",
+          "type": "choice",
+          "prompt": "أي تعبير يطابق المجال من 1 إلى 100 شاملًا الطرفين؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "amount > 1 && amount < 100"
+            },
+            {
+              "id": "b",
+              "text": "amount >= 1 && amount <= 100"
+            },
+            {
+              "id": "c",
+              "text": "amount >= 1 || amount <= 100"
+            }
+          ],
+          "acceptedAnswers": [
+            "b"
+          ],
+          "explanation": "&& تفرض الحدين معًا، و>= و<= تسمحان بالقيمتين 1 و100.",
+          "hints": [
+            "انتبه هل الحد نفسه ضمن المجال."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-04-e2",
+          "type": "choice",
+          "prompt": "ما ناتج if في المثال عند 1000000001؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "يدخل فرع القبول لأن القيمة موجبة"
+            },
+            {
+              "id": "b",
+              "text": "يحدث خطأ بناء"
+            },
+            {
+              "id": "c",
+              "text": "يدخل فرع الرفض لأن الحد الأعلى اتجاوز"
+            }
+          ],
+          "acceptedAnswers": [
+            "c"
+          ],
+          "explanation": "المقارنة الثانية تفشل و&& تتطلب نجاح المقارنتين.",
+          "hints": [
+            "قارن القيمة بأعلى مبلغ مقبول."
+          ],
+          "independent": true
+        },
+        {
+          "id": "cpp-basics-04-e3",
+          "type": "choice",
+          "prompt": "أي مدخل يكشف الفرق بين amount >= 1 وamount > 1؟",
+          "options": [
+            {
+              "id": "a",
+              "text": "1"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "0"
+            }
+          ],
+          "acceptedAnswers": [
+            "a"
+          ],
+          "explanation": "عند 1 فقط تنجح >= وتفشل >.",
+          "hints": [
+            "اختبر قيمة تقع بالضبط عند الحد."
+          ],
+          "independent": true
+        }
+      ],
+      "takeaway": "حوّل قاعدة القبول إلى مقارنات، ثم جرّب الحد وما يليه وما يسبقه."
+    }
+  ],
+  "graphLessons": [
+    {
+      "id": "cpp-basics-01",
+      "title": "أول برنامج بـ C++20 على Windows",
+      "why": "دورة الكتابة والبناء والتشغيل هتساعدك تعرف هل المشكلة في الكود وقت البناء أو في السلوك وقت تشغيل ملف البرنامج.",
+      "skillIds": [
+        "cpp.setup"
+      ]
+    },
+    {
+      "id": "cpp-basics-02",
+      "title": "الأنواع والمتغيرات وحساب القروش",
+      "why": "اختيار النوع يوضّح معنى القيمة، وحساب المصروف بالقروش يدينا إجمالي دقيق بالمقدار اللي بنخزّنه.",
+      "skillIds": [
+        "cpp.types"
+      ]
+    },
+    {
+      "id": "cpp-basics-03",
+      "title": "قراءة مدخلات الطرفية",
+      "why": "البرنامج يحتاج يتصرف بوضوح لما المستخدم يكتب قيمة مختلفة عن اللي الكود متوقعه.",
+      "skillIds": [
+        "cpp.input"
+      ]
+    },
+    {
+      "id": "cpp-basics-04",
+      "title": "اتخاذ قرار باستخدام if",
+      "why": "كل مصروف هيدخل في الحساب، ففحص المبلغ عند الإدخال يحمي الإجمالي من قيم غير صالحة.",
+      "skillIds": [
+        "cpp.conditions"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": "cpp.setup",
+      "title": "أبني وأشغّل برنامج C++20 محليًا",
+      "description": "أجهّز مترجمًا مناسبًا وأستخدم الطرفية لبناء ملف مصدر وتشغيل الناتج.",
+      "required": {
+        "skill": "core.workspace"
+      },
+      "recommended": []
+    },
+    {
+      "id": "cpp.types",
+      "title": "أختار النوع وأحسب المبالغ بالقروش",
+      "description": "أستخدم النصوص والأعداد والقيم المنطقية وأمثّل المبلغ بوحدة صحيحة.",
+      "required": {
+        "skill": "cpp.setup"
+      },
+      "recommended": []
+    },
+    {
+      "id": "cpp.input",
+      "title": "أقرأ مدخلات الطرفية وأفحص نجاح القراءة",
+      "description": "أقرأ كلمات وأعدادًا وسطورًا كاملة وأتعامل مع فشل الاستخراج.",
+      "required": {
+        "skill": "cpp.types"
+      },
+      "recommended": []
+    },
+    {
+      "id": "cpp.conditions",
+      "title": "أقرر قبول قيمة أو رفضها بشرط",
+      "description": "أجمع مقارنات وأختبر حدود قواعد المدخل.",
+      "required": {
+        "skill": "cpp.input"
+      },
+      "recommended": []
+    }
+  ],
+  "exampleChecks": [
+    {
+      "lessonId": "cpp-basics-01",
+      "index": 1,
+      "input": "",
+      "output": "Ready\n"
+    },
+    {
+      "lessonId": "cpp-basics-02",
+      "index": 0,
+      "input": "",
+      "output": "food: 4000\n40 EGP and 0 piastres\n"
+    },
+    {
+      "lessonId": "cpp-basics-03",
+      "index": 0,
+      "input": "transport 1250\n",
+      "output": "transport\t1250\n"
+    },
+    {
+      "lessonId": "cpp-basics-04",
+      "index": 0,
+      "input": "1\n",
+      "output": "Accepted\n"
+    }
+  ],
+  "labs": [],
+  "glossary": [
+    {
+      "term": "مترجم الشيفرة",
+      "technical": "Compiler",
+      "definition": "أداة تحول ملف المصدر إلى شيفرة يمكن تجهيزها للتشغيل."
+    },
+    {
+      "term": "وضع معيار اللغة",
+      "technical": "C++20",
+      "definition": "إصدار من معيار C++ يحدَّد عند بناء أمثلة المسار."
+    },
+    {
+      "term": "القروش الصحيحة",
+      "technical": "Integer piastres",
+      "definition": "تمثيل قيمة المال بعدد القروش الكامل. 3250 تعني 32 جنيهًا و50 قرشًا."
+    },
+    {
+      "term": "مجرى الإدخال القياسي",
+      "technical": "std::cin",
+      "definition": "واجهة لقراءة مدخلات البرنامج، مثل ما يكتبه المستخدم في الطرفية."
+    }
+  ]
+}

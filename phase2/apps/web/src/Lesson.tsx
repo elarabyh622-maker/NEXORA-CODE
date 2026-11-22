@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ApiError, applicationPath, errorText, request, segment, type SessionScope } from './api';
 import { CodeLab } from './CodeLab';
+import { isLocalExampleLanguage } from './exampleLanguages';
 import { useResource } from './hooks';
 import { planLink } from './lessonLinks';
 import { acknowledgeDraftSave, attemptKey, receiveServerDraft } from './draftState';
-import type { Attempt, CurriculumProject, Draft, DraftState, Exercise as ExerciseType, Lesson as LessonType, User } from './types';
+import type { Attempt, CurriculumProject, Draft, DraftState, ExampleLanguage, Exercise as ExerciseType, Lesson as LessonType, User } from './types';
 import { ErrorBox, Heading, Loading } from './ui';
 
 export function Exercise({ exercise, releaseId, lessonId, user, scope, store, onAttempt }: { exercise: ExerciseType; releaseId: string; lessonId: string; user: User | null; scope?: SessionScope; store?: Map<string, DraftState>; onAttempt: () => void }) {
@@ -98,7 +99,7 @@ export function Exercise({ exercise, releaseId, lessonId, user, scope, store, on
   </section>;
 }
 
-export function Lesson({ releaseId, lessonId, goalParam, user, scope, language, store, project, onAttempt }: { releaseId: string; lessonId: string; goalParam?: string; user: User | null; scope?: SessionScope; language: string; store?: Map<string, DraftState>; project?: CurriculumProject; onAttempt: () => void }) {
+export function Lesson({ releaseId, lessonId, goalParam, user, scope, language, store, project, onAttempt }: { releaseId: string; lessonId: string; goalParam?: string; user: User | null; scope?: SessionScope; language: ExampleLanguage; store?: Map<string, DraftState>; project?: CurriculumProject; onAttempt: () => void }) {
   const resource = useResource<LessonType>(`/content/${segment(releaseId)}/lessons/${segment(lessonId)}`, 0, false, scope);
   if (resource.loading) return <Loading />;
   if (resource.error) return <ErrorBox message={resource.error} retry={resource.reload} />;
@@ -117,7 +118,7 @@ export function Lesson({ releaseId, lessonId, goalParam, user, scope, language, 
         {project.download && <div className="actions"><a className="btn" href={applicationPath(project.download)} download>نزّل ملفات البداية</a></div>}
       </section>}
       <section className="exercise-list"><h2>الآن دورك</h2><p className="muted">فكر وتتبع الخطوات. بعد إرسال الإجابة، يصححها النظام ويحفظ المحاولة في حسابك.</p>{lesson.exercises.map(exercise => <Exercise key={`${user?.id ?? 'guest'}/${releaseId}/${exercise.id}`} {...{ exercise, releaseId, lessonId, user, scope, store, onAttempt }} />)}</section>
-      <CodeLab {...{ releaseId, lessonId, goalParam, user, scope, language, store, onAttempt }} />
+      {!isLocalExampleLanguage(exampleLanguage) && <CodeLab {...{ releaseId, lessonId, goalParam, user, scope, language, store, onAttempt }} />}
       <aside className="takeaway"><h2>الفكرة التي تأخذها معك</h2><p>{lesson.takeaway}</p></aside>
     </article><aside className="panel side-summary"><h2>لماذا هذه الخطوة؟</h2><p>{lesson.why}</p><hr /><h3>اقرأ، ثم تتبع</h3><p>تتبّع الأمثلة خطوة بخطوة وتوقّع نتيجتها قبل قراءة الشرح.</p><a className="btn" href={planLink(goalParam)}>راجع الخطوة التالية في خطتك</a></aside></div>
   </>;
